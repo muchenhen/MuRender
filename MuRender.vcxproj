@@ -141,7 +141,6 @@
   <ItemGroup>
     <ClInclude Include="Colors.h" />
     <ClInclude Include="DeviceL.h" />
-    <ClInclude Include="math.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Texture.h" />
@@ -151,7 +150,6 @@
   <ItemGroup>
     <ClCompile Include="Device_L.cpp" />
     <ClCompile Include="Mu.cpp" />
-    <ClCompile Include="math.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Trans.cpp" />

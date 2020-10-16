@@ -21,9 +21,6 @@
     <ClInclude Include="DeviceL.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Device_L.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="math.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
