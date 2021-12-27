@@ -143,6 +143,8 @@
     <ClCompile Include="TinyRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Primitive.h" />
+    <ClInclude Include="RasterizeFunc.h" />
     <ClInclude Include="TGAImage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
