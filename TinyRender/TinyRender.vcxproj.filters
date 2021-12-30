@@ -32,5 +32,8 @@
     <ClInclude Include="Primitive.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OtherFunc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

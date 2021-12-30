@@ -143,6 +143,7 @@
     <ClCompile Include="TinyRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="OtherFunc.h" />
     <ClInclude Include="Primitive.h" />
     <ClInclude Include="RasterizeFunc.h" />
     <ClInclude Include="TGAImage.h" />
