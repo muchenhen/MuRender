@@ -144,6 +144,7 @@
     <ClCompile Include="TinyRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Maths.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="OtherFunc.h" />
     <ClInclude Include="Primitive.h" />

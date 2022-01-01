@@ -1,7 +1,8 @@
 #pragma once
 
+template<class T> 
 struct Point
 {
-	float x;
-	float y;
+	T x;
+	T y;
 };
