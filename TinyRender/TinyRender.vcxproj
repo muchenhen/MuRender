@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="TGAImage.cpp" />
     <ClCompile Include="TinyRender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Model.h" />
     <ClInclude Include="OtherFunc.h" />
     <ClInclude Include="Primitive.h" />
     <ClInclude Include="RasterizeFunc.h" />
