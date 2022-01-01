@@ -11,14 +11,19 @@ int main(int argc, char** argv) {
     TGAImage image(100, 100, TGAImage::RGB);
     // 将图片垂直翻转，这样子原点会变成左下角
     image.flip_vertically();
+    Point P1{ 13, 20 };
+    Point P2{ 80, 40 };
+    SecondLine(P1, P2, image, white);
+    P1 = { 20, 13 };
+    P2 = { 40, 80 };
+    SecondLine(P1, P2, image, white);
+    P1 = { 80, 40 };
+    P2 = { 13, 20 };
+    SecondLine(P1, P2, image, white);
 
-    Point P1{ 0, 0 };
-    Point P2{ 50, 30 };
-
-
-    DrawLineMidPoint(P1, P2, image, white);
+    //DrawLineBresenham(P1, P2, image, white);
 
     // 将image写入文件output.tga
-    image.write_tga_file("DrawLineMidPoint.tga");
+    //image.write_tga_file("DrawLineBresenham.tga");
     return 0;
 }
