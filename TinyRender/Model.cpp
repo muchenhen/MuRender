@@ -1,4 +1,5 @@
 #include "Model.h"
+#include <iostream>
 
 Model::Model(const char* FileName)
 {
@@ -25,13 +26,20 @@ Model::Model(const char* FileName)
 		}
 		else if (!line.compare(0, 2, "f "))
 		{
-			std::vector<Vector3i> f;
-			Vector3i tmp;
+			Face face = { 0,0,0 };
 			iss >> skip;
-			while (iss >> tmp[0] >> skip >> tmp[1] >> skip >> tmp[2]) {
-				for (int i = 0; i < 3; i++) tmp[i]--; // in wavefront obj all indices start at 1, not zero
-				f.push_back(tmp);
+			int skipInt;
+			int i = 0;
+			while (iss >> face[i] >> skip >> skipInt >> skip >> skipInt) {
+				face[i]--;
+				i++;
+				if (i >= 3)
+					break;
+				//else
+				//	iss >> skip;
 			}
+			Faces.push_back(face);
+			// face.Print();
 		}
 	}
 }
@@ -48,4 +56,19 @@ const int& Model::GetVertexNumber()
 const int& Model::GetFacesNumber()
 {
 	return Faces.size();
+}
+
+std::vector<Vector3f>& Model::GetVertexs()
+{
+	return Vertexs;
+}
+
+std::vector<Face>& Model::GetFaces()
+{
+	return Faces;
+}
+
+Vector3f& Model::GetVertex(const int& index)
+{
+	return Vertexs[index];
 }

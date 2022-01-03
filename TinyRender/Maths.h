@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include "Primitive.h"
 template <class T> 
 struct Vector3
 {
@@ -50,6 +51,11 @@ struct Vector3
 			return z;
 			break;
 		}
+	}
+
+	Point<T> ToPoint2D()
+	{
+		return Point<T>{ x,y };
 	}
 };
 

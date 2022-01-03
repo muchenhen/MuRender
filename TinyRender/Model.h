@@ -11,6 +11,27 @@ struct Face
 	int vertexIndex1;
 	int vertexIndex2;
 	int vertexIndex3;
+
+	int& operator[] (const int i)
+	{
+		switch (i)
+		{
+		case 0:
+			return vertexIndex1;
+			break;
+		case 1:
+			return vertexIndex2;
+			break;
+		case 2:
+			return vertexIndex3;
+			break;
+		}
+	}
+
+	void Print()
+	{
+		std::cout << "(" << vertexIndex1 << ", " << vertexIndex2 << ", " << vertexIndex3 << ")\n";
+	}
 };
 
 
@@ -34,5 +55,8 @@ public:
 
 	const int& GetVertexNumber();
 	const int& GetFacesNumber();
+	std::vector<Vector3f>& GetVertexs();
+	std::vector<Face>& GetFaces();
+	Vector3f& GetVertex(const int& index);
 };
 

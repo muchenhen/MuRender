@@ -4,6 +4,7 @@
 #include "OtherFunc.h"
 #include <math.h>
 #include <iostream>
+#include "Model.h"
 
 //数值微分画线
 template<class T>
@@ -78,11 +79,11 @@ void DrawLineMidPoint(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, c
 template<class T>
 void DrawLineBresenham(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, const TGAColor& Color)
 {
-	const int dx = P2.x - P1.x;
-	const int dy = P2.y - P1.y;
+	const int dx = round(P2.x - P1.x);
+	const int dy = round(P2.y - P1.y);
 	int g = -dx;
-	int x = P1.x;
-	int y = P1.y;
+	int x = round(P1.x);
+	int y = round(P1.y);
 	for (; x <= P2.x; x++)
 	{
 		Image.set(x, y, Color);
@@ -111,7 +112,21 @@ void DrawLineBresenham(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, 
 //	std::cout << std::endl;
 //}
 
-void DrawWireframe()
+void DrawWireframe(Model* model, TGAImage& image, const TGAColor& color)
 {
+	for (Face& face : model->GetFaces())
+	{
+		// 每个面的1-2,2-3,1-3的线画一下
+		for (int i = 0; i < 3; i++)
+		{
+			Point<float> p1 = model->GetVertex(face[i]).ToPoint2D();
+			Point<float> p2 = model->GetVertex(face[(i + 1) % 3]).ToPoint2D();
+			p1.x = (p1.x + 1) * (image.get_width() / 2);
+			p2.x = (p2.x + 1) * (image.get_width() / 2);
+			p1.y = (p1.y + 1) * (image.get_height() / 2);
+			p2.y = (p2.y + 1) * (image.get_height() / 2);
 
+			DrawLineBresenham(p1, p2, image, color);
+		}
+	}
 }
