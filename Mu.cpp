@@ -15,7 +15,7 @@
 ****************************************************************/
 #pragma once
 #include "DeviceL.h"
-#include <Eigen/Eigen>
+#include "eigen/Eigen/Eigen"
 #include <windowsx.h> //support GET_X_LPARAM()/GET_Y_LPARAM()
 //ref https://docs.microsoft.com/en-us/windows/desktop/api/windowsx/nf-windowsx-get_x_lparam
 #include <time.h>
