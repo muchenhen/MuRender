@@ -19,120 +19,120 @@ using namespace std;
 constexpr int SCREEN_WIDTH = 800; //窗口屏幕宽度
 constexpr int SCREEN_HEIGHT = 600; //窗口屏幕高度
 
-string windowTitle = "MuRender"; //窗口标题
+string WindowTitle = "MuRender"; //窗口标题
 
 unsigned int gModelIndex = 1; //模型索引 0是box 1是triangle
 
 unique_ptr<Device> gDevice = make_unique<Device>();
 
-LPCWSTR StringToLPCWSTR(const std::string Orig)
+LPCWSTR StringToLPCWSTR(const std::string& Orig)
 {
-	const size_t origsize = Orig.length() + 1;
+	const size_t Origsize = Orig.length() + 1;
 	
-	size_t convertedChars = 0;
-	const auto wcstring = static_cast<wchar_t*>(malloc(sizeof(wchar_t) * (Orig.length() - 1)));
-	mbstowcs_s(&convertedChars, wcstring, origsize, Orig.c_str(), _TRUNCATE);
+	size_t ConvertedChars = 0;
+	const auto Wcstring = static_cast<wchar_t*>(malloc(sizeof(wchar_t) * (Orig.length() - 1)));
+	mbstowcs_s(&ConvertedChars, Wcstring, Origsize, Orig.c_str(), _TRUNCATE);
 
-	return wcstring;
+	return Wcstring;
 }
 
-void TextOutX(HDC hdc, int x, int y, const std::string str)
+void TextOutX(const HDC HDC, const int X, const int Y, const std::string& Str)
 {
-	const LPCWSTR Pstr = StringToLPCWSTR(str);
-	TextOut(hdc, x, y, Pstr, str.size());
+	const LPCWSTR Pstr = StringToLPCWSTR(Str);
+	TextOut(HDC, X, Y, Pstr, Str.size());
 }
 
 LRESULT CALLBACK OnEvent(HWND, unsigned int, WPARAM, LPARAM);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPSTR cmdline, int showCmd)
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	//窗口类注册
-	WNDCLASS wc;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = static_cast<WNDPROC>(OnEvent);
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = GetModuleHandle(nullptr);
-	wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = TEXT("MainWnd");
+	WNDCLASS Wndclass;
+	Wndclass.style = CS_HREDRAW | CS_VREDRAW;
+	Wndclass.lpfnWndProc = static_cast<WNDPROC>(OnEvent);
+	Wndclass.cbClsExtra = 0;
+	Wndclass.cbWndExtra = 0;
+	Wndclass.hInstance = GetModuleHandle(nullptr);
+	Wndclass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+	Wndclass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	Wndclass.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
+	Wndclass.lpszMenuName = nullptr;
+	Wndclass.lpszClassName = TEXT("MainWnd");
 
-	if (!RegisterClass(&wc))
+	if (!RegisterClass(&Wndclass))
 	{
 		MessageBox(nullptr, TEXT("RegisterClass Failed."), nullptr, 0);
 		return false;
 	}
 	//获取客户区所需矩形大小
-	RECT rc = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
-	const int width = rc.right - rc.left;
-	const int height = rc.bottom - rc.top;
+	RECT Rect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+	AdjustWindowRect(&Rect, WS_OVERLAPPEDWINDOW, false);
+	const int Width = Rect.right - Rect.left;
+	const int Height = Rect.bottom - Rect.top;
 
-	const HWND ghwnd = CreateWindow(TEXT("MainWnd"), TEXT("MuRender"),
+	const HWND Ghwnd = CreateWindow(TEXT("MainWnd"), TEXT("MuRender"),
 	                                WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-	                                width, height, NULL, NULL, wc.hInstance, NULL);
-	if (!ghwnd)
+	                                Width, Height, NULL, NULL, Wndclass.hInstance, NULL);
+	if (!Ghwnd)
 	{
 		MessageBox(nullptr, TEXT("CreateWindow Failed."), nullptr, 0);
 		return false;
 	}
 
-	ShowWindow(ghwnd, SW_SHOW);
-	UpdateWindow(ghwnd);
+	ShowWindow(Ghwnd, SW_SHOW);
+	UpdateWindow(Ghwnd);
 
-	MSG msg = {nullptr};
-	while (GetMessage(&msg, nullptr, 0, 0))
+	MSG Msg = {nullptr};
+	while (GetMessage(&Msg, nullptr, 0, 0))
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		TranslateMessage(&Msg);
+		DispatchMessage(&Msg);
 	}
-	return static_cast<int>(msg.wParam);
+	return static_cast<int>(Msg.wParam);
 }
 
-LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WParam, const LPARAM LParam)
 {
-	PAINTSTRUCT ps;
-	HDC hdc;
+	PAINTSTRUCT Paintstruct;
+	HDC Hdc;
 
 	//双缓存 ref:《AI Techniques for Game Programming》
-	static int cxClient, cyClient;
-	static HDC hdcBackBuffer;
-	static HBITMAP hBitmap;
-	static HBITMAP hOldBitmap;
+	static int CxClient, CyClient;
+	static HDC HdcBackBuffer;
+	static HBITMAP HBitmap;
+	static HBITMAP HOldBitmap;
 
-	switch (message)
+	switch (Message)
 	{
 	case WM_CREATE:
 		{
 			//获取客户区尺寸
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			cxClient = rect.right - rect.left;
-			cyClient = rect.bottom - rect.top;
-			const BITMAPINFO bi = {
+			RECT Rect;
+			GetClientRect(Hwnd, &Rect);
+			CxClient = Rect.right - Rect.left;
+			CyClient = Rect.bottom - Rect.top;
+			const BITMAPINFO Bi = {
 				{
-					sizeof(BITMAPINFOHEADER), cxClient, cyClient, 1, 32, BI_RGB,
-					cxClient * cyClient * static_cast<DWORD>(4), 0, 0, 0, 0
+					sizeof(BITMAPINFOHEADER), CxClient, CyClient, 1, 32, BI_RGB,
+					CxClient * CyClient * static_cast<DWORD>(4), 0, 0, 0, 0
 				}
 			};
-			LPVOID ptr;
+			LPVOID Ptr;
 			//获取设备DC
-			hdc = GetDC(hwnd);
+			Hdc = GetDC(Hwnd);
 			//获取内存DC
-			hdcBackBuffer = CreateCompatibleDC(hdc);
+			HdcBackBuffer = CreateCompatibleDC(Hdc);
 
-			hBitmap = CreateDIBSection(hdcBackBuffer, &bi, DIB_RGB_COLORS,
-			                           &ptr, nullptr, 0); //内存位图数据指针ptr,用于初始化framebuffer;
-			if (!hBitmap)
+			HBitmap = CreateDIBSection(HdcBackBuffer, &Bi, DIB_RGB_COLORS,
+			                           &Ptr, nullptr, 0); //内存位图数据指针ptr,用于初始化framebuffer;
+			if (!HBitmap)
 			{
 				MessageBox(nullptr, TEXT("create dib section failed!"), TEXT("error"), MB_OK);
 				return 0;
 			}
 			//初始化设备
-			gDevice->initialize(cxClient, cyClient, ptr);
-			ptr = nullptr;
+			gDevice->Initialize(CxClient, CyClient, Ptr);
+			Ptr = nullptr;
 			//获取模型
 			gDevice->pModel->creatBox3D();
 			gDevice->pModel->creatTriangle3D();
@@ -143,16 +143,16 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//载入纹理
 			gDevice->pTexture->LoadBmp("./Texture/Res/diablo3_pose_diffuse.bmp");
 			//bitmap装入内存DC
-			hOldBitmap = static_cast<HBITMAP>(SelectObject(hdcBackBuffer, hBitmap));
+			HOldBitmap = static_cast<HBITMAP>(SelectObject(HdcBackBuffer, HBitmap));
 			//释放DC
-			ReleaseDC(hwnd, hdc);
+			ReleaseDC(Hwnd, Hdc);
 		}
 		break;
 	case WM_PAINT:
 		{
-			hdc = BeginPaint(hwnd, &ps);
+			Hdc = BeginPaint(Hwnd, &Paintstruct);
 			//用黑色填充backbuffer
-			BitBlt(hdcBackBuffer, 0, 0, cxClient, cyClient, nullptr, NULL, NULL, BLACKNESS);
+			BitBlt(HdcBackBuffer, 0, 0, CxClient, CyClient, nullptr, NULL, NULL, BLACKNESS);
 			gDevice->clearBuffer({0.1f, 0.1f, 0.1f, 1.0f});
 			//----------------------
 			//在这里执行所有画图操作
@@ -166,31 +166,31 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//calculate fps
 			const float dur = static_cast<float>(stop - start) / static_cast<float>(CLOCKS_PER_SEC);
 			const std::string fps = "FPS:" + std::to_string(1.0f / dur);
-			SetTextColor(hdcBackBuffer, RGB(255, 255, 255));
-			SetBkMode(hdcBackBuffer, TRANSPARENT);
-			TextOutX(hdcBackBuffer, 5, 5 + 20 * 1, fps);
-			TextOutX(hdcBackBuffer, 5, 5 + 20 * 2, "Space: solid / edge / texture");
-			TextOutX(hdcBackBuffer, 5, 5 + 20 * 3, "N: next scene");
-			TextOutX(hdcBackBuffer, 5, 5 + 20 * 4, "MouseWheel: Scale");
+			SetTextColor(HdcBackBuffer, RGB(255, 255, 255));
+			SetBkMode(HdcBackBuffer, TRANSPARENT);
+			TextOutX(HdcBackBuffer, 5, 5 + 20 * 1, fps);
+			TextOutX(HdcBackBuffer, 5, 5 + 20 * 2, "Space: solid / edge / texture");
+			TextOutX(HdcBackBuffer, 5, 5 + 20 * 3, "N: next scene");
+			TextOutX(HdcBackBuffer, 5, 5 + 20 * 4, "MouseWheel: Scale");
 			//backbuffer内容传到frontbuffer
-			BitBlt(ps.hdc, 0, 0, cxClient, cyClient, hdcBackBuffer, 0, 0, SRCCOPY);
-			EndPaint(hwnd, &ps);
+			BitBlt(Paintstruct.hdc, 0, 0, CxClient, CyClient, HdcBackBuffer, 0, 0, SRCCOPY);
+			EndPaint(Hwnd, &Paintstruct);
 		}
 		break;
 	case WM_DESTROY:
-		SelectObject(hdcBackBuffer, hOldBitmap);
-		DeleteDC(hdcBackBuffer);
-		DeleteObject(hBitmap);
+		SelectObject(HdcBackBuffer, HOldBitmap);
+		DeleteDC(HdcBackBuffer);
+		DeleteObject(HBitmap);
 	//gDevice->Destroy();
 	//delete gDevice;
 		PostQuitMessage(0);
 		break;
 	case WM_MOUSEMOVE:
 		{
-			const int xPos = GET_X_LPARAM(lParam);
-			const int yPos = GET_Y_LPARAM(lParam);
+			const int xPos = GET_X_LPARAM(LParam);
+			const int yPos = GET_Y_LPARAM(LParam);
 
-			if ((wParam & MK_LBUTTON) != 0)
+			if ((WParam & MK_LBUTTON) != 0)
 			{
 				const float dx = MathSet::convertToRadians(0.25f * static_cast<float>(xPos - gDevice->lastMousePos.x));
 				const float dy = MathSet::convertToRadians(0.25f * static_cast<float>(yPos - gDevice->lastMousePos.y));
@@ -201,7 +201,7 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				gDevice->mPhi = MathSet::clamp(gDevice->mPhi, 0.1f, 2 * Pi - 0.1f);
 				//状态更新
 				//gDevice->update();
-				InvalidateRect(hwnd, nullptr, false);
+				InvalidateRect(Hwnd, nullptr, false);
 			}
 			gDevice->lastMousePos.x = xPos;
 			gDevice->lastMousePos.y = yPos;
@@ -211,9 +211,9 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_RBUTTONDOWN:
 	case WM_LBUTTONDOWN:
 		{
-			gDevice->lastMousePos.x = GET_X_LPARAM(lParam);
-			gDevice->lastMousePos.y = GET_Y_LPARAM(lParam);
-			SetCapture(hwnd);
+			gDevice->lastMousePos.x = GET_X_LPARAM(LParam);
+			gDevice->lastMousePos.y = GET_Y_LPARAM(LParam);
+			SetCapture(Hwnd);
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -223,16 +223,16 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEWHEEL:
 		{
-			SetFocus(hwnd);
-			const float zDelta = static_cast<short>(HIWORD(wParam)) / 120.f * 0.02f;
+			SetFocus(Hwnd);
+			const float zDelta = static_cast<short>(HIWORD(WParam)) / 120.f * 0.02f;
 			gDevice->mZoom += zDelta;
 			gDevice->mScale = MathSet::scaleMatrix(gDevice->mZoom, gDevice->mZoom, gDevice->mZoom);
-			InvalidateRect(hwnd, nullptr, false);
+			InvalidateRect(Hwnd, nullptr, false);
 		}
 		break;
 	case WM_KEYDOWN:
 		{
-			switch (wParam)
+			switch (WParam)
 			{
 			case VK_SPACE:
 				{
@@ -243,13 +243,13 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					else
 						gDevice->renderMode = RenderMode::RenderStateWireFrame;
 					gDevice->clearBuffer({1.0f, 0.0f, 0.0f, 1.0f});
-					InvalidateRect(hwnd, nullptr, false);
+					InvalidateRect(Hwnd, nullptr, false);
 				}
 				break;
 			case 78: //"N"
 				{
 					gModelIndex = (gModelIndex + 1) % gDevice->pModel->ModelList.size();
-					InvalidateRect(hwnd, nullptr, false);
+					InvalidateRect(Hwnd, nullptr, false);
 				}
 				break;
 			default:
@@ -257,6 +257,8 @@ LRESULT CALLBACK OnEvent(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			} //switch
 		} //wm_keydown
 		break;
+	default: 
+		;
 	}
-	return DefWindowProc(hwnd, message, wParam, lParam);
+	return DefWindowProc(Hwnd, Message, WParam, LParam);
 }

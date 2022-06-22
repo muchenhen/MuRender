@@ -53,7 +53,7 @@ public:
 	~Device();
 
 	//³õÊ¼»¯
-	void initialize(int w, int h, void* framebuf);
+	void Initialize(int W, int H, void* FrameBuffer);
 	
 	//Ïú»Ù
 	void destroy();

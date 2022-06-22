@@ -5,12 +5,12 @@ Device::~Device()
 }
 
 //≥ı ºªØ
-void Device::initialize(int w, int h, void* framebuf)
+void Device::Initialize(const int W, const int H, void* FrameBuffer)
 {
-	width = w;
-	height = h;
+	width = W;
+	height = H;
 
-	pointFrameBuffer = static_cast<unsigned int*>(framebuf);
+	pointFrameBuffer = static_cast<unsigned int*>(FrameBuffer);
 
 	zBuffer = new float[height * width];
 	for (int i = 0; i < height * width; i++)
