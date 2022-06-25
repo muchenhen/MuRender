@@ -79,20 +79,53 @@ void DrawLineMidPoint(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, c
 template<class T>
 void DrawLineBresenham(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, const TGAColor& Color)
 {
-	const int dx = round(P2.x - P1.x);
-	const int dy = round(P2.y - P1.y);
-	int g = -dx;
-	int x = round(P1.x);
-	int y = round(P1.y);
-	for (; x <= P2.x; x++)
-	{
-		Image.set(x, y, Color);
+	// const int dx = round(P2.x - P1.x);
+	// const int dy = round(P2.y - P1.y);
+	// int g = -dx;
+	// int x = round(P1.x);
+	// int y = round(P1.y);
+	// for (; x <= P2.x; x++)
+	// {
+	// 	Image.set(x, y, Color);
+	// 	std::cout << "x: " << x << " ,y: " << y << std::endl;
+	// 	g = g + dy + dy;
+	// 	if (g >= 0)
+	// 	{
+	// 		y++;
+	// 		g = g - dx - dx;
+	// 	}
+	// }
+	T x0 = P1.x;
+	T y0 = P1.y;
+	T x1 = P2.x;
+	T y1 = P2.y;
+	bool steep = false;
+	if (std::abs(x0 - x1) < std::abs(y0 - y1)) {
+		std::swap(x0, y0);
+		std::swap(x1, y1);
+		steep = true;
+	}
+	if (x0 > x1) {
+		std::swap(x0, x1);
+		std::swap(y0, y1);
+	}
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+	int derror2 = std::abs(dy) * 2;
+	int error2 = 0;
+	int y = y0;
+	for (int x = x0; x <= x1; ++x) {
+		if (steep) {
+			Image.set(y, x, Color);
+		}
+		else {
+			Image.set(x, y, Color);
+		}
 		std::cout << "x: " << x << " ,y: " << y << std::endl;
-		g = g + dy + dy;
-		if (g >= 0)
-		{
-			y++;
-			g = g - dx - dx;
+		error2 += derror2;
+		if (error2 > dx) {
+			y += (y1 > y0 ? 1 : -1);
+			error2 -= dx * 2;
 		}
 	}
 }

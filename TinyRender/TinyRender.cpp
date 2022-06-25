@@ -1,4 +1,4 @@
-﻿#include "TGAImage.h"
+#include "TGAImage.h"
 #include "RasterizeFunc.h"
 #include "Maths.h"
 #include "Model.h"

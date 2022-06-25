@@ -36,17 +36,15 @@ struct Face
 
 
 /*
-* ObjÄ£ÐÍÎÄ¼þÀà
-* ¶ÁÈ¡Ò»¸öObjÎÄ¼þÉú³ÉÒ»¸öModel¶ÔÏó
-* 1¡¢¶ÁÈ¡ËùÓÐ¶¥µãÐÅÏ¢
-* 2¡¢½âÎöËùÓÐÃæ
+* Objæ¨¡åž‹æ–‡ä»¶ç±»
+* è¯»å–ä¸€ä¸ªObjæ–‡ä»¶ç”Ÿæˆä¸€ä¸ªModelå¯¹è±¡
+* 1ã€è¯»å–æ‰€æœ‰é¡¶ç‚¹ä¿¡æ¯
+* 2ã€è§£æžæ‰€æœ‰é¢
 */
 class Model
 {
 private:
-	//¶¥µã
 	std::vector<Vector3f> Vertexs;
-	//Ãæ
 	std::vector<Face> Faces;
 
 public:

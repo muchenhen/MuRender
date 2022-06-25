@@ -246,7 +246,7 @@ void TGAImage::flip_horizontally() {
     }
 }
 
-// ´¹Ö±·­×ª
+// ï¿½ï¿½Ö±ï¿½ï¿½×ª
 void TGAImage::flip_vertically() {
     if (!data.size()) return;
     size_t bytes_per_line = width * bytespp;
