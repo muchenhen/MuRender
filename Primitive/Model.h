@@ -1,32 +1,23 @@
 
 #pragma once
 #include <vector>
-#include <iostream>
-#include <windows.h>
-#include <fstream>
-#include <istream>
-#include <sstream>
-#include "Vector.h"
 #include "Mesh.h"
-#include "Colors.h"
 #include "Obj.h"
 using namespace std;
 
 class Model
 {
 public:
-	vector<Mesh*> ModelList;
+    vector<Mesh*> ModelList;
 
-	Model();
-	~Model();
+    Model();
+    ~Model();
 
-	//创建三角形mesh
-	void creatTriangle3D();
-	//创建box mesh
-	void creatBox3D();
+    void CreateTriangle3D();
+    void CreateBox3D();
 
-	void objCube();
-	void objCube2();
+    void ObjCube();
+    void ObjCube2();
 
-	void objBuffer(string filename);
+    void ObjBuffer(string Filename);
 };

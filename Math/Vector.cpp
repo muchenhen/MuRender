@@ -1,543 +1,442 @@
 #include "Vector.h"
+#include <corecrt_math.h>
 
-
-/////////////////////
-//
-//二维向量类
-//
-/////////////////////
-
-//默认构造函数
-Vector2::Vector2()
+MuVector2D::MuVector2D()
 {
-	u = 0; v = 0;
+	U = 0; V = 0;
 }
 
-//复制构造函数
-Vector2::Vector2(const Vector2& a)
+MuVector2D::MuVector2D(const MuVector2D& A)
 {
-	u = a.u;
-	v = a.v;
+	U = A.U;
+	V = A.V;
 }
 
-//参数构造函数
-Vector2::Vector2(float u1, float v1)
+MuVector2D::MuVector2D(float U1, float V1)
 {
-	u = u1;
-	v = v1;
+	U = U1;
+	V = V1;
 }
 
-//析构函数
-Vector2::~Vector2()
+MuVector2D::~MuVector2D()
+= default;
+
+MuVector2D& MuVector2D::operator=(const MuVector2D& A)
 {
-
-}
-
-//运算符重载
-
-//赋值
-Vector2& Vector2::operator=(const Vector2& a)
-{
-	u = a.u;
-	v = a.v;
+	U = A.U;
+	V = A.V;
 	return *this;
 }
 
-//判断是否相等
-bool Vector2::operator==(const Vector2& a)
+bool MuVector2D::operator==(const MuVector2D& A)
 {
-	return (u == a.u && v == a.v);
+	return (U == A.U && V == A.V);
 }
 
-//!=元素符重载 判断两个Vector是否不相等
-bool Vector2::operator!=(const Vector2& a)
+bool MuVector2D::operator!=(const MuVector2D& A)
 {
-	return (u != a.u || v != a.v);
+	return (U != A.U || V != A.V);
 }
 
-//重载-运算符用于取反
-Vector2 Vector2::operator-()
+MuVector2D MuVector2D::operator-()
 {
-	return Vector2(-u, -v);
+	return MuVector2D(-U, -V);
 }
 
-//二元加法
-Vector2 Vector2::operator+(const Vector2& a)
+MuVector2D MuVector2D::operator+(const MuVector2D& A)
 {
-	return Vector2(u + a.u, v + a.v);
+	return MuVector2D(U + A.U, V + A.V);
 }
 
-//标量乘法 标量右乘
-Vector2 Vector2::operator*(float a)
+MuVector2D MuVector2D::operator*(float A)
 {
-	return Vector2(a * u, a * v);
+	return MuVector2D(A * U, A * V);
 }
 
-//标量除法
-Vector2 Vector2::operator/(float a)
+MuVector2D MuVector2D::operator/(float A)
 {
-	a = 1.0f / a;
-	return Vector2(a * u, a * v);
+	A = 1.0f / A;
+	return MuVector2D(A * U, A * V);
 }
 
-//自反运算符重载
-
-// -= 
-Vector2& Vector2::operator-=(const Vector2& a)
+MuVector2D& MuVector2D::operator-=(const MuVector2D& A)
 {
-	u -= a.u;
-	v -= a.v;
+	U -= A.U;
+	V -= A.V;
 	return *this;
 }
 
-// +=
-Vector2& Vector2::operator+=(const Vector2& a)
+MuVector2D& MuVector2D::operator+=(const MuVector2D& A)
 {
-	u += a.v;
-	v += a.v;
+	U += A.V;
+	V += A.V;
 	return *this;
 }
 
-// *=
-Vector2& Vector2::operator*=(float a)
+MuVector2D& MuVector2D::operator*=(float A)
 {
-	u *= a;
-	v *= a;
+	U *= A;
+	V *= A;
 	return *this;
 }
 
-// /=
-Vector2& Vector2::operator/=(float a)
+MuVector2D& MuVector2D::operator/=(float A)
 {
-	a = 1.0f / a;
-	u *= a;
-	v *= a;
+	A = 1.0f / A;
+	U *= A;
+	V *= A;
 	return *this;
 }
 
-// 重载*号实现向量点乘
-float Vector2::operator*(const Vector2& a)
+float MuVector2D::operator*(const MuVector2D& A)
 {
-	return (u * a.u + v * a.v);
+	return (U * A.U + V * A.V);
 }
 
-//向量标准化
-void Vector2::normalize()
+void MuVector2D::Normalize()
 {
-	float modulus = sqrtf(u * u + v * v);
+	float modulus = sqrtf(U * U + V * V);
 	if (modulus > 0.0f)
 	{
 		modulus = 1.0f / modulus;
-		u *= modulus;
-		v *= modulus;
+		U *= modulus;
+		V *= modulus;
 	}
 }
 
-//非成员函数
-
-//求模
-float modulus(const Vector2& a)
+float Modulus(const MuVector2D& A)
 {
-	return sqrtf(a.u * a.u + a.v * a.v);
+	return sqrtf(A.U * A.U + A.V * A.V);
 }
 
-/*//计算向量叉乘
-Vector2 multiplicationCross(const Vector2& a, const Vector2& b)
+MuVector2D operator*(float K, const MuVector2D& V)
 {
-	return Vector2(a.u * b.v - a.v * b.u);
-}*/
-
-//标量左乘
-Vector2 operator*(float k, const Vector2& v)
-{
-	return Vector2(k * v.u, k * v.v);
+	return MuVector2D(K * V.U, K * V.V);
 }
 
-//计算两点间距离
-float distance(const Vector2& a, const Vector2& b)
+float Distance(const MuVector2D& A, const MuVector2D& B)
 {
-	float dx = a.u - b.u;
-	float dy = a.v - b.v;
+	float dx = A.U - B.U;
+	float dy = A.V - B.V;
 	return sqrtf(dx * dx + dy * dy);
 }
 
 
-/////////////////////
-//
-//三维向量类
-//
-/////////////////////
-
-//默认构造函数
-Vector3::Vector3()
+MuVector3D::MuVector3D()
 {
-	x = 0; y = 0; z = 0;
+	X = 0; Y = 0; Z = 0;
 }
 
-//复制构造函数
-Vector3::Vector3(const Vector3& a)
+MuVector3D::MuVector3D(const MuVector3D& A)
 {
-	x = a.x;
-	y = a.y;
-	z = a.z;
+	X = A.X;
+	Y = A.Y;
+	Z = A.Z;
 }
 
-//参数构造函数
-Vector3::Vector3(float ax, float ay, float az)
+MuVector3D::MuVector3D(float InX, float InY, float InZ)
 {
-	x = ax;
-	y = ay;
-	z = az;
+	X = InX;
+	Y = InY;
+	Z = InZ;
 }
 
-//析构函数
-Vector3::~Vector3()
+MuVector3D::~MuVector3D()
 {
 
 }
 
-//运算符重载
-
-//赋值
-Vector3& Vector3::operator=(const Vector3& a)
+MuVector3D& MuVector3D::operator=(const MuVector3D& A)
 {
-	x = a.x;
-	y = a.y;
-	z = a.z;
+	X = A.X;
+	Y = A.Y;
+	Z = A.Z;
 	return *this;
 }
 
-//判断是否相等
-bool Vector3::operator==(const Vector3& a)
+bool MuVector3D::operator==(const MuVector3D& A)
 {
-	return (x == a.x && y == a.y && z == a.z);
+	return (X == A.X && Y == A.Y && Z == A.Z);
 }
 
-//!=元素符重载 判断两个Vector是否不相等
-bool Vector3::operator!=(const Vector3& a)
+bool MuVector3D::operator!=(const MuVector3D& A)
 {
-	return (x != a.x || y != a.y || z != a.z);
+	return (X != A.X || Y != A.Y || Z != A.Z);
 }
 
-//重载-运算符用于取反
-Vector3 Vector3::operator-()
+MuVector3D MuVector3D::operator-()
 {
-	return Vector3(-x, -y, -z);
+	return MuVector3D(-X, -Y, -Z);
 }
 
-//二元加法
-Vector3 Vector3::operator+(const Vector3& a)
+MuVector3D MuVector3D::operator+(const MuVector3D& A)
 {
-	return Vector3(x + a.x, y + a.y, z + a.z);
+	return MuVector3D(X + A.X, Y + A.Y, Z + A.Z);
 }
 
-//标量乘法 标量右乘
-Vector3 Vector3::operator*(float a)
+MuVector3D MuVector3D::operator*(float A)
 {
-	return Vector3(a * x, a * y, a * z);
+	return MuVector3D(A * X, A * Y, A * Z);
 }
 
-//标量除法
-Vector3 Vector3::operator/(float a)
+MuVector3D MuVector3D::operator/(float A)
 {
-	a = 1.0f / a;
-	return Vector3(a * x, a * y, a * z);
+	A = 1.0f / A;
+	return MuVector3D(A * X, A * Y, A * Z);
 }
 
-//自反运算符重载
 
-// -= 
-Vector3& Vector3::operator-=(const Vector3& a)
+MuVector3D& MuVector3D::operator-=(const MuVector3D& A)
 {
-	x -= a.x;
-	y -= a.y;
-	z -= a.z;
+	X -= A.X;
+	Y -= A.Y;
+	Z -= A.Z;
 	return *this;
 }
 
-// +=
-Vector3& Vector3::operator+=(const Vector3& a)
+MuVector3D& MuVector3D::operator+=(const MuVector3D& A)
 {
-	x += a.x;
-	y += a.y;
-	z += a.z;
+	X += A.X;
+	Y += A.Y;
+	Z += A.Z;
 	return *this;
 }
 
-// *=
-Vector3& Vector3::operator*=(float a)
+MuVector3D& MuVector3D::operator*=(float A)
 {
-	x *= a;
-	y *= a;
-	z *= a;
+	X *= A;
+	Y *= A;
+	Z *= A;
 	return *this;
 }
 
-// /=
-Vector3& Vector3::operator/=(float a)
+MuVector3D& MuVector3D::operator/=(float A)
 {
-	a = 1.0f / a;
-	x *= a;
-	y *= a;
-	z *= a;
+	A = 1.0f / A;
+	X *= A;
+	Y *= A;
+	Z *= A;
 	return *this;
 }
 
-// 重载*号实现向量点乘
-float Vector3::operator*(const Vector3& a)
+float MuVector3D::operator*(const MuVector3D& A)
 {
-	return (x * a.x + y * a.y + z * a.z);
+	return (X * A.X + Y * A.Y + Z * A.Z);
 }
 
-//向量标准化
-void Vector3::normalize()
+void MuVector3D::Normalize()
 {
-	float modulus = sqrtf(x * x + y * y + z * z);
+	float modulus = sqrtf(X * X + Y * Y + Z * Z);
 	if (modulus > 0.0f)
 	{
 		modulus = 1.0f / modulus;
-		x *= modulus;
-		y *= modulus;
-		z *= modulus;
+		X *= modulus;
+		Y *= modulus;
+		Z *= modulus;
 	}
 }
 
-//非成员函数
 
-//求模
-float modulus(const Vector3& a)
+float Modulus(const MuVector3D& A)
 {
-	return sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
+	return sqrtf(A.X * A.X + A.Y * A.Y + A.Z * A.Z);
 }
 
-//计算向量叉乘
-Vector3 multiplicationCross(const Vector3& a, const Vector3& b)
+MuVector3D MultiplicationCross(const MuVector3D& A, const MuVector3D& B)
 {
-	return Vector3(
-		a.y * b.z - a.z * b.y,
-		a.z * b.x - a.x * b.z,
-		a.x * b.y - a.y * b.x);
+	return MuVector3D(
+		A.Y * B.Z - A.Z * B.Y,
+		A.Z * B.X - A.X * B.Z,
+		A.X * B.Y - A.Y * B.X);
 }
 
-//标量左乘
-Vector3 operator*(float k, const Vector3& v)
+MuVector3D operator*(float K, const MuVector3D& V)
 {
-	return Vector3(k * v.x, k * v.y, k * v.z);
+	return MuVector3D(K * V.X, K * V.Y, K * V.Z);
 }
 
-//计算两点间距离
-float distance(const Vector3& a, const Vector3& b)
+float Distance(const MuVector3D& A, const MuVector3D& B)
 {
-	float dx = a.x - b.x;
-	float dy = a.y - b.y;
-	float dz = a.z - b.z;
+	float dx = A.X - B.X;
+	float dy = A.Y - B.Y;
+	float dz = A.Z - B.Z;
 	return sqrtf(dx * dx + dy * dy + dz * dz);
 }
 
 
-/////////////////////
-//
-//四维向量类
-//
-/////////////////////
 
-//默认构造函数
-Vector4::Vector4()
+MuVector::MuVector()
 {
-	x = y = z = 0; w = 1;
+	X = Y = Z = 0; W = 1;
 }
 
-//复制构造函数
-Vector4::Vector4(const Vector4& a)
+MuVector::MuVector(const MuVector& a)
 {
-	x = a.x;
-	y = a.y;
-	z = a.z;
-	w = a.w;
+	X = a.X;
+	Y = a.Y;
+	Z = a.Z;
+	W = a.W;
 }
 
-Vector4::Vector4(const Vector3& a)
+MuVector::MuVector(const MuVector3D& a)
 {
-	x = a.x;
-	y = a.y;
-	z = a.z;
-	w = 1.0f;
+	X = a.X;
+	Y = a.Y;
+	Z = a.Z;
+	W = 1.0f;
 }
 
-//参数构造函数
-Vector4::Vector4(float ax, float ay, float az, float aw)
+MuVector::MuVector(float ax, float ay, float az, float aw)
 {
-	x = ax;
-	y = ay;
-	z = az;
-	w = aw;
+	X = ax;
+	Y = ay;
+	Z = az;
+	W = aw;
 }
 
-Vector4::Vector4(float ax, float ay, float az)
+MuVector::MuVector(float ax, float ay, float az)
 {
-	x = ax;
-	y = ay;
-	z = az;
-	w = 1.0f;
+	X = ax;
+	Y = ay;
+	Z = az;
+	W = 1.0f;
 }
 
-Vector4::Vector4(float u, float v)
+MuVector::MuVector(float u, float v)
 {
-	x = u;
-	y = v;
-	z = 0.0f;
-	w = 0.0f;
+	X = u;
+	Y = v;
+	Z = 0.0f;
+	W = 0.0f;
 }
 
-//析构函数
-Vector4::~Vector4()
+MuVector::~MuVector()
 {
 
 }
 
-//运算符重载
 
-//赋值运算符重载
-Vector4& Vector4::operator=(const Vector4& a)
+MuVector& MuVector::operator=(const MuVector& a)
 {
-	x = a.x;
-	y = a.y;
-	z = a.z;
-	w = a.w;
+	X = a.X;
+	Y = a.Y;
+	Z = a.Z;
+	W = a.W;
 	return *this;
 }
 
-//==运算符重载 判断两个Vector是否相等
-bool Vector4::operator==(const Vector4& a)
+bool MuVector::operator==(const MuVector& a)
 {
-	return (x == a.x && y == a.y && z == a.z && w == a.w);
+	return (X == a.X && Y == a.Y && Z == a.Z && W == a.W);
 }
 
-//!=元素符重载 判断两个Vector是否不相等
-bool Vector4::operator!=(const Vector4& a)
+bool MuVector::operator!=(const MuVector& a)
 {
-	return (x != a.x || y != a.y || z != a.z || w != a.w);
+	return (X != a.X || Y != a.Y || Z != a.Z || W != a.W);
 }
 
-//重载-运算符用于取反
-Vector4 Vector4::operator - () const
+MuVector MuVector::operator - () const
 {
-	return Vector4(-x, -y, -z, 1);
+	return MuVector(-X, -Y, -Z, 1);
 }
 
-//二元加法
-Vector4 Vector4::operator+(const Vector4& a) const
+MuVector MuVector::operator+(const MuVector& a) const
 {
-	return Vector4(x + a.x, y + a.y, z + a.z, 1);
+	return MuVector(X + a.X, Y + a.Y, Z + a.Z, 1);
 }
 
-//二元减法
-Vector4 Vector4::operator-(const Vector4& a) const
+MuVector MuVector::operator-(const MuVector& a) const
 {
-	return Vector4(x - a.x, y - a.y, z - a.z, 1);
+	return MuVector(X - a.X, Y - a.Y, Z - a.Z, 1);
 }
 
-//标量乘法 标量右乘
-Vector4 Vector4::operator*(float a) const
+MuVector MuVector::operator*(float a) const
 {
-	return Vector4(a * x, a * y, a * z, 1);
+	return MuVector(a * X, a * Y, a * Z, 1);
 }
 
-//标量除法
-Vector4 Vector4::operator/(float a) const
+MuVector MuVector::operator/(float a) const
 {
 	float t = 1.0f / a;
-	return Vector4(t * x, t * y, t * z, 1);
+	return MuVector(t * X, t * Y, t * Z, 1);
 }
 
-//自反运算符重载
 
-//-=
-Vector4& Vector4::operator-=(const Vector4& a)
+MuVector& MuVector::operator-=(const MuVector& a)
 {
-	x -= a.x;
-	y -= a.y;
-	z -= a.z;
+	X -= a.X;
+	Y -= a.Y;
+	Z -= a.Z;
 	return *this;
 }
 
 
-//+=
-Vector4& Vector4::operator+=(const Vector4& a)
+MuVector& MuVector::operator+=(const MuVector& a)
 {
-	x += a.x;
-	y += a.y;
-	z += a.z;
+	X += a.X;
+	Y += a.Y;
+	Z += a.Z;
 	return *this;
 }
 
-//*=
-Vector4& Vector4::operator*=(float a)
+MuVector& MuVector::operator*=(float a)
 {
-	x *= a;
-	y *= a;
-	z *= a;
+	X *= a;
+	Y *= a;
+	Z *= a;
 	return *this;
 }
 
-// /=
-Vector4& Vector4::operator/=(float a)
+MuVector& MuVector::operator/=(float a)
 {
 	a = 1.0f / a;
-	x *= a;
-	y *= a;
-	z *= a;
+	X *= a;
+	Y *= a;
+	Z *= a;
 	return *this;
 }
 
-// 重载*号实现向量点乘
-float Vector4::operator*(const Vector4& a) const
+float MuVector::operator*(const MuVector& a) const
 {
-	return (x * a.x + y * a.y + z * a.z);
+	return (X * a.X + Y * a.Y + Z * a.Z);
 }
 
-//向量标准化
-void Vector4::normalize()
+void MuVector::Normalize()
 {
-	float modulus = sqrtf(x * x + y * y + z * z);
+	float modulus = sqrtf(X * X + Y * Y + Z * Z);
 	if (modulus > 0.0f)
 	{
 		modulus = 1.0f / modulus;
-		x *= modulus;
-		y *= modulus;
-		z *= modulus;
+		X *= modulus;
+		Y *= modulus;
+		Z *= modulus;
 	}
 }
 
-//非成员函数
 
-//求模
-float modulus(const Vector4& a)
+float Modulus(const MuVector& a)
 {
-	return sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
+	return sqrtf(a.X * a.X + a.Y * a.Y + a.Z * a.Z);
 }
 
-//计算向量叉乘
-Vector4 multiplicationCross(const Vector4& a, const Vector4& b)
+MuVector MultiplicationCross(const MuVector& a, const MuVector& b)
 {
-	return Vector4(
-		a.y * b.z - a.z * b.y,
-		a.z * b.x - a.x * b.z,
-		a.x * b.y - a.y * b.x,
+	return MuVector(
+		a.Y * b.Z - a.Z * b.Y,
+		a.Z * b.X - a.X * b.Z,
+		a.X * b.Y - a.Y * b.X,
 		1);
 }
 
-//标量左乘
-Vector4 operator*(float k, const Vector4& v)
+MuVector operator*(float k, const MuVector& v)
 {
-	return Vector4(k * v.x, k * v.y, k * v.z, 1);
+	return MuVector(k * v.X, k * v.Y, k * v.Z, 1);
 }
 
-//计算两点间距离
-float distance(const Vector4& a, const Vector4& b)
+float Distance(const MuVector& a, const MuVector& b)
 {
-	float dx = a.x - b.x;
-	float dy = a.y - b.y;
-	float dz = a.z - b.z;
+	float dx = a.X - b.X;
+	float dy = a.Y - b.Y;
+	float dz = a.Z - b.Z;
 	return sqrtf(dx * dx + dy * dy + dz * dz);
 }

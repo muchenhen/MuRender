@@ -2,7 +2,7 @@
 
 const float Math_L::Pi = 3.1415926f;
 
-//Æ½ÒÆ¾ØÕó
+//Æ½ï¿½Æ¾ï¿½ï¿½ï¿½
 Eigen::Matrix4f Math_L::MatrixSetTranslate(float x, float y, float z)
 {
 	Eigen::Matrix4f TranslateMatrix;
@@ -13,7 +13,7 @@ Eigen::Matrix4f Math_L::MatrixSetTranslate(float x, float y, float z)
 		x, y, z, 1;
 	return TranslateMatrix;
 }
-//Ëõ·Å¾ØÕó
+//ï¿½ï¿½ï¿½Å¾ï¿½ï¿½ï¿½
 Eigen::Matrix4f Math_L::MatrixSetScale(float x, float y, float z)
 {
 	Eigen::Matrix4f ScaleMatrix;
@@ -24,7 +24,7 @@ Eigen::Matrix4f Math_L::MatrixSetScale(float x, float y, float z)
 		0, 0, 0, 1;
 	return ScaleMatrix;
 }
-//ÈÆXÖáÐý×ª¾ØÕó
+//ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 Eigen::Matrix4f Math_L::MatrixSetRotationX(float angle)
 {
 	Eigen::Matrix4f RotationXMatrix;
@@ -35,7 +35,7 @@ Eigen::Matrix4f Math_L::MatrixSetRotationX(float angle)
 		0, 0, 0, 1;
 	return RotationXMatrix;
 }
-//ÈÆYÖáÐý×ª¾ØÕó
+//ï¿½ï¿½Yï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 Eigen::Matrix4f Math_L::MatrixSetRotationY(float angle)
 {
 	Eigen::Matrix4f RotationYMatrix;
@@ -46,7 +46,7 @@ Eigen::Matrix4f Math_L::MatrixSetRotationY(float angle)
 		0, 0, 0, 1;
 	return RotationYMatrix;
 }
-//ÈÆZÖáÐý×ª¾ØÕó
+//ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 Eigen::Matrix4f Math_L::MatrixSetRotationZ(float angle)
 {
 	Eigen::Matrix4f RotationZMatrix;
@@ -57,7 +57,7 @@ Eigen::Matrix4f Math_L::MatrixSetRotationZ(float angle)
 		0, 0, 0, 1;
 	return RotationZMatrix;
 }
-//»ñÈ¡ÉãÏñ»ú¾ØÕó»òÕßÊÓ½Ç¾ØÕó,view matrix
+//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó½Ç¾ï¿½ï¿½ï¿½,view matrix
 Eigen::Matrix4f Math_L::MatrixSetLookAt(const Eigen::Vector4f& look, const Eigen::Vector4f& at, const Eigen::Vector4f& up)
 {
 	Eigen::Vector4f zaxis = (at - look).normalized();
@@ -72,8 +72,8 @@ Eigen::Matrix4f Math_L::MatrixSetLookAt(const Eigen::Vector4f& look, const Eigen
 	return ViewMatrix;
 }
 /***********************************************
-²Î¿¼D3D11 ÁúÊé
-»ñÈ¡Í¶Ó°¾ØÕó  D3DXMatrixPerspectiveFovLH 
+ï¿½Î¿ï¿½D3D11 ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½È¡Í¶Ó°ï¿½ï¿½ï¿½ï¿½  D3DXMatrixPerspectiveFovLH 
 	fovY ----vertical field of view  angle in radians
 	aspectRatio = width / height
 	nearZ -----distance to near plane
@@ -90,7 +90,7 @@ Eigen::Matrix4f Math_L::MatrixPerspectiveFovLH(float fovY, float aspectRatio, fl
 		0, 0, -nearZ * farZ / (farZ - nearZ), 0;
 	return mat;
 }
-//ÑÕÉ«×ª»¯ÎªUINT, argb order
+//ï¿½ï¿½É«×ªï¿½ï¿½ÎªUINT, argb order
 UINT Math_L::ColorToUINT(const Eigen::Vector4f& color)
 {
 	int r = int(255 * color[0]);

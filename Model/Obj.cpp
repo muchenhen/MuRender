@@ -1,117 +1,104 @@
 #include "Obj.h"
+#include <fstream>
+#include <sstream>
+#include "Colors.h"
 
-void Obj::createCubeObj()
+void Obj::CreateCubeObj()
 {
-	//顶点位置
-	posList.push_back(Vector4(-1.0f, -1.0f, -1.0f, 1.0f));
-	posList.push_back(Vector4(1.0f, -1.0f, -1.0f, 1.0f));
-	posList.push_back(Vector4(1.0f, 1.0f, -1.0f, 1.0f));
-	posList.push_back(Vector4(-1.0f, 1.0f, -1.0f, 1.0f));
-	posList.push_back(Vector4(-1.0f, -1.0f, 1.0f, 1.0f));
-	posList.push_back(Vector4(1.0f, -1.0f, 1.0f, 1.0f));
-	posList.push_back(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
-	posList.push_back(Vector4(-1.0f, 1.0f, 1.0f, 1.0f));
-	//顶点UV
-	uvList.push_back(Vector4(0.0f, 0.0f));
-	uvList.push_back(Vector4(0.0f, 1.0f));
-	uvList.push_back(Vector4(1.0f, 0.0f));
-	uvList.push_back(Vector4(1.0f, 1.0f));
-	//位置索引
-	faceIndexPos = { 
-		0,2,1,	0,3,2,//front
-		4,7,6,	4,6,5,//back
-		0,7,4,	0,7,3,//left
-		1,6,5,	1,6,2,//right
-		2,7,6,	2,7,3,//up
-		0,5,1,	0,5,4//bottom
-	};
+    VertexPositionList.emplace_back(-1.0f, -1.0f, -1.0f, 1.0f);
+    VertexPositionList.emplace_back(1.0f, -1.0f, -1.0f, 1.0f);
+    VertexPositionList.emplace_back(1.0f, 1.0f, -1.0f, 1.0f);
+    VertexPositionList.emplace_back(-1.0f, 1.0f, -1.0f, 1.0f);
+    VertexPositionList.emplace_back(-1.0f, -1.0f, 1.0f, 1.0f);
+    VertexPositionList.emplace_back(1.0f, -1.0f, 1.0f, 1.0f);
+    VertexPositionList.emplace_back(1.0f, 1.0f, 1.0f, 1.0f);
+    VertexPositionList.emplace_back(-1.0f, 1.0f, 1.0f, 1.0f);
+    UVPositionList.emplace_back(0.0f, 0.0f);
+    UVPositionList.emplace_back(0.0f, 1.0f);
+    UVPositionList.emplace_back(1.0f, 0.0f);
+    UVPositionList.emplace_back(1.0f, 1.0f);
+    FaceIndexPos = {
+        0, 2, 1, 0, 3, 2, 4, 7, 6, 4, 6, 5, 0, 7, 4, 0, 7, 3, 1, 6, 5, 1, 6, 2, 2, 7, 6, 2, 7, 3, 0, 5, 1, 0, 5, 4};
 
-	//uv索引
-	faceIndexUV = {
-		0,2,1,	0,3,2,
-		0,3,2,	0,2,1,
-		0,2,3,	0,2,1,
-		0,2,3,	0,2,1,
-		0,2,3,	0,2,1,
-		0,2,1,	0,2,3
-	};
+    FaceIndexUV = {
+        0, 2, 1, 0, 3, 2,
+        0, 3, 2, 0, 2, 1,
+        0, 2, 3, 0, 2, 1,
+        0, 2, 3, 0, 2, 1,
+        0, 2, 3, 0, 2, 1,
+        0, 2, 1, 0, 2, 3};
 
-	//按照位置索引和uv索引组成vertex
-	
-	for (int i = 0; i < faceIndexPos.size(); i++)
-	{
-		Vertexs.push_back(Vertex(posList[faceIndexPos[i]], ColorsL::AliceBlue, uvList[faceIndexUV[i]]));
-	}
-
+    for (int i = 0; i < FaceIndexPos.size(); i++)
+    {
+        VertexList.emplace_back(VertexPositionList[FaceIndexPos[i]], ColorsL::AliceBlue, UVPositionList[FaceIndexUV[i]]);
+    }
 }
 
-bool Obj::LoadObj(string filename)
+bool Obj::LoadObj(const string& Filename)
 {
-	ifstream fin;
-	fin.open(filename, ios_base::in);
+    ifstream Fin;
+    Fin.open(Filename, ios_base::in);
 
-	if (!fin)
-		return false;
+    if (!Fin)
+        return false;
 
-	string flag;
-	char line[100];
-	stringstream ss;
+    string flag;
+    char line[100];
+    stringstream Ss;
 
-	fin.getline(line, 100);
+    Fin.getline(line, 100);
 
-	while (fin.peek() != EOF)
-	{
-		ss.clear();
-		ss.str(line);
-		ss >> flag;
+    while (Fin.peek() != EOF)
+    {
+        Ss.clear();
+        Ss.str(line);
+        Ss >> flag;
 
-		if (flag == "v")
-		{
-			Vector3 v;
-			ss >> v.x >> v.y >> v.z;
-			posList.push_back(Vector4(v));
-		}
-		else if (flag == "vt")
-		{
-			Vector3 vn;
-			ss >> vn.x >> vn.y >> vn.z;
-			uvList.push_back(Vector4(vn));
-		}
-		else if (flag == "f")
-		{
-			char s1[20], s2[20], s3[20];
-			ss >> s1 >> s2 >> s3;
+        if (flag == "v")
+        {
+            MuVector3D v;
+            Ss >> v.X >> v.Y >> v.Z;
+            VertexPositionList.emplace_back(v);
+        }
+        else if (flag == "vt")
+        {
+            MuVector3D Vn;
+            Ss >> Vn.X >> Vn.Y >> Vn.Z;
+            UVPositionList.emplace_back(Vn);
+        }
+        else if (flag == "f")
+        {
+            char s1[20], s2[20], s3[20];
+            Ss >> s1 >> s2 >> s3;
 
-			vector<string> tr1 = split(s1, "/");
-			vector<string> tr2 = split(s2, "/");
-			vector<string> tr3 = split(s3, "/");
+            vector<string> tr1 = Split(s1, "/");
+            vector<string> tr2 = Split(s2, "/");
+            vector<string> tr3 = Split(s3, "/");
 
-			faceIndexPos.push_back(stoi(tr1[0])-1);
-			faceIndexPos.push_back(stoi(tr2[0])-1);
-			faceIndexPos.push_back(stoi(tr3[0])-1);
+            FaceIndexPos.push_back(stoi(tr1[0]) - 1);
+            FaceIndexPos.push_back(stoi(tr2[0]) - 1);
+            FaceIndexPos.push_back(stoi(tr3[0]) - 1);
 
-			faceIndexUV.push_back(stoi(tr1[1])-1);
-			faceIndexUV.push_back(stoi(tr2[1])-1);
-			faceIndexUV.push_back(stoi(tr3[1])-1);
-		}
-		fin.getline(line, 100);
-	}
-	fin.close();
+            FaceIndexUV.push_back(stoi(tr1[1]) - 1);
+            FaceIndexUV.push_back(stoi(tr2[1]) - 1);
+            FaceIndexUV.push_back(stoi(tr3[1]) - 1);
+        }
+        Fin.getline(line, 100);
+    }
+    Fin.close();
 
-
-
-	return true;
+    return true;
 }
 
-vector<string> Obj::split(char* data, const char* d)
+vector<string> Obj::Split(char* Data, const char* D)
 {
-	vector<string> strlist;
-	char* buff = NULL;
-	char* p = strtok_s(data, d, &buff);
-	while (p)
-	{
-		strlist.push_back(p);
-		p = strtok_s(NULL, d, &buff);
-	}
-	return strlist;
+    vector<string> Strings;
+    char* Buff = nullptr;
+    const char* P = strtok_s(Data, D, &Buff);
+    while (P)
+    {
+        Strings.emplace_back(P);
+        P = strtok_s(nullptr, D, &Buff);
+    }
+    return Strings;
 }

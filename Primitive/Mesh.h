@@ -1,9 +1,5 @@
 #pragma once
 #include <vector>
-#include <windows.h>
-
-
-#include "Vector.h"
 #include "Vertex.h"
 using namespace std;
 

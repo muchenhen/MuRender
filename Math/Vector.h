@@ -1,223 +1,118 @@
 #pragma once
-#include <math.h>
 
-/////////////////////////////////////////////////////////
-//
-//二维向量类
-//
-/////////////////////////////////////////////////////////
-class Vector2
+
+class MuVector2D
 {
 public:
-	float u,v;
+	float U, V;
 
-	//默认构造函数
-	Vector2();
-	//复制构造函数
-	Vector2(const Vector2& a);
-	//参数构造函数
-	Vector2(float u1, float v1);
+	MuVector2D();
+	MuVector2D(float U1, float V1);
+	MuVector2D(const MuVector2D& A);
 
-	~Vector2();
+	~MuVector2D();
 
-	//运算符重载
-	//赋值运算符重载
-	Vector2& operator = (const Vector2& a);
-	//==运算符重载
-	bool operator == (const Vector2& a);
-	//!+运算符重载
-	bool operator != (const Vector2& a);
+	MuVector2D& operator = (const MuVector2D& A);
+	bool operator == (const MuVector2D& A);
+	bool operator != (const MuVector2D& A);
+	MuVector2D operator - ();
+	MuVector2D operator + (const MuVector2D& A);
+	MuVector2D operator * (float A);
+	MuVector2D operator / (float A);
+	MuVector2D& operator -= (const MuVector2D& A);
+	MuVector2D& operator += (const MuVector2D& A);
+	MuVector2D& operator *= (float A);
+	MuVector2D& operator /= (float A);
+	float operator * (const MuVector2D& A);
 
-	//重载-运算符用于取反
-	Vector2 operator - ();
-
-	//二元加法
-	Vector2 operator + (const Vector2& a);
-
-	//标量乘法
-	Vector2 operator * (float a);
-	//标量除法
-	Vector2 operator / (float a);
-
-	//自反运算符重载
-	//-=
-	Vector2& operator -= (const Vector2& a);
-	//+=
-	Vector2& operator += (const Vector2& a);
-	//*= 与标量
-	Vector2& operator *= (float a);
-	///= 与标量
-	Vector2& operator /= (float a);
-
-	//重载*号实现向量点乘
-	float operator * (const Vector2& a);
-
-	//向量标准化
-	void normalize();
-
+	void Normalize();
 };
 
-//非成员函数
-
-//求向量的模
-float modulus(const Vector2& a);
+float Modulus(const MuVector2D& A);
 
 /*
-//计算向量的叉乘
-Vector2 multiplicationCross(const Vector2& a, const Vector2& b);
-//实现标量左乘
+MuVector2D multiplicationCross(const MuVector2D& a, const MuVector2D& b);
 */
 
-Vector2 operator * (float k, const Vector2& v);
-//计算两点间的距离
-float distance(const Vector2& a, const Vector2& b);
+MuVector2D operator * (float K, const MuVector2D& V);
+float Distance(const MuVector2D& A, const MuVector2D& B);
 
-//全局变量
-const Vector2 ZeroVector2(0.0f, 0.0f);
 
-/////////////////////////////////////////////////////////
-//
-//三维向量类
-//
-/////////////////////////////////////////////////////////
-class Vector3
+class MuVector3D
 {
 public:
-	float x, y, z;
+	float X, Y, Z;
 
-	//默认构造函数
-	Vector3();
-	//复制构造函数
-	Vector3(const Vector3& a);
-	//参数构造函数
-	Vector3(float ax, float ay, float az);
+	MuVector3D();
+	MuVector3D(const MuVector3D& A);
+	MuVector3D(float InX, float InY, float InZ);
 
-	~Vector3();
+	~MuVector3D();
 
-	//运算符重载
-	//赋值运算符重载
-	Vector3& operator = (const Vector3& a);
-	//==运算符重载
-	bool operator == (const Vector3& a);
-	//!+运算符重载
-	bool operator != (const Vector3& a);
+	MuVector3D& operator = (const MuVector3D& A);
+	bool operator == (const MuVector3D& A);
+	bool operator != (const MuVector3D& A);
+	MuVector3D operator - ();
+	MuVector3D operator + (const MuVector3D& A);
+	MuVector3D operator * (float A);
+	MuVector3D operator / (float A);
+	MuVector3D& operator -= (const MuVector3D& A);
+	MuVector3D& operator += (const MuVector3D& A);
+	MuVector3D& operator *= (float A);
+	MuVector3D& operator /= (float A);
+	float operator * (const MuVector3D& A);
 
-	//重载-运算符用于取反
-	Vector3 operator - ();
-
-	//二元加法
-	Vector3 operator + (const Vector3& a);
-
-	//标量乘法
-	Vector3 operator * (float a);
-	//标量除法
-	Vector3 operator / (float a);
-
-	//自反运算符重载
-	//-=
-	Vector3& operator -= (const Vector3& a);
-	//+=
-	Vector3& operator += (const Vector3& a);
-	//*= 与标量
-	Vector3& operator *= (float a);
-	///= 与标量
-	Vector3& operator /= (float a);
-
-	//重载*号实现向量点乘
-	float operator * (const Vector3& a);
-
-	//向量标准化
-	void normalize();
-
+	void Normalize();
 };
 
-//非成员函数
 
-//求向量的模
-float modulus(const Vector3& a);
-//计算向量的叉乘
-Vector3 multiplicationCross(const Vector3& a, const Vector3& b);
-//实现标量左乘
-Vector3 operator * (float k, const Vector3& v);
-//计算两点间的距离
-float distance(const Vector3& a, const Vector3& b);
-
-//全局变量
-const Vector3 ZeroVector3(0.0f, 0.0f, 0.0f);
+float Modulus(const MuVector3D& A);
+MuVector3D MultiplicationCross(const MuVector3D& A, const MuVector3D& B);
+MuVector3D operator * (float K, const MuVector3D& V);
+float Distance(const MuVector3D& A, const MuVector3D& B);
 
 
-/////////////////////////////////////////////////////////
-//
-//四维向量类
-//
-/////////////////////////////////////////////////////////
-class Vector4
+class MuVector
 {
 public:
-	float x, y, z, w;
+	float X, Y, Z, W;
 
-	//默认构造函数
-	Vector4();
-	//复制构造函数
-	Vector4(const Vector4& a);
-	Vector4(const Vector3& a);
-	//参数构造函数
-	Vector4(float ax, float ay, float az, float aw);
-	Vector4(float ax, float ay, float az);
-	Vector4(float u, float v);
-	//析构函数
-	~Vector4();
+	MuVector();
+	MuVector(const MuVector& a);
+	MuVector(const MuVector3D& a);
+	MuVector(float ax, float ay, float az, float aw);
+	MuVector(float ax, float ay, float az);
+	MuVector(float u, float v);
+	~MuVector();
 
-	//运算符重载
-	//赋值运算符重载
-	Vector4& operator = (const Vector4& a);
-	//==运算符重载
-	bool operator == (const Vector4& a);
-	//!+运算符重载
-	bool operator != (const Vector4& a);
+	MuVector& operator = (const MuVector& a);
+	bool operator == (const MuVector& a);
+	bool operator != (const MuVector& a);
+	MuVector operator - () const;
+	MuVector operator + (const MuVector& a)const;
+	MuVector operator - (const MuVector& a) const;
+	MuVector operator * (float a) const;
+	MuVector operator / (float a) const;
+	MuVector& operator -= (const MuVector& a);
+	MuVector& operator += (const MuVector& a);
+	MuVector& operator *= (float a);
+	MuVector& operator /= (float a);
 
-	//重载-运算符用于取反
-	Vector4 operator - () const;
+	float operator * (const MuVector& a)const;
 
-	//二元加法
-	Vector4 operator + (const Vector4& a)const;
-
-	//二元减法
-	Vector4 operator - (const Vector4& a) const;
-
-	//标量乘法
-	Vector4 operator * (float a) const;
-	//标量除法
-	Vector4 operator / (float a) const;
-
-	//自反运算符重载
-	//-=
-	Vector4& operator -= (const Vector4& a);
-	//+=
-	Vector4& operator += (const Vector4& a);
-	//*= 与标量
-	Vector4& operator *= (float a);
-	///= 与标量
-	Vector4& operator /= (float a);
-
-	//重载*号实现向量点乘
-	float operator * (const Vector4& a)const;
-
-	//向量标准化
-	void normalize();
-
+	void Normalize();
 };
 
-//非成员函数
 
-//求向量的模
-float modulus(const Vector4& a);
-//计算向量的叉乘
-Vector4 multiplicationCross(const Vector4& a, const Vector4& b);
-//实现标量左乘
-Vector4 operator * (float k, const Vector4& v);
-//计算两点间的距离
-float distance(const Vector4& a, const Vector4& b);
+float Modulus(const MuVector& a);
+MuVector MultiplicationCross(const MuVector& a, const MuVector& b);
+MuVector operator * (float k, const MuVector& v);
+float Distance(const MuVector& a, const MuVector& b);
 
-//全局变量
-const Vector4 ZeroVector4(0.0f, 0.0f, 0.0f, 1.0f);
+namespace MuVectors
+{
+	const MuVector2D ZeroVector2(0.0f, 0.0f);
+	const MuVector3D ZeroVector3(0.0f, 0.0f, 0.0f);
+	const MuVector ZeroVector4(0.0f, 0.0f, 0.0f, 1.0f);
+
+}
