@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "TGAImage.h"
+
 struct Face
 {
 	int vertexIndex1;

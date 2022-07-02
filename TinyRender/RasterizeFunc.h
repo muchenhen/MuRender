@@ -257,6 +257,30 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], TGAImage& Image, const TGAColor Color, f
 
 void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage& TextureImage, float* ZBuffer)
 {
+    Vec3f t0, t1, t2, uv0, uv1, uv2;
+    t0 = (Pts[0]);
+    t1 = (Pts[1]);
+    t2 = (Pts[2]);
+    uv0 = (VTs[0]);
+    uv1 = (VTs[1]);
+    uv2 = (VTs[2]);
+
+    if (t0.y > t1.y)
+    {
+        std::swap(t0, t1);
+        std::swap(uv0, uv1);
+    }
+    if (t0.y > t2.y)
+    {
+        std::swap(t0, t2);
+        std::swap(uv0, uv2);
+    }
+    if (t1.y > t2.y)
+    {
+        std::swap(t1, t2);
+        std::swap(uv1, uv2);
+    }
+
     Vec2f BboxMin(Image.get_width() - 1, Image.get_height() - 1);
     Vec2f BboxMax(0, 0);
     const Vec2f Clamp(Image.get_width() - 1, Image.get_height() - 1);
@@ -284,6 +308,11 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage&
             if (ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] < P.z)
             {
                 ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] = P.z;
+                float Alpha = P.x / (BboxMax.x - BboxMin.x);
+                float Beta = P.y / (BboxMax.y - BboxMin.y);
+                Vec3i PUV = Vec3i(static_cast<int>((uv2.x - uv0.x) * Alpha * TextureImage.get_width()), static_cast<int>((uv2.y - uv0.y) * Beta * TextureImage.get_height()), 0);
+                TGAColor Color = TextureImage.get(PUV.x, PUV.y);
+                std::cout << PUV.x << " " << PUV.y << std::endl;
                 Image.set(P.x, P.y, Color);
             }
         }

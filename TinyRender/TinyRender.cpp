@@ -42,7 +42,7 @@ int main()
         Vec3f N = (WorldCoords[2] - WorldCoords[0]) ^ (WorldCoords[1] - WorldCoords[0]);
         N.normalize();
         const float Intensity = N * LightDir;
-        DrawTriangleEdgeFunc(Pts, Image, TGAColor(Intensity * 255, Intensity * 255, Intensity * 255, 255), ZBuffer.get());
+        DrawTriangleEdgeFunc(Pts, VTs, Image, Texture, ZBuffer.get());
         printf("\r %f [%.2lf%%]", Intensity, i * 100.0f / ModelInstance->GetFacesNumber());
     }
 
