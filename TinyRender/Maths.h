@@ -119,7 +119,9 @@ template <class t> struct Vec3 {
             return z;
             break;
         }
+        return x;
     }
+
     Point<t> ToPoint2D()
     {
         return Point<t>{x, y};

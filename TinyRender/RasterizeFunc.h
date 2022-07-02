@@ -6,6 +6,16 @@
 #include <iostream>
 #include "Model.h"
 
+// 定义TGA颜色 白色
+const TGAColor WHITE = TGAColor(255, 255, 255, 255);
+// 定义TGA颜色 红色
+const TGAColor RED = TGAColor(255, 0, 0, 255);
+
+const TGAColor GREEN = TGAColor(0, 255, 0);
+
+constexpr int WIDTH = 800;
+constexpr int HEIGHT = 800;
+
 //数值微分画线
 template <class T>
 void DrawLineDDA(const Point<T>& P1, const Point<T>& P2, TGAImage& Image, const TGAColor& Color)
@@ -201,7 +211,7 @@ void DrawFilledTriangle(Vec2i T0, Vec2i T1, Vec2i T2, TGAImage& Image, const TGA
     }
 }
 
-Vec3f Barycentric(const Vec2i Pts[3], Vec2i P)
+Vec3f Barycentric(const Vec3f Pts[3], Vec3f P)
 {
     const Vec3f U =
         Vec3f(Pts[2].x - Pts[0].x,Pts[1].x - Pts[0].x,Pts[0].x - P.x) ^ Vec3f(Pts[2].y - Pts[0].y,Pts[1].y - Pts[0].y,Pts[0].y - P.y);
@@ -210,27 +220,43 @@ Vec3f Barycentric(const Vec2i Pts[3], Vec2i P)
     return {1.f - (U.x + U.y) / U.z, U.y / U.z, U.x / U.z};
 }
 
-void DrawTriangleEdgeFunc(Vec2i Pts[3], TGAImage& Image, const TGAColor Color)
+void DrawTriangleEdgeFunc(Vec3f Pts[3], TGAImage& Image, const TGAColor Color, float* ZBuffer)
 {
-    Vec2i BboxMin(Image.get_width() - 1, Image.get_height() - 1);
-    Vec2i BboxMax(0, 0);
-    const Vec2i Clamp(Image.get_width() - 1, Image.get_height() - 1);
+    Vec2f BboxMin(Image.get_width() - 1, Image.get_height() - 1);
+    Vec2f BboxMax(0, 0);
+    const Vec2f Clamp(Image.get_width() - 1, Image.get_height() - 1);
     for (int i = 0; i < 3; i++)
     {
-        BboxMin.x = std::max(0, std::min(BboxMin.x, Pts[i].x));
-        BboxMin.y = std::max(0, std::min(BboxMin.y, Pts[i].y));
+        BboxMin.x = std::max(0.0f, std::min(BboxMin.x, Pts[i].x));
+        BboxMin.y = std::max(0.0f, std::min(BboxMin.y, Pts[i].y));
 
         BboxMax.x = std::min(Clamp.x, std::max(BboxMax.x, Pts[i].x));
         BboxMax.y = std::min(Clamp.y, std::max(BboxMax.y, Pts[i].y));
     }
-    Vec2i P;
+    Vec3f P;
     for (P.x = BboxMin.x; P.x <= BboxMax.x; P.x++)
     {
         for (P.y = BboxMin.y; P.y <= BboxMax.y; P.y++)
         {
-            Vec3f BcScreen = Barycentric(Pts, P);
-            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0) continue;
-            Image.set(P.x, P.y, Color);
+            Vec3<float> BcScreen = Barycentric(Pts, P);
+            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0) 
+                continue;
+            P.z = 0;
+            for (int i = 0 ; i < 3; i++)
+            {
+                P.z += Pts[i][2] * BcScreen[i];
+            }
+            if (ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] < P.z)
+            {
+                ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] = P.z;
+                Image.set(P.x, P.y, Color);
+            }
         }
     }
+}
+
+// 简单的从世界转到屏幕空间的转换
+Vec3f WorldToScreen(const Vec3f& V)
+{
+    return Vec3f(int((V.x + 1.) * WIDTH / 2. + .5), int((V.y + 1.) * HEIGHT / 2. + .5), V.z);
 }
