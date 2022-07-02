@@ -46,6 +46,7 @@ class Model
 private:
     std::vector<Vec3f> Vertexs;
 	std::vector<Face> Faces;
+    std::vector<Vec3f> VTs;
 
 public:
 	Model(const char* FileName);
@@ -55,7 +56,8 @@ public:
 	const int& GetFacesNumber();
     std::vector<Vec3f>& GetVertexs();
 	std::vector<Face>& GetFaces();
-    Vec3f& GetVertex(const int& index);
-    Face& GetFace(const int& index);
+    Vec3f& GetVertex(const int& Index);
+    Face& GetFace(const int& Index);
+    Vec3f& GetVT(const int& Index);
 };
 

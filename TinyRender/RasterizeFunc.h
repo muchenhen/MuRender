@@ -214,7 +214,7 @@ void DrawFilledTriangle(Vec2i T0, Vec2i T1, Vec2i T2, TGAImage& Image, const TGA
 Vec3f Barycentric(const Vec3f Pts[3], Vec3f P)
 {
     const Vec3f U =
-        Vec3f(Pts[2].x - Pts[0].x,Pts[1].x - Pts[0].x,Pts[0].x - P.x) ^ Vec3f(Pts[2].y - Pts[0].y,Pts[1].y - Pts[0].y,Pts[0].y - P.y);
+        Vec3f(Pts[2].x - Pts[0].x, Pts[1].x - Pts[0].x, Pts[0].x - P.x) ^ Vec3f(Pts[2].y - Pts[0].y, Pts[1].y - Pts[0].y, Pts[0].y - P.y);
     if (std::abs(U.z) < 1)
         return {-1, 1, 1};
     return {1.f - (U.x + U.y) / U.z, U.y / U.z, U.x / U.z};
@@ -239,10 +239,45 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], TGAImage& Image, const TGAColor Color, f
         for (P.y = BboxMin.y; P.y <= BboxMax.y; P.y++)
         {
             Vec3<float> BcScreen = Barycentric(Pts, P);
-            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0) 
+            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0)
                 continue;
             P.z = 0;
-            for (int i = 0 ; i < 3; i++)
+            for (int i = 0; i < 3; i++)
+            {
+                P.z += Pts[i][2] * BcScreen[i];
+            }
+            if (ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] < P.z)
+            {
+                ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] = P.z;
+                Image.set(P.x, P.y, Color);
+            }
+        }
+    }
+}
+
+void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage& TextureImage, float* ZBuffer)
+{
+    Vec2f BboxMin(Image.get_width() - 1, Image.get_height() - 1);
+    Vec2f BboxMax(0, 0);
+    const Vec2f Clamp(Image.get_width() - 1, Image.get_height() - 1);
+    for (int i = 0; i < 3; i++)
+    {
+        BboxMin.x = std::max(0.0f, std::min(BboxMin.x, Pts[i].x));
+        BboxMin.y = std::max(0.0f, std::min(BboxMin.y, Pts[i].y));
+
+        BboxMax.x = std::min(Clamp.x, std::max(BboxMax.x, Pts[i].x));
+        BboxMax.y = std::min(Clamp.y, std::max(BboxMax.y, Pts[i].y));
+    }
+    Vec3f P;
+    for (P.x = BboxMin.x; P.x <= BboxMax.x; P.x++)
+    {
+        for (P.y = BboxMin.y; P.y <= BboxMax.y; P.y++)
+        {
+            Vec3<float> BcScreen = Barycentric(Pts, P);
+            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0)
+                continue;
+            P.z = 0;
+            for (int i = 0; i < 3; i++)
             {
                 P.z += Pts[i][2] * BcScreen[i];
             }
