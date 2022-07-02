@@ -44,7 +44,7 @@ struct Face
 class Model
 {
 private:
-	std::vector<Vector3f> Vertexs;
+    std::vector<Vec3f> Vertexs;
 	std::vector<Face> Faces;
 
 public:
@@ -53,8 +53,9 @@ public:
 
 	const int& GetVertexNumber();
 	const int& GetFacesNumber();
-	std::vector<Vector3f>& GetVertexs();
+    std::vector<Vec3f>& GetVertexs();
 	std::vector<Face>& GetFaces();
-	Vector3f& GetVertex(const int& index);
+    Vec3f& GetVertex(const int& index);
+    Face& GetFace(const int& index);
 };
 

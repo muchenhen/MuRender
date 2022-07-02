@@ -17,7 +17,7 @@ Model::Model(const char* FileName)
 		if (!line.compare(0, 2, "v "))
 		{
 			iss >> skip;
-			Vector3f Vertex;
+            Vec3f Vertex;
 			for (int i = 0; i < 3; i++)
 			{
 				iss >> Vertex[i];
@@ -58,7 +58,7 @@ const int& Model::GetFacesNumber()
 	return Faces.size();
 }
 
-std::vector<Vector3f>& Model::GetVertexs()
+std::vector<Vec3f>& Model::GetVertexs()
 {
 	return Vertexs;
 }
@@ -68,7 +68,12 @@ std::vector<Face>& Model::GetFaces()
 	return Faces;
 }
 
-Vector3f& Model::GetVertex(const int& index)
+Vec3f& Model::GetVertex(const int& index)
 {
 	return Vertexs[index];
+}
+
+Face& Model::GetFace(const int& index)
+{
+    return Faces[index];
 }
