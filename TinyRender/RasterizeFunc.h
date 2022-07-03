@@ -255,16 +255,18 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], TGAImage& Image, const TGAColor Color, f
     }
 }
 
-void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage& TextureImage, float* ZBuffer)
+// 从贴图采样颜色
+void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f UVs[3], TGAImage& Image, TGAImage& TextureImage, float* ZBuffer, const float& Intensity)
 {
     Vec3f t0, t1, t2, uv0, uv1, uv2;
     t0 = (Pts[0]);
     t1 = (Pts[1]);
     t2 = (Pts[2]);
-    uv0 = (VTs[0]);
-    uv1 = (VTs[1]);
-    uv2 = (VTs[2]);
+    uv0 = (UVs[0]);
+    uv1 = (UVs[1]);
+    uv2 = (UVs[2]);
 
+    if (t0.y == t1.y && t0.y == t2.y) return; // i dont care about degenerate triangles
     if (t0.y > t1.y)
     {
         std::swap(t0, t1);
@@ -281,39 +283,34 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage&
         std::swap(uv1, uv2);
     }
 
-    Vec2f BboxMin(Image.get_width() - 1, Image.get_height() - 1);
-    Vec2f BboxMax(0, 0);
-    const Vec2f Clamp(Image.get_width() - 1, Image.get_height() - 1);
-    for (int i = 0; i < 3; i++)
+    int total_height = t2.y - t0.y;
+    for (int i = 0; i < total_height; i++)
     {
-        BboxMin.x = std::max(0.0f, std::min(BboxMin.x, Pts[i].x));
-        BboxMin.y = std::max(0.0f, std::min(BboxMin.y, Pts[i].y));
-
-        BboxMax.x = std::min(Clamp.x, std::max(BboxMax.x, Pts[i].x));
-        BboxMax.y = std::min(Clamp.y, std::max(BboxMax.y, Pts[i].y));
-    }
-    Vec3f P;
-    for (P.x = BboxMin.x; P.x <= BboxMax.x; P.x++)
-    {
-        for (P.y = BboxMin.y; P.y <= BboxMax.y; P.y++)
+        bool second_half = i > t1.y - t0.y || t1.y == t0.y;
+        int segment_height = second_half ? t2.y - t1.y : t1.y - t0.y;
+        float alpha = (float)i / total_height;
+        float beta = (float)(i - (second_half ? t1.y - t0.y : 0)) / segment_height; 
+        Vec3f A = t0 + Vec3f(t2 - t0) * alpha;
+        Vec3f B = second_half ? t1 + Vec3f(t2 - t1) * beta : t0 + Vec3f(t1 - t0) * beta;
+        // 通过插值计算每个点的uv
+        Vec3f uvA = uv0 + (uv2 - uv0) * alpha;
+        Vec3f uvB = second_half ? uv1 + (uv2 - uv1) * beta : uv0 + (uv1 - uv0) * beta;
+        if (A.x > B.x)
         {
-            Vec3<float> BcScreen = Barycentric(Pts, P);
-            if (BcScreen.x < 0 || BcScreen.y < 0 || BcScreen.z < 0)
-                continue;
-            P.z = 0;
-            for (int i = 0; i < 3; i++)
+            std::swap(A, B);
+            std::swap(uvA, uvB);
+        }
+        for (int j = A.x; j <= B.x; j++)
+        {
+            float phi = B.x == A.x ? 1. : (float)(j - A.x) / (float)(B.x - A.x);
+            Vec3f P = Vec3f(A) + Vec3f(B - A) * phi;
+            Vec3f uvP = uvA + (uvB - uvA) * phi;
+            int idx = P.x + P.y * WIDTH;
+            if (ZBuffer[idx] < P.z)
             {
-                P.z += Pts[i][2] * BcScreen[i];
-            }
-            if (ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] < P.z)
-            {
-                ZBuffer[static_cast<int>(P.x + P.y * WIDTH)] = P.z;
-                float Alpha = P.x / (BboxMax.x - BboxMin.x);
-                float Beta = P.y / (BboxMax.y - BboxMin.y);
-                Vec3i PUV = Vec3i(static_cast<int>((uv2.x - uv0.x) * Alpha * TextureImage.get_width()), static_cast<int>((uv2.y - uv0.y) * Beta * TextureImage.get_height()), 0);
-                TGAColor Color = TextureImage.get(PUV.x, PUV.y);
-                std::cout << PUV.x << " " << PUV.y << std::endl;
-                Image.set(P.x, P.y, Color);
+                ZBuffer[idx] = P.z;
+                TGAColor color = TextureImage.get(uvP.x, uvP.y) * Intensity;
+                Image.set(P.x, P.y, color);
             }
         }
     }
@@ -323,4 +320,9 @@ void DrawTriangleEdgeFunc(Vec3f Pts[3], Vec3f VTs[3], TGAImage& Image, TGAImage&
 Vec3f WorldToScreen(const Vec3f& V)
 {
     return Vec3f(int((V.x + 1.) * WIDTH / 2. + .5), int((V.y + 1.) * HEIGHT / 2. + .5), V.z);
+}
+
+Vec3i WorldToScreen(const Vec3i& V)
+{
+    return Vec3i(int((V.x + 1.) * WIDTH / 2. + .5), int((V.y + 1.) * HEIGHT / 2. + .5), V.z);
 }

@@ -30,28 +30,33 @@ Model::Model(const char* FileName)
             iss >> skip;
             int skipInt;
             int i = 0;
-            while (iss >> face[i] >> skip >> skipInt >> skip >> skipInt)
+            Vec3i Vs;
+            int VTs[3];
+            int VNs[3];
+
+            while (iss >> face[i] >> skip >> VTs[i] >> skip >> VNs[i])
             {
                 face[i]--;
+                VTs[i]--;
+                VNs[i]--;
                 i++;
                 if (i >= 3)
                     break;
-                // else
-                //	iss >> skip;
             }
+            face.SetVTs(VTs);
             Faces.push_back(face);
-            // face.Print();
         }
         else if (!line.compare(0, 2, "vt"))
         {
-            Vec3f VT;
+            // 读取UV信息
+            Vec3f UV;
             iss >> skip;
             iss >> skip;
             for (int i = 0; i < 3; i++)
             {
-                iss >> VT[i];
+                iss >> UV[i];
             }
-            VTs.push_back(VT);
+            UVs.push_back(UV);
         }
     }
 }
@@ -80,6 +85,7 @@ std::vector<Face>& Model::GetFaces()
     return Faces;
 }
 
+// 通过定点索引拿到顶点
 Vec3f& Model::GetVertex(const int& Index)
 {
     return Vertexs[Index];
@@ -90,7 +96,8 @@ Face& Model::GetFace(const int& Index)
     return Faces[Index];
 }
 
-Vec3f& Model::GetVT(const int& Index)
+// 通过UV索引拿到UV
+Vec3f& Model::GetUV(const int& Index)
 {
-    return VTs[Index];
+    return UVs[Index];
 }

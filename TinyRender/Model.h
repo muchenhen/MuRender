@@ -8,11 +8,31 @@
 
 #include "TGAImage.h"
 
+/*
+ * 作为一个Face
+ * 按照顺序有 顶点索引/uv索引/法线索引
+ */
+
 struct Face
 {
+	// 顶点索引
+    int VertexIndex[3];
+	// UV索引
+    int VTIndex[3];
+    int VNIndex[3];
+
 	int vertexIndex1;
 	int vertexIndex2;
 	int vertexIndex3;
+
+	Face(int InvertexIndex1,
+         int InvertexIndex2,
+         int InvertexIndex3)
+	{
+        vertexIndex1 = InvertexIndex1;
+        vertexIndex2 = InvertexIndex2;
+        vertexIndex3 = InvertexIndex3;
+	}
 
 	int& operator[] (const int i)
 	{
@@ -30,6 +50,20 @@ struct Face
 		}
 	}
 
+	void SetVTs(int InVTs[3])
+	{
+        VTIndex[0] = InVTs[0];
+        VTIndex[1] = InVTs[1];
+        VTIndex[2] = InVTs[2];
+	}
+
+	void SetVNs(int InVNs[3])
+    {
+        VNIndex[0] = InVNs[0];
+        VNIndex[1] = InVNs[1];
+        VNIndex[2] = InVNs[2];
+    }
+
 	void Print()
 	{
 		std::cout << "(" << vertexIndex1 << ", " << vertexIndex2 << ", " << vertexIndex3 << ")\n";
@@ -46,9 +80,12 @@ struct Face
 class Model
 {
 private:
+	// 所有的顶点信息
     std::vector<Vec3f> Vertexs;
+	// 所有的Face信息
 	std::vector<Face> Faces;
-    std::vector<Vec3f> VTs;
+	// 每一个顶点对应的UV信息
+    std::vector<Vec3f> UVs;
 
 public:
 	Model(const char* FileName);
@@ -60,6 +97,6 @@ public:
 	std::vector<Face>& GetFaces();
     Vec3f& GetVertex(const int& Index);
     Face& GetFace(const int& Index);
-    Vec3f& GetVT(const int& Index);
+    Vec3f& GetUV(const int& Index);
 };
 

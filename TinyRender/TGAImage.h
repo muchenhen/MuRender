@@ -1,5 +1,4 @@
-#ifndef __IMAGE_H__
-#define __IMAGE_H__
+#pragma once
 
 #include <cstdint>
 #include <fstream>
@@ -94,4 +93,3 @@ public:
     void clear();
 };
 
-#endif //__IMAGE_H__
