@@ -17,7 +17,7 @@ enum class RenderMode
  */
 class Device
 {
-private:
+public:
     // 
     int width;
     int height;
