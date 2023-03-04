@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ab3de0a3-18a3-4bb8-99cc-71105b8308f5}</ProjectGuid>
+    <ProjectGuid>{47f6e3fc-ca7c-4a8f-a2e9-813592df4bd3}</ProjectGuid>
     <RootNamespace>MuSoftRender</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -127,7 +127,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main\Main.cpp" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="MuFunctions.h" />
+    <ClInclude Include="MuSoftRender.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MuFunctions.cpp" />
+    <ClCompile Include="MuSoftRender.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MuSoftRender.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="MuSoftRender.ico" />
+    <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
