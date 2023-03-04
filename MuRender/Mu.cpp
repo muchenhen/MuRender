@@ -117,7 +117,7 @@ LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WPara
     PAINTSTRUCT PaintStruct;
     HDC Hdc;
 
-    static int CxClient, CyClient;
+    static int ClientRectWidth, ClientRectHeight;
     static HDC HdcBackBuffer;
     static HBITMAP HBitmap;
     static HBITMAP HOldBitmap;
@@ -125,28 +125,58 @@ LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WPara
     switch (Message)
     {
     case WM_CREATE: {
-        RECT Rect;
+
+        // 这段代码定义了一个 RECT 结构体变量 Rect，并使用 GetClientRect 函数获取窗口的客户区域。
+        // GetClientRect 函数接受两个参数：一个窗口句柄和一个指向 RECT 结构体的指针。
+        // 函数将客户区域的坐标存储在 RECT 结构体中。
+        RECT Rect; // RECT 是一个结构体，用于定义矩形的左上角和右下角的坐标。它包含四个 LONG 类型的成员：left, top, right, 和 bottom。这些成员分别表示矩形的左边界、上边界、右边界和下边界。
         GetClientRect(Hwnd, &Rect);
-        CxClient = Rect.right - Rect.left;
-        CyClient = Rect.bottom - Rect.top;
-        const BITMAPINFO Bi = {
+
+        ClientRectWidth = Rect.right - Rect.left;
+        ClientRectHeight = Rect.bottom - Rect.top;
+
+        /*
+         * 这段代码定义了一个 BITMAPINFO 结构体变量 Bi，并初始化了它的成员。
+         * BITMAPINFO 结构体包含一个 BITMAPINFOHEADER 结构体和一个颜色表。
+         * 在这个例子中，颜色表没有被初始化。
+         * BITMAPINFOHEADER 结构体包含有关位图的信息，
+         * 例如宽度、高度、颜色深度等。
+         * 在这个例子中，
+         * 位图的宽度和高度分别由 ClientRectWidth 和 ClientRectHeight 变量指定。
+         * 颜色深度为 32 位，压缩类型为 BI_RGB（无压缩）。
+         * 图像大小由 ClientRectWidth * ClientRectHeight * static_cast<DWORD>(4) 计算得出。
+         */
+        const BITMAPINFO Bi = 
+        {
             {
-                sizeof(BITMAPINFOHEADER), CxClient, CyClient, 1, 32, BI_RGB,
-                CxClient * CyClient * static_cast<DWORD>(4), 0, 0, 0, 0
+                sizeof(BITMAPINFOHEADER),
+                ClientRectWidth,
+                ClientRectHeight,
+                1,
+                32,
+                BI_RGB,
+                ClientRectWidth * ClientRectHeight * static_cast<DWORD>(4),
+                0,
+                0,
+                0,
+                0
             }
         };
         LPVOID Ptr;
         Hdc = GetDC(Hwnd);
         HdcBackBuffer = CreateCompatibleDC(Hdc);
 
-        HBitmap = CreateDIBSection(HdcBackBuffer, &Bi, DIB_RGB_COLORS,
-                                   &Ptr, nullptr, 0);
+        HBitmap = CreateDIBSection(HdcBackBuffer, &Bi, DIB_RGB_COLORS, &Ptr, nullptr, 0);
+
         if (!HBitmap)
         {
             MessageBox(nullptr, TEXT("create dib section failed!"), TEXT("error"), MB_OK);
             return 0;
         }
-        gDevice->Initialize(CxClient, CyClient, Ptr);
+
+        gDevice->Initialize(ClientRectWidth, ClientRectHeight, Ptr);
+
+
         Ptr = nullptr;
         gDevice->pModel->CreateBox3D();
         gDevice->pModel->CreateTriangle3D();
@@ -158,13 +188,14 @@ LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WPara
     break;
     case WM_PAINT: {
         Hdc = BeginPaint(Hwnd, &PaintStruct);
-        BitBlt(HdcBackBuffer, 0, 0, CxClient, CyClient, nullptr, NULL, NULL, BLACKNESS);
+        BitBlt(HdcBackBuffer, 0, 0, ClientRectWidth, ClientRectHeight, nullptr, NULL, NULL, BLACKNESS);
         gDevice->ClearBuffer({0.1f, 0.1f, 0.1f, 1.0f});
         const clock_t start = clock();
         {
             gDevice->Update();
             gDevice->SetMvp();
-            gDevice->DrawPrimitive(gDevice->pModel->ModelList[gModelIndex]);
+            //gDevice->DrawPrimitive(gDevice->pModel->ModelList[gModelIndex]);
+            gDevice->DrawLine(0,0, SCREEN_WIDTH, SCREEN_HEIGHT, MuVector(255,0,0));
         }
         const clock_t stop = clock();
         const float dur = static_cast<float>(stop - start) / static_cast<float>(CLOCKS_PER_SEC);
@@ -175,7 +206,7 @@ LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WPara
         TextOutX(HdcBackBuffer, 5, 5 + 20 * 2, "Space: solid / edge / texture");
         TextOutX(HdcBackBuffer, 5, 5 + 20 * 3, "N: next scene");
         TextOutX(HdcBackBuffer, 5, 5 + 20 * 4, "MouseWheel: Scale");
-        BitBlt(PaintStruct.hdc, 0, 0, CxClient, CyClient, HdcBackBuffer, 0, 0, SRCCOPY);
+        BitBlt(PaintStruct.hdc, 0, 0, ClientRectWidth, ClientRectHeight, HdcBackBuffer, 0, 0, SRCCOPY);
         EndPaint(Hwnd, &PaintStruct);
     }
     break;
