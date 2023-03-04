@@ -95,7 +95,7 @@ BreakBeforeBinaryOperators: NonAssignment
 #   Mozilla(除枚举、函数、记录定义，与Attach类似), Stroustrup(除函数定义、catch、else，与Attach类似), 
 #   Allman(总是在大括号前换行), GNU(总是在大括号前换行，并对于控制语句的大括号增加额外的缩进), WebKit(在函数前换行), Custom
 #   注：这里认为语句块也属于函数
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Allman
 
 # 在三元运算符前换行
 BreakBeforeTernaryOperators: false
@@ -131,7 +131,7 @@ DerivePointerAlignment: false
 FixNamespaceComments: true
 
 # 缩进case标签
-IndentCaseLabels: false
+IndentCaseLabels: true
 
 IndentPPDirectives: None
 

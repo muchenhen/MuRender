@@ -19,10 +19,11 @@ BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                      _In_opt_ HINSTANCE hPrevInstance,
-                      _In_ LPWSTR lpCmdLine,
-                      _In_ int nCmdShow)
+int APIENTRY wWinMain(
+_In_ HINSTANCE hInstance,
+_In_opt_ HINSTANCE hPrevInstance,
+_In_ LPWSTR lpCmdLine,
+_In_ int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -97,8 +98,18 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
-    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-                              CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(
+        szWindowClass, 
+        szTitle, 
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 
+        0, 
+        CW_USEDEFAULT, 
+        0, 
+        nullptr, 
+        nullptr, 
+        hInstance, 
+        nullptr);
 
     if (!hWnd)
     {
@@ -123,62 +134,83 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    PAINTSTRUCT paintStruct;
     HDC hdc = GetDC(hWnd);
+
+    static HDC hdcBackBuffer;
+
+    static int clientRectWidth;
+    static int clientRectHeight;
+
+    static HBITMAP hBitmap;
 
     switch (message)
     {
-    case WM_COMMAND: {
-        int wmId = LOWORD(wParam);
-        // 分析菜单选择:
-        switch (wmId)
+        case WM_CREATE:
         {
-        case IDM_ABOUT:
-            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-            break;
-        case IDM_EXIT:
-            DestroyWindow(hWnd);
+            RECT rect;
+            GetClientRect(hWnd, &rect);
+
+            clientRectWidth = rect.right - rect.left;
+            clientRectHeight = rect.bottom - rect.top;
+
+            const BITMAPINFOHEADER bitmapInfoHeader =
+                {
+                    sizeof(BITMAPINFOHEADER),
+                    clientRectWidth,
+                    clientRectHeight,
+                    1,
+                    32,
+                    BI_RGB,
+                    clientRectWidth * clientRectHeight * static_cast<DWORD>(4),
+                    0,
+                    0,
+                    0,
+                    0
+                };
+            const RGBQUAD rgbQuad = {};
+            const BITMAPINFO bitmapInfo = {bitmapInfoHeader, rgbQuad};
+
+            LPVOID pointer;
+            hdc = GetDC(hWnd);
+            hdcBackBuffer = CreateCompatibleDC(hdc);
+            hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &pointer, nullptr, 0);
+            SelectObject(hdcBackBuffer, hBitmap);
+            ReleaseDC(hWnd, hdc);
+        }
+        break;
+        case WM_COMMAND:
+        {
+            int wmId = LOWORD(wParam);
+            // 分析菜单选择:
+            switch (wmId)
+            {
+                case IDM_ABOUT:
+                    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                    break;
+                case IDM_EXIT:
+                    DestroyWindow(hWnd);
+                    break;
+                default:
+                    return DefWindowProc(hWnd, message, wParam, lParam);
+            }
+        }
+        break;
+        case WM_PAINT:
+        {
+            BeginPaint(hWnd, &paintStruct);
+            // TODO: 在此处添加使用 hdc 的任何绘图代码...
+            BitBlt(hdcBackBuffer, 0, 0, clientRectWidth, clientRectHeight, nullptr, NULL, NULL, BLACKNESS);
+            BitBlt(paintStruct.hdc, 0, 0, clientRectWidth, clientRectHeight, hdcBackBuffer, 0, 0, SRCCOPY);
+
+            EndPaint(hWnd, &paintStruct);
+        }
+        break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
             break;
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
-        }
-    }
-    break;
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: 在此处添加使用 hdc 的任何绘图代码...
-        // 绘制一个等边三角形，填充满整个窗口
-        // 1. 获取窗口的宽度和高度
-        int width = ps.rcPaint.right - ps.rcPaint.left;
-        int height = ps.rcPaint.bottom - ps.rcPaint.top;
-        // 2. 计算三角形的三个顶点
-        POINT pt[3];
-        pt[0].x = width / 2;
-        pt[0].y = 0;
-        pt[1].x = 0;
-        pt[1].y = height;
-        pt[2].x = width;
-        pt[2].y = height;
-        // 3. 创建一个画刷
-        HBRUSH hBrush = CreateSolidBrush(RGB(255, 0, 0));
-        // 4. 选择画刷
-        SelectObject(hdc, hBrush);
-        // 5. 绘制三角形
-        Polygon(hdc, pt, 3);
-        // 6. 释放画刷
-        DeleteObject(hBrush);
-
-        // 在窗口正中间绘制一个红色的点
-        SetPixel(hdc, width / 2, height / 2, RGB(0, 0, 0));
-
-        EndPaint(hWnd, &ps);
-    }
-    break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
 }
@@ -189,16 +221,16 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
+        case WM_INITDIALOG:
             return (INT_PTR)TRUE;
-        }
-        break;
+
+        case WM_COMMAND:
+            if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+            {
+                EndDialog(hDlg, LOWORD(wParam));
+                return (INT_PTR)TRUE;
+            }
+            break;
     }
     return (INT_PTR)FALSE;
 }

@@ -114,6 +114,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 LRESULT CALLBACK OnEvent(const HWND Hwnd, const UINT Message, const WPARAM WParam, const LPARAM LParam)
 {
+    // PAINTSTRUCT是一个包含应用程序信息的结构。此信息可用于绘制该应用程序所拥有的窗口的客户端区域
     PAINTSTRUCT PaintStruct;
     HDC Hdc;
 
