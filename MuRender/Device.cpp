@@ -1,8 +1,24 @@
 #include "Device.h"
 
-Device::~Device()
+Device::Device():
+    width(0),
+    height(0),
+    renderMode(),
+    pointFrameBuffer(nullptr),
+    zBuffer(nullptr),
+    mTheta(0),
+    mPhi(0),
+    mRadius(0),
+    mZoom(0),
+    optimized(0),
+    pModel(nullptr),
+    pTexture(nullptr),
+    lastMousePos()
 {
 }
+
+Device::~Device()
+= default;
 
 void Device::Initialize(const int W, const int H, void* FrameBuffer)
 {
@@ -36,10 +52,10 @@ void Device::Initialize(const int W, const int H, void* FrameBuffer)
 
     mZoom = 0.5f;
     mScale = MathSet::scaleMatrix(mZoom, mZoom, mZoom);
-    setFrustum(PI / 4, (float)width / height, 1.0f, 1000.f);
+    SetFrustum(PI / 4, (float)width / height, 1.0f, 1000.f);
 }
 
-void Device::destroy()
+void Device::Destroy()
 {
     if (pModel)
         delete pModel;
@@ -49,7 +65,7 @@ void Device::destroy()
         delete[] zBuffer;
 }
 
-void Device::clearBuffer(const MuVector& color)
+void Device::ClearBuffer(const MuVector& color)
 {
     for (int i = 0; i < width; ++i)
     {
@@ -61,7 +77,7 @@ void Device::clearBuffer(const MuVector& color)
     }
 }
 
-void Device::update()
+void Device::Update()
 {
     float x = mRadius * sinf(mPhi) * cosf(mTheta);
     float z = mRadius * sinf(mPhi) * sinf(mTheta);
@@ -71,25 +87,25 @@ void Device::update()
     MuVector at(0.0f, 0.0f, 0.0f, 1.0f);
     MuVector up(0.0f, 1.0f, 0.0f, 0.0f);
 
-    setCameraPos(eyePos, at);
+    SetCameraPos(eyePos, at);
 }
 
-void Device::setCameraPos(const MuVector& look, const MuVector& at)
+void Device::SetCameraPos(const MuVector& look, const MuVector& at)
 {
     mView = MathSet::MatrixLookAtLh(look, at, MuVector(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
-void Device::setFrustum(float fov, float ratio, float n, float f)
+void Device::SetFrustum(float fov, float ratio, float n, float f)
 {
     mProj = MathSet::MatrixPerspectiveFovLH(fov, ratio, n, f);
 }
 
-void Device::setMVP()
+void Device::SetMvp()
 {
     mMvp = mWorld * mView * mProj * mScale;
 }
 
-void Device::drawPrimitive(Mesh* mesh)
+void Device::DrawPrimitive(Mesh* mesh)
 {
     Vertex v0, v1, v2;
     for (unsigned int i = 0; i < mesh->indexBuffer.size(); i += 3)
@@ -100,25 +116,25 @@ void Device::drawPrimitive(Mesh* mesh)
         v0.pos = MathSet::multVector4(v0.pos, mMvp);
         v1.pos = MathSet::multVector4(v1.pos, mMvp);
         v2.pos = MathSet::multVector4(v2.pos, mMvp);
-        if (clip(v0.pos) == false || clip(v1.pos) == false || clip(v2.pos) == false)
+        if (Clip(v0.pos) == false || Clip(v1.pos) == false || Clip(v2.pos) == false)
         {
             continue;
         }
         if (renderMode == RenderMode::RenderStateWireFrame)
         {
-            if (backFaceCulling(v0.pos, v1.pos, v2.pos))
+            if (BackFaceCulling(v0.pos, v1.pos, v2.pos))
             {
                 continue;
             }
         }
-        ndc2Screen(v0);
-        ndc2Screen(v1);
-        ndc2Screen(v2);
+        NDCToScreen(v0);
+        NDCToScreen(v1);
+        NDCToScreen(v2);
         Rasterize(v0, v1, v2);
     }
 }
 
-bool Device::clip(MuVector& pos)
+bool Device::Clip(MuVector& pos)
 {
     if (pos.X >= -pos.W && pos.X <= pos.W && pos.Y >= -pos.W && pos.Y <= pos.W && pos.Z >= 0.f && pos.Z <= pos.W)
     {
@@ -127,13 +143,13 @@ bool Device::clip(MuVector& pos)
     return false;
 }
 
-void Device::ndc2Screen(Vertex& vertexout)
+void Device::NDCToScreen(Vertex& Vertexout)
 {
-    float reciprecalw = 1.0f / vertexout.pos.W;
-    vertexout.pos.X = (vertexout.pos.X * reciprecalw + 1.0f) * 0.5f * width;
-    vertexout.pos.Y = (vertexout.pos.Y * reciprecalw + 1.0f) * 0.5f * height;
-    vertexout.pos.Z = vertexout.pos.W;
-    vertexout.pos.W = reciprecalw;
+    float reciprecalw = 1.0f / Vertexout.pos.W;
+    Vertexout.pos.X = (Vertexout.pos.X * reciprecalw + 1.0f) * 0.5f * width;
+    Vertexout.pos.Y = (Vertexout.pos.Y * reciprecalw + 1.0f) * 0.5f * height;
+    Vertexout.pos.Z = Vertexout.pos.W;
+    Vertexout.pos.W = reciprecalw;
 }
 
 void Device::Interpolate(const Vertex& v0, const Vertex& v1, const Vertex& v2, Vertex& pixelSamp, const MuVector& vw)

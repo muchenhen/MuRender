@@ -12,11 +12,16 @@ enum class RenderMode
     RenderStateTexture = 2
 };
 
+/**
+ * \brief  Device class
+ */
 class Device
 {
-public:
+private:
+    // 
     int width;
     int height;
+    // 渲染模式
     RenderMode renderMode;
     unsigned int* pointFrameBuffer;
     float* zBuffer;
@@ -34,43 +39,44 @@ public:
     Texture* pTexture;
     POINT lastMousePos;
 
-    Device() = default;
+    Device();
     ~Device();
-
+    
+public:
     void Initialize(int W, int H, void* FrameBuffer);
 
-    void destroy();
+    void Destroy();
 
-    void clearBuffer(const MuVector& color);
+    void ClearBuffer(const MuVector& color);
 
-    void update();
+    void Update();
 
-    void setCameraPos(const MuVector& look, const MuVector& at);
+    void SetCameraPos(const MuVector& look, const MuVector& at);
 
-    void setFrustum(float fov, float ratio, float n, float f);
+    void SetFrustum(float fov, float ratio, float n, float f);
 
-    void setMVP();
+    void SetMvp();
 
-    void drawPrimitive(Mesh* mesh);
+    void DrawPrimitive(Mesh* mesh);
 
-    bool clip(MuVector& pos);
+    bool Clip(MuVector& pos);
 
-    void ndc2Screen(Vertex& vertexout);
+    void NDCToScreen(Vertex& Vertexout);
 
     void Interpolate(const Vertex& v0, const Vertex& v1, const Vertex& v2, Vertex& pixelSamp, const MuVector& vw);
 
-    void drawPoint(int x, int y, const unsigned int color, const float z);
+    void DrawPoint(int x, int y, const unsigned int color, const float z);
 
-    void drawLine(int x0, int y0, int x1, int y1, const MuVector& color);
-    void drawLine(const MuVector& p0, const MuVector& p1, const MuVector& color);
+    void DrawLine(int x0, int y0, int x1, int y1, const MuVector& color);
+    void DrawLine(const MuVector& p0, const MuVector& p1, const MuVector& color);
 
-    bool triangleCheck(const Vertex& v0, const Vertex& v1, const Vertex& v2, Vertex& p, MuVector& Vw);
+    bool TriangleCheck(const Vertex& v0, const Vertex& v1, const Vertex& v2, Vertex& p, MuVector& Vw);
 
-    bool backFaceCulling(const MuVector& p0, const MuVector& p1, const MuVector& p2);
+    bool BackFaceCulling(const MuVector& p0, const MuVector& p1, const MuVector& p2);
 
-    void fillTriangleVertexColor(Vertex& v0, Vertex& v1, Vertex& v2);
+    void FillTriangleVertexColor(Vertex& v0, Vertex& v1, Vertex& v2);
 
-    void fillTriangleTexture(Vertex& v0, Vertex& v1, Vertex& v2);
+    void FillTriangleTexture(Vertex& v0, Vertex& v1, Vertex& v2);
 
     void Rasterize(Vertex& v0, Vertex& v1, Vertex& v2);
 };

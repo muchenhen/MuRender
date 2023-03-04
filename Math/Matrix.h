@@ -24,6 +24,8 @@ public:
 	float a41, float a42, float a43, float a44);
 	Matrix(const float a[4][4]);
 
+    ~Matrix();
+
 	void setZeroMatrix();
 	void setUnitMatrix();
 

@@ -35,6 +35,10 @@ Matrix::Matrix(const float a[4][4])
 	}
 }
 
+Matrix::~Matrix()
+{
+}
+
 void Matrix::setZeroMatrix()
 {
 	for (int i = 0; i < 4; i++)
