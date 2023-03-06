@@ -30,12 +30,33 @@
     <ClInclude Include="MuFunctions.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Device\MuDevice.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera\MuCamera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rasterizer\MuRasterizer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\MuMath.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuSoftRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MuFunctions.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Device\MuDevice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\MuCamera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rasterizer\MuRasterizer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

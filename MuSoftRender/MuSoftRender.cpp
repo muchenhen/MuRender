@@ -4,6 +4,8 @@
 #include "framework.h"
 #include "MuSoftRender.h"
 #include "MuFunctions.h"
+#include "Device/MuDevice.h"
+#include "Rasterizer/MuRasterizer.h"
 #include <string>
 
 #define MAX_LOADSTRING 100
@@ -134,14 +136,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    // PAINTSTRUCT是Windows API 中的一个结构体，用于保存绘图信息
     PAINTSTRUCT paintStruct;
+    // HDC是 Windows API 中的一个句柄，用于保存绘图设备的句柄
     HDC hdc = GetDC(hWnd);
 
+    // 用于保存绘图设备的句柄
     static HDC hdcBackBuffer;
+
+
+    static MuDevice* Device = new MuDevice;
+    static MuRasterizer* Rasterizer = new MuRasterizer; 
 
     static int clientRectWidth;
     static int clientRectHeight;
 
+    Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
+
+    // 用于保存位图句柄
     static HBITMAP hBitmap;
 
     switch (message)
@@ -154,6 +166,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             clientRectWidth = rect.right - rect.left;
             clientRectHeight = rect.bottom - rect.top;
 
+             /*
+             * 这段代码定义了一个 BITMAPINFO 结构体变量 Bi，并初始化了它的成员。
+             * BITMAPINFO 结构体包含一个 BITMAPINFOHEADER 结构体和一个颜色表。
+             * 在这个例子中，颜色表没有被初始化。
+             * BITMAPINFOHEADER 结构体包含有关位图的信息，
+             * 例如宽度、高度、颜色深度等。
+             * 在这个例子中，
+             * 位图的宽度和高度分别由 ClientRectWidth 和 ClientRectHeight 变量指定。
+             * 颜色深度为 32 位，压缩类型为 BI_RGB（无压缩）。
+             * 图像大小由 ClientRectWidth * ClientRectHeight * static_cast<DWORD>(4) 计算得出。
+             */
             const BITMAPINFOHEADER bitmapInfoHeader =
                 {
                     sizeof(BITMAPINFOHEADER),
@@ -168,13 +191,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     0,
                     0
                 };
+            /*
+             * RGBQUAD
+             * RGBQUAD是Windows API中的一种结构体，用于表示颜色的四个分量：红色(Red)，绿色(Green)，蓝色(Blue)和Alpha。其中Alpha表示透明度，取值范围为0~255，0表示完全透明，255表示完全不透明。RGBQUAD通常用于处理图像数据，例如在BMP文件中就使用了RGBQUAD结构体来表示每个像素点的颜色。
+
+                RGBQUAD的定义如下：
+
+                typedef struct tagRGBQUAD {
+                    BYTE rgbBlue;
+                    BYTE rgbGreen;
+                    BYTE rgbRed;
+                    BYTE rgbReserved;
+                } RGBQUAD;
+
+
+                其中，rgbBlue、rgbGreen和rgbRed分别表示蓝色、绿色和红色的分量，取值范围也是0~255。rgbReserved用于保留位，通常设置为0。
+
+                在Windows API中，RGBQUAD结构体经常用于处理位图数据（BMP）和调色板（Palette）等图形相关的操作。比如，可以使用RGBQUAD结构体来表示一个像素点的颜色信息，或者使用RGBQUAD结构体来表示调色板中每种颜色的信息。
+             */
             const RGBQUAD rgbQuad = {};
+
+            /*
+             *
+             */
             const BITMAPINFO bitmapInfo = {bitmapInfoHeader, rgbQuad};
 
-            LPVOID pointer;
+            /*
+             * LPVOID是Windows API中定义的类型。它代表“指向VOID的长指针”，用于表示指向任何类型的指针。Ptr是LPVOID类型的变量，这意味着它可以保存任何类型数据的地址。
+             */
+            LPVOID pointer = nullptr;
+
+            Device->InitDevice(pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
+            Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
             hdc = GetDC(hWnd);
             hdcBackBuffer = CreateCompatibleDC(hdc);
+            /*
+             * 调用了 CreateDIBSection() 函数来创建一个与设备兼容的位图
+             * 第一个是设备上下文句柄（在这里是 HdcBackBuffer）
+             * 第二个是指向位图信息结构体的指针（在这里是 &Bitmapinfo）
+             * 第三个是颜色表类型（在这里是 DIB_RGB_COLORS）
+             * 第四个是指向指针变量的指针（在这里是 &Ptr），它将接收位图数据缓冲区的地址
+             * 第五个和第六个参数分别为文件映射对象和文件映射对象中数据的偏移量，在这里都为 0
+             */
             hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &pointer, nullptr, 0);
+            /*
+             * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
+             */
             SelectObject(hdcBackBuffer, hBitmap);
             ReleaseDC(hWnd, hdc);
         }
@@ -200,7 +262,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             BeginPaint(hWnd, &paintStruct);
             // TODO: 在此处添加使用 hdc 的任何绘图代码...
+            // 先画一个黑色背景
             BitBlt(hdcBackBuffer, 0, 0, clientRectWidth, clientRectHeight, nullptr, NULL, NULL, BLACKNESS);
+            // 再从hdcBackBuffer里取颜色绘制
             BitBlt(paintStruct.hdc, 0, 0, clientRectWidth, clientRectHeight, hdcBackBuffer, 0, 0, SRCCOPY);
 
             EndPaint(hWnd, &paintStruct);
