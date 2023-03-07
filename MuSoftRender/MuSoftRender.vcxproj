@@ -139,6 +139,7 @@
     <ClInclude Include="Math\MuMath.h" />
     <ClInclude Include="MuFunctions.h" />
     <ClInclude Include="MuSoftRender.h" />
+    <ClInclude Include="Obj\MuObjModel.h" />
     <ClInclude Include="Rasterizer\MuRasterizer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Function\MuLog.cpp" />
     <ClCompile Include="MuFunctions.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
+    <ClCompile Include="Obj\MuObjModel.cpp" />
     <ClCompile Include="Rasterizer\MuRasterizer.cpp" />
   </ItemGroup>
   <ItemGroup>

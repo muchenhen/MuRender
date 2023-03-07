@@ -29,6 +29,8 @@ namespace MuMath
 {
 constexpr float PI = 3.14159265358979323846f;
 
+static bool bUseRodrigues = false;
+
 template <typename T>
 T Clamp(T Value, T Min, T Max)
 {
@@ -58,11 +60,12 @@ inline MuMatrix4F GetRotateXMatrix(float Angle)
     Angle = Angle * PI / 180.0f;
     const float Cos = std::cos(Angle);
     const float Sin = std::sin(Angle);
-    return MuMatrix4F{
-        1.0f, 0.0f, 0.0f, 0.0f,
+    MuMatrix4F RotateXMatrix;
+    RotateXMatrix << 1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, Cos, -Sin, 0.0f,
         0.0f, Sin, Cos, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f};
+        0.0f, 0.0f, 0.0f, 1.0f;
+    return RotateXMatrix;
 }
 
 // 绕Y轴旋转矩阵
@@ -72,11 +75,12 @@ inline MuMatrix4F GetRotateYMatrix(float Angle)
     Angle = Angle * PI / 180.0f;
     const float Cos = std::cos(Angle);
     const float Sin = std::sin(Angle);
-    return MuMatrix4F{
-        Cos, 0.0f, Sin, 0.0f,
+    MuMatrix4F RotateYMatrix;
+    RotateYMatrix << Cos, 0.0f, Sin, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         -Sin, 0.0f, Cos, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f};
+        0.0f, 0.0f, 0.0f, 1.0f;
+    return RotateYMatrix;
 }
 
 // 绕Z轴旋转矩阵
@@ -86,21 +90,23 @@ inline MuMatrix4F GetRotateZMatrix(float Angle)
     Angle = Angle * PI / 180.0f;
     const float Cos = std::cos(Angle);
     const float Sin = std::sin(Angle);
-    return MuMatrix4F{
-        Cos, -Sin, 0.0f, 0.0f,
+    MuMatrix4F RotateZMatrix;
+    RotateZMatrix << Cos, -Sin, 0.0f, 0.0f,
         Sin, Cos, 0.0f, 0.0f,
         0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f};
+        0.0f, 0.0f, 0.0f, 1.0f;
+    return RotateZMatrix;
 }
 
 // 缩放矩阵
 inline MuMatrix4F GetScaleMatrix(float Scale)
 {
-    return MuMatrix4F{
-        Scale, 0.0f, 0.0f, 0.0f,
+    MuMatrix4F ScaleMatrix;
+    ScaleMatrix << Scale, 0.0f, 0.0f, 0.0f,
         0.0f, Scale, 0.0f, 0.0f,
         0.0f, 0.0f, Scale, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f};
+        0.0f, 0.0f, 0.0f, 1.0f;
+    return ScaleMatrix;
 }
 
 // ----------------- 非线性变换 -----------------
@@ -108,11 +114,12 @@ inline MuMatrix4F GetScaleMatrix(float Scale)
 // 平移矩阵
 inline MuMatrix4F GetTranslateMatrix(float X, float Y, float Z)
 {
-    return MuMatrix4F{
-        1.0f, 0.0f, 0.0f, X,
+    MuMatrix4F TranslateMatrix;
+    TranslateMatrix << 1.0f, 0.0f, 0.0f, X,
         0.0f, 1.0f, 0.0f, Y,
         0.0f, 0.0f, 1.0f, Z,
-        0.0f, 0.0f, 0.0f, 1.0f};
+        0.0f, 0.0f, 0.0f, 1.0f;
+    return TranslateMatrix;
 }
 
 /*
@@ -122,7 +129,6 @@ inline MuMatrix4F GetTranslateMatrix(float X, float Y, float Z)
  * 目标是将相机移动到原点，且相机面向Z轴负方向 其他物体做相同的变换 这样和相机的相对位置不变
  * 根据相机的当前位置、朝向、up方向，计算出相机的Model Transform矩阵
  */
-bool bUseRodrigues = false;
 inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const MuPoint4F& CameraLookAt, const MuPoint4F& CameraUp)
 {
     // 计算相机的平移矩阵
@@ -144,21 +150,27 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
     }
     else
     {
-        // 计算相机的Z轴方向
-        const MuPoint3F CameraZAxis = (CameraPosition - CameraLookAt).normalized();
+        MuPoint3F CameraPosition3F = MuPoint3F(CameraPosition.x(), CameraPosition.y(), CameraPosition.z());
+        MuPoint3F CameraLookAt3F =  MuPoint3F(CameraLookAt.x(), CameraLookAt.y(), CameraLookAt.z());
+        MuPoint3F CameraUp3F =  MuPoint3F(CameraUp.x(), CameraUp.y(), CameraUp.z());
 
-        // 计算相机的X轴方向
-        const MuPoint3F CameraXAxis = CameraUp.cross(CameraZAxis).normalized();
-
-        // 计算相机的Y轴方向
+        const MuPoint3F CameraZAxis = (CameraPosition3F - CameraLookAt3F).normalized();
+        const MuPoint3F CameraXAxis = CameraUp3F.cross(CameraZAxis).normalized();
         const MuPoint3F CameraYAxis = CameraZAxis.cross(CameraXAxis).normalized();
-    
+        // // 计算相机的Z轴方向
+        // const MuPoint4F CameraZAxis = (CameraPosition - CameraLookAt).normalized();
+        //
+        // // 计算相机的X轴方向
+        // const MuPoint4F CameraXAxis = CameraUp.cross(CameraZAxis).normalized();
+        //
+        // // 计算相机的Y轴方向
+        // const MuPoint4F CameraYAxis = CameraZAxis.cross(CameraXAxis).normalized();
+        
         // 计算相机的旋转矩阵
-        CameraRotationMatrix = {
-            CameraXAxis.x(), CameraXAxis.y(), CameraXAxis.z(), 0.0f,
-            CameraYAxis.x(), CameraYAxis.y(), CameraYAxis.z(), 0.0f,
-            CameraZAxis.x(), CameraZAxis.y(), CameraZAxis.z(), 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f};
+        CameraRotationMatrix << CameraXAxis.x(), CameraYAxis.x(), CameraZAxis.x(), 0.0f,
+            CameraXAxis.y(), CameraYAxis.y(), CameraZAxis.y(), 0.0f,
+            CameraXAxis.z(), CameraYAxis.z(), CameraZAxis.z(), 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f;
     }
 
     // 相机的Model Transform矩阵
@@ -183,11 +195,12 @@ inline MuMatrix4F GetPerspectiveProjectionMatrix(float FOVy, float Aspect, float
     // 计算焦距
     const float FocalLength = 1.0f / std::tan(FOVy / 2.0f);
     // 计算透视投影矩阵
-    return MuMatrix4F{
-        FocalLength / Aspect, 0.0f, 0.0f, 0.0f,
+    MuMatrix4F PerspectiveProjectionMatrix;
+    PerspectiveProjectionMatrix << FocalLength / Aspect, 0.0f, 0.0f, 0.0f,
         0.0f, FocalLength, 0.0f, 0.0f,
         0.0f, 0.0f, (Far + Near) / (Near - Far), 2.0f * Far * Near / (Near - Far),
-        0.0f, 0.0f, -1.0f, 0.0f};
+        0.0f, 0.0f, -1.0f, 0.0f;
+    return PerspectiveProjectionMatrix;
 }
 
 }

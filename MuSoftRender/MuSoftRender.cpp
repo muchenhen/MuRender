@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Math/MuMath.h"
+#include "Obj/MuObjModel.h"
 
 #define MAX_LOADSTRING 100
 
@@ -233,6 +234,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             
             Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
+
+            auto* objModel = new MuObjModel;
+            objModel->Load("../Cube.obj");
             
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。

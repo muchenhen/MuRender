@@ -27,3 +27,8 @@ const MuPoint4I G_POSITIVE_Z_DIRECTION = MuPoint4I(0, 0, 1, 0);
 const MuPoint4I G_POSITIVE_Y_DIRECTION = MuPoint4I(0, 1, 0, 0);
 // 正X方向
 const MuPoint4I G_POSITIVE_X_DIRECTION = MuPoint4I(1, 0, 0, 0);
+
+struct FMuObjFace
+{
+    
+};
