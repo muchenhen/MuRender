@@ -193,21 +193,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 };
             /*
              * RGBQUAD
-             * RGBQUAD是Windows API中的一种结构体，用于表示颜色的四个分量：红色(Red)，绿色(Green)，蓝色(Blue)和Alpha。其中Alpha表示透明度，取值范围为0~255，0表示完全透明，255表示完全不透明。RGBQUAD通常用于处理图像数据，例如在BMP文件中就使用了RGBQUAD结构体来表示每个像素点的颜色。
-
+             * RGBQUAD是Windows API中的一种结构体，
+             * 用于表示颜色的四个分量：红色(Red)，绿色(Green)，蓝色(Blue)和Alpha。
+             * 其中Alpha表示透明度，取值范围为0~255，0表示完全透明，255表示完全不透明。
+             * RGBQUAD通常用于处理图像数据，例如在BMP文件中就使用了RGBQUAD结构体来表示每个像素点的颜色。
                 RGBQUAD的定义如下：
-
                 typedef struct tagRGBQUAD {
                     BYTE rgbBlue;
                     BYTE rgbGreen;
                     BYTE rgbRed;
                     BYTE rgbReserved;
                 } RGBQUAD;
-
-
                 其中，rgbBlue、rgbGreen和rgbRed分别表示蓝色、绿色和红色的分量，取值范围也是0~255。rgbReserved用于保留位，通常设置为0。
-
-                在Windows API中，RGBQUAD结构体经常用于处理位图数据（BMP）和调色板（Palette）等图形相关的操作。比如，可以使用RGBQUAD结构体来表示一个像素点的颜色信息，或者使用RGBQUAD结构体来表示调色板中每种颜色的信息。
+                在Windows API中，RGBQUAD结构体经常用于处理位图数据（BMP）和调色板（Palette）等图形相关的操作。
+                比如，可以使用RGBQUAD结构体来表示一个像素点的颜色信息，或者使用RGBQUAD结构体来表示调色板中每种颜色的信息。
              */
             const RGBQUAD RgbQuad = {};
 
@@ -234,8 +233,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             
             Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
-            
-            // Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
             
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
@@ -269,7 +266,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             
             {
                 // TODO: 在此处添加使用 hdc 的任何绘图代码...
-                Rasterizer->RandomDraw(Device->GetPointBitFrameBuffer());
+                // Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
+                // Rasterizer->RandomDraw(Device->GetPointBitFrameBuffer());
+                // Rasterizer->DrawLine( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuPoint2I(clientRectWidth-1, clientRectHeight-1), MuColor::White);
+                // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
+                Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
             }
 
             // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中

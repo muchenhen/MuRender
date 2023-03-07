@@ -134,6 +134,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Device\MuDevice.h" />
     <ClInclude Include="Camera\MuCamera.h" />
+    <ClInclude Include="Function\MuLog.h" />
     <ClInclude Include="Math\MuMath.h" />
     <ClInclude Include="MuFunctions.h" />
     <ClInclude Include="MuSoftRender.h" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Device\MuDevice.cpp" />
     <ClCompile Include="Camera\MuCamera.cpp" />
+    <ClCompile Include="Function\MuLog.cpp" />
     <ClCompile Include="MuFunctions.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Rasterizer\MuRasterizer.cpp" />
