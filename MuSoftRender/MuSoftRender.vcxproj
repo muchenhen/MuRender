@@ -135,6 +135,7 @@
     <ClInclude Include="Device\MuDevice.h" />
     <ClInclude Include="Camera\MuCamera.h" />
     <ClInclude Include="Function\MuLog.h" />
+    <ClInclude Include="Function\MuStruct.h" />
     <ClInclude Include="Math\MuMath.h" />
     <ClInclude Include="MuFunctions.h" />
     <ClInclude Include="MuSoftRender.h" />
