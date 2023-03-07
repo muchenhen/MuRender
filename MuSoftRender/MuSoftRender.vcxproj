@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\GitHub\MuRender\MuSoftRender\Math;E:\GitHub\MuRender\MuSoftRender;E:\GitHub\MuRender\eigen-3.4.0;$(IncludePath)</IncludePath>
+    <IncludePath>E:\GitHub\MuRender\MuSoftRender\Math;D:\GitHub\MuRender\eigen-3.4.0;;D:\GitHub\MuRender\eigen-3.4.0;E:\GitHub\MuRender\MuSoftRender;E:\GitHub\MuRender\eigen-3.4.0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -107,6 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

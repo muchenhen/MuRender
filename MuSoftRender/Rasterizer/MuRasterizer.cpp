@@ -22,3 +22,11 @@ bool MuRasterizer::DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& 
     }
     return false;
 }
+
+void MuRasterizer::RandomDraw(unsigned* PointBitFrameBuffer)
+{
+    for (int i = 0; i < WidthBound * HeightBound; i++)
+    {
+        PointBitFrameBuffer[i] = MuColor::GetRandomColor();
+    }
+}

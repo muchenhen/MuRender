@@ -1,6 +1,6 @@
 #pragma once
-#include "MuMath.h"
-#include "Device/MuDevice.h"
+#include "../Math/MuMath.h"
+#include "../Device/MuDevice.h"
 
 class MuRasterizer
 {
@@ -22,4 +22,6 @@ public:
      * \return 是否画成功了
      */
     bool DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point, const MuRGB& Color);
+
+    void RandomDraw(FrameBuffer* PointBitFrameBuffer);
 };

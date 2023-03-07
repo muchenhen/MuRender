@@ -1,6 +1,6 @@
 #pragma once
-#include <Eigen/Eigen>
-#include <Eigen/Dense>
+#include "../eigen-3.4.0/eigen-3.4.0/Eigen/Eigen"
+#include "../eigen-3.4.0/eigen-3.4.0/Eigen/Dense"
 #include <algorithm>
 
 typedef Eigen::Vector2i MuPoint2I;
@@ -46,6 +46,15 @@ inline unsigned int MuRGBtoUInt(const MuRGB& Color)
     g = MuMath::Clamp(g, 0, 255);
     b = MuMath::Clamp(b, 0, 255);
     return static_cast<unsigned int>((r << 16) | (g << 8) | (b));
+}
+
+inline unsigned int GetRandomColor()
+{
+    const int R = rand() % 256;
+    const int G = rand() % 256;
+    const int B = rand() % 256;
+
+    return static_cast<unsigned int>((R << 16) | (G << 8) | (B));
 }
 
 const MuRGB White(1, 1, 1);

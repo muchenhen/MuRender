@@ -8,6 +8,8 @@
 #include "Rasterizer/MuRasterizer.h"
 #include <string>
 
+#include "Math/MuMath.h"
+
 #define MAX_LOADSTRING 100
 
 // 全局变量:
@@ -43,7 +45,7 @@ _In_ int nCmdShow)
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MUSOFTRENDER));
+    const HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MUSOFTRENDER));
 
     MSG msg;
 
@@ -57,7 +59,7 @@ _In_ int nCmdShow)
         }
     }
 
-    return (int)msg.wParam;
+    return static_cast<int>(msg.wParam);
 }
 
 //
@@ -67,23 +69,23 @@ _In_ int nCmdShow)
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+    WNDCLASSEXW Wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+    Wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc = WndProc;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
-    wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MUSOFTRENDER));
-    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_MUSOFTRENDER);
-    wcex.lpszClassName = szWindowClass;
-    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    Wcex.style = CS_HREDRAW | CS_VREDRAW;
+    Wcex.lpfnWndProc = WndProc;
+    Wcex.cbClsExtra = 0;
+    Wcex.cbWndExtra = 0;
+    Wcex.hInstance = hInstance;
+    Wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MUSOFTRENDER));
+    Wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    Wcex.hbrBackground = reinterpret_cast<HBRUSH>((COLOR_WINDOW + 1));
+    Wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_MUSOFTRENDER);
+    Wcex.lpszClassName = szWindowClass;
+    Wcex.hIconSm = LoadIcon(Wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    return RegisterClassExW(&wcex);
+    return RegisterClassExW(&Wcex);
 }
 
 //
@@ -100,7 +102,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
-    HWND hWnd = CreateWindowW(
+    const HWND hWnd = CreateWindowW(
         szWindowClass, 
         szTitle, 
         WS_OVERLAPPEDWINDOW,
@@ -138,15 +140,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     // PAINTSTRUCT是Windows API 中的一个结构体，用于保存绘图信息
     PAINTSTRUCT paintStruct;
-    // HDC是 Windows API 中的一个句柄，用于保存绘图设备的句柄
-    HDC hdc = GetDC(hWnd);
 
     // 用于保存绘图设备的句柄
     static HDC hdcBackBuffer;
 
 
-    static MuDevice* Device = new MuDevice;
-    static MuRasterizer* Rasterizer = new MuRasterizer; 
+    static auto* Device = new MuDevice;
+    static auto Rasterizer = new MuRasterizer; 
 
     static int clientRectWidth;
     static int clientRectHeight;
@@ -209,22 +209,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 在Windows API中，RGBQUAD结构体经常用于处理位图数据（BMP）和调色板（Palette）等图形相关的操作。比如，可以使用RGBQUAD结构体来表示一个像素点的颜色信息，或者使用RGBQUAD结构体来表示调色板中每种颜色的信息。
              */
-            const RGBQUAD rgbQuad = {};
+            const RGBQUAD RgbQuad = {};
 
             /*
              *
              */
-            const BITMAPINFO bitmapInfo = {bitmapInfoHeader, rgbQuad};
+            const BITMAPINFO bitmapInfo = {bitmapInfoHeader, RgbQuad};
 
             /*
              * LPVOID是Windows API中定义的类型。它代表“指向VOID的长指针”，用于表示指向任何类型的指针。Ptr是LPVOID类型的变量，这意味着它可以保存任何类型数据的地址。
              */
-            LPVOID pointer = nullptr;
-
-            Device->InitDevice(pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
-            Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
-            hdc = GetDC(hWnd);
-            hdcBackBuffer = CreateCompatibleDC(hdc);
+            LPVOID Pointer;
+            const HDC Hdc = GetDC(hWnd);
+            hdcBackBuffer = CreateCompatibleDC(Hdc);
             /*
              * 调用了 CreateDIBSection() 函数来创建一个与设备兼容的位图
              * 第一个是设备上下文句柄（在这里是 HdcBackBuffer）
@@ -233,17 +230,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              * 第四个是指向指针变量的指针（在这里是 &Ptr），它将接收位图数据缓冲区的地址
              * 第五个和第六个参数分别为文件映射对象和文件映射对象中数据的偏移量，在这里都为 0
              */
-            hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &pointer, nullptr, 0);
+            hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &Pointer, nullptr, 0);
+            
+            Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
+            Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
+            
+            // Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
+            
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
              */
             SelectObject(hdcBackBuffer, hBitmap);
-            ReleaseDC(hWnd, hdc);
+            ReleaseDC(hWnd, Hdc);
         }
         break;
         case WM_COMMAND:
         {
-            int wmId = LOWORD(wParam);
+            const int wmId = LOWORD(wParam);
             // 分析菜单选择:
             switch (wmId)
             {
@@ -261,12 +264,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_PAINT:
         {
             BeginPaint(hWnd, &paintStruct);
-            // TODO: 在此处添加使用 hdc 的任何绘图代码...
-            // 先画一个黑色背景
+            // 用黑色清除之前的绘制
             BitBlt(hdcBackBuffer, 0, 0, clientRectWidth, clientRectHeight, nullptr, NULL, NULL, BLACKNESS);
-            // 再从hdcBackBuffer里取颜色绘制
-            BitBlt(paintStruct.hdc, 0, 0, clientRectWidth, clientRectHeight, hdcBackBuffer, 0, 0, SRCCOPY);
+            
+            {
+                // TODO: 在此处添加使用 hdc 的任何绘图代码...
+                Rasterizer->RandomDraw(Device->GetPointBitFrameBuffer());
+            }
 
+            // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中
+            BitBlt(paintStruct.hdc, 0, 0, clientRectWidth, clientRectHeight, hdcBackBuffer, 0, 0, SRCCOPY);
             EndPaint(hWnd, &paintStruct);
         }
         break;
@@ -294,6 +301,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 EndDialog(hDlg, LOWORD(wParam));
                 return (INT_PTR)TRUE;
             }
+            break;
+        default:
             break;
     }
     return (INT_PTR)FALSE;
