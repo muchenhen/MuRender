@@ -1,15 +1,14 @@
 // MuSoftRender.cpp : 定义应用程序的入口点。
 //
 
-#include "framework.h"
 #include "MuSoftRender.h"
-#include "MuFunctions.h"
-#include "Device/MuDevice.h"
-#include "Rasterizer/MuRasterizer.h"
-#include <string>
+#include <MuMath.h>
+#include <Camera/MuCamera.h>
+#include <Device/MuDevice.h>
+#include <Obj/MuObjModel.h>
+#include <Rasterizer/MuRasterizer.h>
+#include "framework.h"
 
-#include "Math/MuMath.h"
-#include "Obj/MuObjModel.h"
 
 #define MAX_LOADSTRING 100
 
@@ -147,8 +146,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
     static auto* Device = new MuDevice;
-    static auto Rasterizer = new MuRasterizer; 
-
+    static auto Rasterizer = new MuRasterizer;
+    static auto* ObjModel = new MuObjModel;
+    static auto* Camera = new MuCamera;
+    Camera->SetAspectRatio(1.777f);
+    Camera->SetFOVy(90);
+    Camera->SetProjectionMode(EProjectionMode::Perspective);
+    Camera->SetCameraPosition(MuPoint4I(250,250,250,0));
+    Camera->SetLookAtPoint(MuPoint4I(0,0,0,0));
+    Camera->Init();
     static int clientRectWidth;
     static int clientRectHeight;
 
@@ -235,8 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
 
-            auto* objModel = new MuObjModel;
-            objModel->Load("../Cube.obj");
+            ObjModel->Load("../Cube.obj");
             
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
@@ -274,7 +279,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Rasterizer->RandomDraw(Device->GetPointBitFrameBuffer());
                 // Rasterizer->DrawLine( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuPoint2I(clientRectWidth-1, clientRectHeight-1), MuColor::White);
                 // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
-                Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
+                // Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
+                Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
             }
 
             // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中

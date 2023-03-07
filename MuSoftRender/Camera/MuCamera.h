@@ -2,18 +2,40 @@
 #include "../Math/MuMath.h"
 #include "../Function/MuStruct.h"
 
+#define ADD_GET_SET_METHOD(ClassName, MemberName) \
+    ClassName Get##MemberName() const { return MemberName; } \
+    void Set##MemberName(ClassName In##MemberName) { MemberName = In##MemberName; }
+
 class MuCamera
 {
 public:
-
+    MuCamera();
     MuCamera(const MuPoint4I& InPosition, const MuPoint4I& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode);
 
+    bool Init();
+    
+    // 为所有private成员变量生成创建Get和Set方法
+    ADD_GET_SET_METHOD(MuPoint4I, CameraPosition)
+    ADD_GET_SET_METHOD(MuPoint4I, LookAtPoint)
+    ADD_GET_SET_METHOD(MuPoint4I, LookAtDirection)
+    ADD_GET_SET_METHOD(MuVector4I, UpDirection)
+    ADD_GET_SET_METHOD(float, FOVy)
+    ADD_GET_SET_METHOD(float, AspectRatio)
+    ADD_GET_SET_METHOD(float, NearPlane)
+    ADD_GET_SET_METHOD(float, FarPlane)
+    ADD_GET_SET_METHOD(EProjectionMode, ProjectionMode)
+    
 private:
 
     /*
      * 相机位置
      */
     MuPoint4I CameraPosition = G_ORIGIN_POINT;
+
+    /*
+     * LookAt 点
+     */
+    MuPoint4I LookAtPoint = G_ORIGIN_POINT;
 
     /*
      * LookAt 方向

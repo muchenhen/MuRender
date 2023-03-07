@@ -69,6 +69,86 @@ bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& 
     return false;
 }
 
+bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color)
+{
+    // // 将四边形分成两个三角形
+    // if (DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, Color) && DrawTriangle(PointBitFrameBuffer, Point1, Point4, Point3, Color))
+    // {
+    //     return true;
+    // }
+
+    // 找出x最小的点
+    const MuPoint2I* MinXPoint = &Point1;
+    if (Point2.x() < MinXPoint->x())
+    {
+        MinXPoint = &Point2;
+    }
+    // 找出x最大的点
+    const MuPoint2I* MaxXPoint = &Point1;
+    if (Point2.x() > MaxXPoint->x())
+    {
+        MaxXPoint = &Point2;
+    }
+    // 找出y最小的点
+    const MuPoint2I* MinYPoint = &Point1;
+    if (Point2.y() < MinYPoint->y())
+    {
+        MinYPoint = &Point2;
+    }
+    // 找出y最大的点
+    const MuPoint2I* MaxYPoint = &Point1;
+    if (Point2.y() > MaxYPoint->y())
+    {
+        MaxYPoint = &Point2;
+    }
+
+    // x最小的点为0，x最大的点为2，y最小的点为3，y最大的点为1
+    const MuPoint2I* PointArray[4] = {MinXPoint, MaxYPoint, MaxXPoint, MinYPoint};
+    MuLog::LogInfo("MinXPoint: %d, %d", MinXPoint->x(), MinXPoint->y());
+    MuLog::LogInfo("MaxXPoint: %d, %d", MaxXPoint->x(), MaxXPoint->y());
+    MuLog::LogInfo("MinYPoint: %d, %d", MinYPoint->x(), MinYPoint->y());
+    MuLog::LogInfo("MaxYPoint: %d, %d", MaxYPoint->x(), MaxYPoint->y());
+    // 012画一个三角形，230画一个三角形
+    if (DrawTriangle(PointBitFrameBuffer, *PointArray[0], *PointArray[1], *PointArray[2], Color) &&
+        DrawTriangle(PointBitFrameBuffer, *PointArray[2], *PointArray[3], *PointArray[0], Color))
+    {
+        return true;
+    }
+}
+
+bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, const MuRGB& Color)
+{
+    // 画出obj模型
+    for (int i = 0; i < ObjModel->GetFaceCount(); i++)
+    {
+        const FMuObjFace Face = ObjModel->GetFace(i);
+        // 确认 Face 顶点数量
+        if (Face.GetVertexCount() == 3)
+        {
+            const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
+            const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
+            const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
+            // const MuPoint2I Point1 = ObjModel->GetVertexByIndex(VertexIndex1).cast<int>();
+            // const MuPoint2I Point2 = ObjModel->GetVertexByIndex(VertexIndex2).cast<int>();
+            // const MuPoint2I Point3 = ObjModel->GetVertexByIndex(VertexIndex3).cast<int>();
+            // DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, Color);
+        }
+        else if (Face.GetVertexCount() == 4)
+        {
+            const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
+            const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
+            const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
+            const int VertexIndex4 = Face.GetVertex(3).VertexIndex;
+            // const MuPoint2I Point1 = ObjModel->GetVertexByIndex(VertexIndex1).cast<int>();
+            // const MuPoint2I Point2 = ObjModel->GetVertexByIndex(VertexIndex2).cast<int>();
+            // const MuPoint2I Point3 = ObjModel->GetVertexByIndex(VertexIndex3).cast<int>();
+            // const MuPoint2I Point4 = ObjModel->GetVertexByIndex(VertexIndex4).cast<int>();
+            // DrawQuad(PointBitFrameBuffer, Point1, Point2, Point3, Point4, Color);
+        }
+    }
+    return true;
+}
+
 MuVector2I MuRasterizer::GetRandomPoint2I()
 {
     // 在widthBound * heightBound范围内随机取一个点
@@ -96,4 +176,19 @@ void MuRasterizer::RandomDrawTriangle(unsigned* PointBitFrameBuffer)
     MuLog::LogInfo("Point2: %d, %d", Point2.x(), Point2.y());
     MuLog::LogInfo("Point3: %d, %d", Point3.x(), Point3.y());
     DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, MuColor::GetRandomMuRGB());
+}
+
+void MuRasterizer::RandomDrawQuad(unsigned* PointBitFrameBuffer)
+{
+    // 在屏幕上随机取四个点，然后画四边形
+    const MuPoint2I Point1 = GetRandomPoint2I();
+    const MuPoint2I Point2 = GetRandomPoint2I();
+    const MuPoint2I Point3 = GetRandomPoint2I();
+    const MuPoint2I Point4 = GetRandomPoint2I();
+    // print point
+    MuLog::LogInfo("Point1: %d, %d", Point1.x(), Point1.y());
+    MuLog::LogInfo("Point2: %d, %d", Point2.x(), Point2.y());
+    MuLog::LogInfo("Point3: %d, %d", Point3.x(), Point3.y());
+    MuLog::LogInfo("Point4: %d, %d", Point4.x(), Point4.y());
+    DrawQuad(PointBitFrameBuffer, Point1, Point2, Point3, Point4, MuColor::GetRandomMuRGB());
 }
