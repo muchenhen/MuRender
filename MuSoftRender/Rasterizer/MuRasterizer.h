@@ -1,9 +1,9 @@
 #pragma once
 #include "../Math/MuMath.h"
 #include "../Device/MuDevice.h"
-#include <Function/MuStruct.h>
+#include "../Function/MuStruct.h"
 
-#include "Obj/MuObjModel.h"
+#include "../Obj/MuObjModel.h"
 
 class MuRasterizer
 {

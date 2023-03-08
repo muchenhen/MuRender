@@ -71,46 +71,11 @@ bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& 
 
 bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color)
 {
-    // // 将四边形分成两个三角形
-    // if (DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, Color) && DrawTriangle(PointBitFrameBuffer, Point1, Point4, Point3, Color))
-    // {
-    //     return true;
-    // }
-
-    // 找出x最小的点
-    const MuPoint2I* MinXPoint = &Point1;
-    if (Point2.x() < MinXPoint->x())
-    {
-        MinXPoint = &Point2;
-    }
-    // 找出x最大的点
-    const MuPoint2I* MaxXPoint = &Point1;
-    if (Point2.x() > MaxXPoint->x())
-    {
-        MaxXPoint = &Point2;
-    }
-    // 找出y最小的点
-    const MuPoint2I* MinYPoint = &Point1;
-    if (Point2.y() < MinYPoint->y())
-    {
-        MinYPoint = &Point2;
-    }
-    // 找出y最大的点
-    const MuPoint2I* MaxYPoint = &Point1;
-    if (Point2.y() > MaxYPoint->y())
-    {
-        MaxYPoint = &Point2;
-    }
-
-    // x最小的点为0，x最大的点为2，y最小的点为3，y最大的点为1
-    const MuPoint2I* PointArray[4] = {MinXPoint, MaxYPoint, MaxXPoint, MinYPoint};
-    MuLog::LogInfo("MinXPoint: %d, %d", MinXPoint->x(), MinXPoint->y());
-    MuLog::LogInfo("MaxXPoint: %d, %d", MaxXPoint->x(), MaxXPoint->y());
-    MuLog::LogInfo("MinYPoint: %d, %d", MinYPoint->x(), MinYPoint->y());
-    MuLog::LogInfo("MaxYPoint: %d, %d", MaxYPoint->x(), MaxYPoint->y());
-    // 012画一个三角形，230画一个三角形
-    if (DrawTriangle(PointBitFrameBuffer, *PointArray[0], *PointArray[1], *PointArray[2], Color) &&
-        DrawTriangle(PointBitFrameBuffer, *PointArray[2], *PointArray[3], *PointArray[0], Color))
+    // 画四条线 两两相连
+    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
+        DrawLine(PointBitFrameBuffer, Point2, Point3, Color) &&
+        DrawLine(PointBitFrameBuffer, Point3, Point4, Color) &&
+        DrawLine(PointBitFrameBuffer, Point4, Point1, Color))
     {
         return true;
     }
