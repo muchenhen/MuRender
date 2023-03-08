@@ -11,6 +11,9 @@ class MuObjModel
 {
 public:
     bool Load(const string& Filename);
+    int GetFaceCount() const;
+    FMuObjFace GetFace(int I) const;
+    MuPoint3F GetVertexByIndex(int VertexIndex);
 
 private:
     // 顶点坐标
@@ -20,7 +23,7 @@ private:
     // 纹理坐标
     vector<MuPoint2F> Texcoords;
     // 顶点索引
-    vector<int> Indices;
+    vector<FMuObjFace> FaceIndices;
 
     void ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex);
 

@@ -46,6 +46,12 @@ inline int RandomInt(int Min, int Max)
     return Distribution(RandomEngine);
 }
 
+// MuPoint3I -> MuPoint2I
+inline MuPoint2I Point3IToPoint2I(const MuPoint3I& Point)
+{
+    return MuPoint2I(Point.x(), Point.y());
+}
+
 /*
  * Model Transform Matrix
  * 模型变换相关矩阵

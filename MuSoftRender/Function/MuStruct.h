@@ -28,7 +28,26 @@ const MuPoint4I G_POSITIVE_Y_DIRECTION = MuPoint4I(0, 1, 0, 0);
 // 正X方向
 const MuPoint4I G_POSITIVE_X_DIRECTION = MuPoint4I(1, 0, 0, 0);
 
+struct FMuFaceIndex
+{
+    int VertexIndex;
+    int TexcoordIndex;
+    int NormalIndex;
+};
+
 struct FMuObjFace
 {
-    
+    std::vector<FMuFaceIndex> Indices{};
+    int GetVertexCount() const;
+    FMuFaceIndex GetVertex(int I) const;
 };
+
+inline int FMuObjFace::GetVertexCount() const
+{
+    return Indices.size();
+}
+
+inline FMuFaceIndex FMuObjFace::GetVertex(int I) const
+{
+    return Indices[I];
+}

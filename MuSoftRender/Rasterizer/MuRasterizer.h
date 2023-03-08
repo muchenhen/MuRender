@@ -1,6 +1,9 @@
 #pragma once
 #include "../Math/MuMath.h"
 #include "../Device/MuDevice.h"
+#include "../Function/MuStruct.h"
+
+#include "../Obj/MuObjModel.h"
 
 class MuRasterizer
 {
@@ -28,9 +31,15 @@ public:
 
     bool DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color);
 
+    bool DrawQuad(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color);
+
+    bool DrawObj(FrameBuffer* PointBitFrameBuffer, MuObjModel* ObjModel, const MuRGB& Color);
+    
     MuVector2I GetRandomPoint2I();
     
     void RandomDraw(FrameBuffer* PointBitFrameBuffer);
 
     void RandomDrawTriangle(FrameBuffer* PointBitFrameBuffer);
+
+    void RandomDrawQuad(FrameBuffer* PointBitFrameBuffer);
 };

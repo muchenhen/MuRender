@@ -55,20 +55,39 @@ bool MuObjModel::Load(const std::string& Filename)
                 tokens.push_back(s);
             }
 
+            FMuObjFace Face;
             for (int i = 0; i < tokens.size(); i++)
             {
                 string token = tokens[i];
                 int vertexIndex, texcoordIndex, normalIndex;
                 ParseVertexIndex(token, &vertexIndex, &texcoordIndex, &normalIndex);
-                Indices.push_back(vertexIndex);
-                Indices.push_back(texcoordIndex);
-                Indices.push_back(normalIndex);
+                FMuFaceIndex FaceIndex{};
+                FaceIndex.VertexIndex = vertexIndex;
+                FaceIndex.TexcoordIndex = texcoordIndex;
+                FaceIndex.NormalIndex = normalIndex;
+                Face.Indices.push_back(FaceIndex);
             }
+            FaceIndices.push_back(Face);
         }
     }
 
     File.close();
     return true;
+}
+
+int MuObjModel::GetFaceCount() const
+{
+    return FaceIndices.size();
+}
+
+FMuObjFace MuObjModel::GetFace(int I) const
+{
+    return FaceIndices[I];
+}
+
+MuPoint3F MuObjModel::GetVertexByIndex(int VertexIndex)
+{
+    return Vertices[VertexIndex];
 }
 
 void MuObjModel::ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex)
