@@ -280,7 +280,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Rasterizer->DrawLine( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuPoint2I(clientRectWidth-1, clientRectHeight-1), MuColor::White);
                 // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
                 // Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
-                Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
+                // Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
+                Rasterizer->DrawObj(Device->GetPointBitFrameBuffer(), ObjModel, MuColor::GetRandomMuRGB());
             }
 
             // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中
