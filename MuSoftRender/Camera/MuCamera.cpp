@@ -40,6 +40,19 @@ bool MuCamera::Init()
     // 计算LookAt方向
     LookAtDirection = LookAtDirection - CameraPosition;
     LookAtDirection.normalize();
+
+    // ViewTransform = MuMath::GetViewTransformMatrix(CameraPosition, LookAtDirection, UpDirection);
+    // PerspectivTransform = MuMath::GetPerspectiveProjectionMatrix(FOVy, AspectRatio, NearPlane, FarPlane);
     
     return true;
+}
+
+MuMatrix4F MuCamera::GetViewTransformMatrix()
+{
+    return ViewTransform;
+}
+
+MuMatrix4F MuCamera::GetPerspectiveTransformMatrix()
+{
+    return PerspectivTransform;
 }

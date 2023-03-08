@@ -24,7 +24,9 @@ public:
     ADD_GET_SET_METHOD(float, NearPlane)
     ADD_GET_SET_METHOD(float, FarPlane)
     ADD_GET_SET_METHOD(EProjectionMode, ProjectionMode)
-    
+    MuMatrix4F GetViewTransformMatrix();
+    MuMatrix4F GetPerspectiveTransformMatrix();
+
 private:
 
     /*
@@ -71,6 +73,11 @@ private:
      * ViewTransform 矩阵
      */
     MuMatrix4F ViewTransform;
+
+    /*
+     * PerspectivTransform 矩阵
+     */
+    MuMatrix4F PerspectivTransform;
 
     /*
      * 投影模式
