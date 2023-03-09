@@ -1,22 +1,28 @@
 #pragma once
 #include "../Math/MuMath.h"
 #include "../Function/MuStruct.h"
-#include "MuFunctions.h"
 
+#define ADD_GET_SET_METHOD(ClassName, MemberName) \
+    ClassName Get##MemberName() const { return MemberName; } \
+    void Set##MemberName(ClassName In##MemberName) { MemberName = In##MemberName; }
+
+/*
+ * 摄像机类
+ * 参考ue4的UCameraComponent
+ */
 class MuCamera
 {
 public:
     MuCamera();
-    MuCamera(const MuPoint4F& InPosition, const MuVector4F& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode);
+    MuCamera(const MuPoint4I& InPosition, const MuPoint4I& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode);
 
     bool Init();
     
     // 为所有private成员变量生成创建Get和Set方法
-    ADD_GET_SET_METHOD(MuPoint4F, CameraPosition)
-    ADD_GET_SET_METHOD(MuPoint4F, LookAtPoint)
-    ADD_GET_SET_METHOD(MuVector4F, LookAtDirection)
-    ADD_GET_SET_METHOD(MuVector4F, UpDirection)
-    ADD_GET_SET_METHOD(float, FOVy)
+    ADD_GET_SET_METHOD(MuPoint4I, CameraPosition)
+    ADD_GET_SET_METHOD(MuPoint4I, LookAtPoint)
+    ADD_GET_SET_METHOD(MuPoint4I, LookAtDirection)
+    ADD_GET_SET_METHOD(MuVector4I, UpDirection)
     ADD_GET_SET_METHOD(float, AspectRatio)
     ADD_GET_SET_METHOD(float, NearPlane)
     ADD_GET_SET_METHOD(float, FarPlane)
@@ -25,46 +31,64 @@ public:
     MuMatrix4F GetPerspectiveTransformMatrix();
 
 private:
+    /*
+     * FOV 角度制
+     */
+    float FieldOfView;
 
     /*
-     * 相机位置
+     * 正交视图的所需宽度（以世界单位表示）（在透视模式中忽略
      */
-    MuPoint4F CameraPosition = G_ORIGIN_POINT;
+    float OrthoWidth;
 
     /*
-     * LookAt 点
+     * 正交视图的近平面距离（世界单位）
      */
-    MuPoint4F LookAtPoint = G_ORIGIN_POINT;
+    float OrthoNearClipPlane;
 
     /*
-     * LookAt 方向
+     * 正交视图的远平面距离（世界单位）
      */
-    MuVector4F LookAtDirection = G_NEGATIVE_Z_DIRECTION;
-
-    /*
-     * 向上方向
-     */
-    MuVector4F UpDirection = G_POSITIVE_Y_DIRECTION;
-    
-    /*
-     * FOV y (角度制
-     */
-    float FOVy = 60.f;
+    float OrthoFarClipPlane;
 
     /*
      * 相机宽高比
      */
-    float AspectRatio = 1.7f;
+    float AspectRatio;
+    
+    /*
+     * 相机位置
+     */
+    MuPoint4I CameraPosition;
+
+    /*
+     * LookAt 点
+     */
+    MuPoint4I LookAtPoint;
+
+    /*
+     * LookAt 方向
+     */
+    MuPoint4I LookAtDirection;
+
+    /*
+     * 向上方向
+     */
+    MuVector4I UpDirection;
+    
+    
+
+    
 
     /*
      * 视锥体近平面距离
      */
-    float NearPlane = 0.1f;
+    float NearPlane;
 
     /*
      *  视锥体远平面距离
      */
-    float FarPlane = 1000.f;
+    float FarPlane;
 
     /*
      * ViewTransform 矩阵
@@ -72,9 +96,9 @@ private:
     MuMatrix4F ViewTransform;
 
     /*
-     * PerspectivTransform 矩阵
+     * PerspectiveTransform 矩阵
      */
-    MuMatrix4F PerspectivTransform;
+    MuMatrix4F PerspectiveTransform;
 
     /*
      * 投影模式
