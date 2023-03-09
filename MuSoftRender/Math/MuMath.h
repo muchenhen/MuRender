@@ -189,24 +189,31 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
  */
 
 // 正交投影矩阵
+/*
+ * 已知摄像机位置 方向 up方向 FieldOfView OrthoWidth OrthoNearClipPlane OrthoFarClipPlane 计算出摄像机的平截头体
+ */
+ // TODO:
+
+
+// 确定了正交投影的平截头体，分别是从摄像机看 左面 右面 下面 上面 近平面 远平面
+inline MuMatrix4F GetOrthoProjectionMatrix(float Left, float Right, float Bottom, float Top, float Near, float Far)
+{
+    MuMatrix4F OrthoProjectionMatrix;
+    OrthoProjectionMatrix <<
+        2.0f / (Right - Left), 0.0f,                  0.0f,                -(Right + Left) / (Right - Left),
+        0.0f,                  2.0f / (Top - Bottom), 0.0f,                -(Top + Bottom) / (Top - Bottom),
+        0.0f,                  0.0f,                  2.0f / (Near - Far), -(Near + Far) / (Near - Far),
+        0.0f,                  0.0f,                  0.0f,                1.0f;
+    return OrthoProjectionMatrix;
+}
 
 // 透视投影矩阵
 /*
- * 通过摄像机FOVy、宽高比、近平面距离、远平面距离，计算出透视投影矩阵
+ * 通过摄像机FieldOfView、宽高比、近平面距离、远平面距离，计算出透视投影矩阵
  */
-inline MuMatrix4F GetPerspectiveProjectionMatrix(float FOVy, float Aspect, float Near, float Far)
+inline MuMatrix4F GetPerspectiveProjectionMatrix(float FieldOfView, float AspectRatio, float Near, float Far)
 {
-    // 角度转弧度
-    FOVy = FOVy * PI / 180.0f;
-    // 计算焦距
-    const float FocalLength = 1.0f / std::tan(FOVy / 2.0f);
-    // 计算透视投影矩阵
-    MuMatrix4F PerspectiveProjectionMatrix;
-    PerspectiveProjectionMatrix << FocalLength / Aspect, 0.0f, 0.0f, 0.0f,
-        0.0f, FocalLength, 0.0f, 0.0f,
-        0.0f, 0.0f, (Far + Near) / (Near - Far), 2.0f * Far * Near / (Near - Far),
-        0.0f, 0.0f, -1.0f, 0.0f;
-    return PerspectiveProjectionMatrix;
+   
 }
 
 }

@@ -8,6 +8,7 @@
 #include "Obj/MuObjModel.h"
 #include "Rasterizer/MuRasterizer.h"
 #include "framework.h"
+#include "Function/MuLog.h"
 
 
 #define MAX_LOADSTRING 100
@@ -16,6 +17,11 @@
 HINSTANCE hInst;                     // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];       // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING]; // 主窗口类名
+
+// 屏幕宽度
+constexpr int SCREEN_WIDTH = 1280;
+// 屏幕高度
+constexpr int SCREEN_HEIGHT = 720;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM MyRegisterClass(HINSTANCE hInstance);
@@ -108,8 +114,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 
         0, 
-        CW_USEDEFAULT, 
-        0, 
+        SCREEN_WIDTH, 
+        SCREEN_HEIGHT, 
         nullptr, 
         nullptr, 
         hInstance, 
@@ -148,13 +154,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static auto* Device = new MuDevice;
     static auto Rasterizer = new MuRasterizer;
     static auto* ObjModel = new MuObjModel;
-    static auto* Camera = new MuCamera;
-    Camera->SetAspectRatio(1.777f);
-    Camera->SetFOVy(90);
-    Camera->SetProjectionMode(EProjectionMode::Perspective);
-    Camera->SetCameraPosition(MuPoint4I(250,250,250,0));
-    Camera->SetLookAtPoint(MuPoint4I(0,0,0,0));
-    Camera->Init();
+    // static auto* Camera = new MuCamera;
+    // Camera->SetCameraPosition(MuPoint4I(5,5,5,1));
+    // ModelTransformMatrix 单位矩阵
+    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵 TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
+    static auto ModelTransformMatrix = MuMatrix4F::Identity();
+    // 计算ViewTransformMatrix
+    // static auto ViewTransformMatrix = Camera->GetViewTransformMatrix();
+    // static auto PerspectiveTransformMatrix = Camera->GetPerspectiveTransformMatrix();
+    // MVP矩阵 右手系
+    // static auto MVPMatrix = PerspectiveTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+    
     static int clientRectWidth;
     static int clientRectHeight;
 
@@ -167,11 +177,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         case WM_CREATE:
         {
-            RECT rect;
-            GetClientRect(hWnd, &rect);
+            RECT Rect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+            GetClientRect(hWnd, &Rect);
 
-            clientRectWidth = rect.right - rect.left;
-            clientRectHeight = rect.bottom - rect.top;
+            clientRectWidth = Rect.right - Rect.left;
+            clientRectHeight = Rect.bottom - Rect.top;
+            MuLog::LogInfo( "clientRectWidth: %d, clientRectHeight: %d", clientRectWidth, clientRectHeight);
 
              /*
              * 这段代码定义了一个 BITMAPINFO 结构体变量 Bi，并初始化了它的成员。
