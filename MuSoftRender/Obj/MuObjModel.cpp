@@ -90,6 +90,11 @@ MuPoint3F MuObjModel::GetVertexByIndex(int VertexIndex)
     return Vertices[VertexIndex];
 }
 
+vector<MuPoint3F> MuObjModel::GetAllVertices()
+{
+    return Vertices;
+}
+
 void MuObjModel::ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex)
 {
     string vertexString, texcoordString, normalString;

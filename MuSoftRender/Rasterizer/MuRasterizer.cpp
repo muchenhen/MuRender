@@ -1,5 +1,6 @@
 #include "MuRasterizer.h"
 #include "../Function//MuLog.h"
+#include"MuMath.h"
 
 MuRasterizer::MuRasterizer():
     WidthBound(0),
@@ -15,13 +16,25 @@ void MuRasterizer::InitRasterizer(int Width, int Height)
 
 bool MuRasterizer::DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point, const MuRGB& Color)
 {
-    // 保定点没有超出屏幕范围
+    // 确保点没有超出屏幕范围
     if (Point.x() >= 0 && Point.x() < WidthBound && Point.y() >= 0 && Point.y() < HeightBound)
     {
         PointBitFrameBuffer[WidthBound * Point.y() + Point.x()] = MuColor::MuRGBtoUInt(Color);
         return true;
     }
     return false;
+}
+
+bool MuRasterizer::DrawPoint(unsigned* PointBitFrameBuffer, const MuPoint3I& Point, const MuRGB& Color)
+{
+    const MuPoint2I Point2D = MuMath::Point3IToPoint2I(Point);
+	return DrawPoint(PointBitFrameBuffer, Point2D, Color);
+}
+
+bool MuRasterizer::DrawPoint(unsigned* PointBitFrameBuffer, const MuPoint4I& Point, const MuRGB& Color)
+{
+    const MuPoint2I Point2D = MuMath::Point4IToPoint2I(Point);
+    return DrawPoint(PointBitFrameBuffer, Point2D, Color);
 }
 
 bool MuRasterizer::DrawLine(unsigned* PointBitFrameBuffer, const MuPoint2I& StartPoint, const MuPoint2I& EndPoint, const MuRGB& Color)

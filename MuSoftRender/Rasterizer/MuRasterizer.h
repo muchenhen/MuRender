@@ -27,6 +27,10 @@ public:
      */
     bool DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point, const MuRGB& Color);
 
+    bool DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint3I& Point, const MuRGB& Color);
+
+    bool DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint4I& Point, const MuRGB& Color);
+
     bool DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& StartPoint, const MuPoint2I& EndPoint, const MuRGB& Color);
 
     bool DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color);

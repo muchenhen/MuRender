@@ -15,6 +15,8 @@ public:
     FMuObjFace GetFace(int I) const;
     MuPoint3F GetVertexByIndex(int VertexIndex);
 
+    vector<MuPoint3F> GetAllVertices();
+
 private:
     // 顶点坐标
     vector<MuPoint3F> Vertices;
@@ -28,4 +30,5 @@ private:
     void ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex);
 
     int CountSubstring(string str, string sub);
+
 };

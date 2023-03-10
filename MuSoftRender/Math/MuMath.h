@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <random>
 
+// 屏幕宽度
+constexpr int SCREEN_WIDTH = 1280;
+// 屏幕高度
+constexpr int SCREEN_HEIGHT = 720;
+constexpr float PI = 3.14159265358979323846f;
+
 typedef Eigen::Vector2i MuPoint2I;
 typedef Eigen::Vector3i MuPoint3I;
 typedef Eigen::Vector4i MuPoint4I;
@@ -27,8 +33,6 @@ typedef Eigen::Matrix4f MuMatrix4F;
 
 namespace MuMath
 {
-constexpr float PI = 3.14159265358979323846f;
-
 static bool bUseRodrigues = false;
 
 template <typename T>
@@ -51,6 +55,25 @@ inline MuPoint2I Point3IToPoint2I(const MuPoint3I& Point)
 {
     return MuPoint2I(Point.x(), Point.y());
 }
+
+// MuPoint4I -> MuPoint3I
+inline MuPoint3I Point4IToPoint3I(const MuPoint4I& Point)
+{
+       return MuPoint3I(Point.x(), Point.y(), Point.z());
+}
+
+// MuPoint4I -> MuPoint2I
+inline MuPoint2I Point4IToPoint2I(const MuPoint4I& Point)
+{
+       return MuPoint2I(Point.x(), Point.y());
+}
+
+// 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内
+inline MuPoint2I Point3IToScreenPoint(const MuPoint3I& Point)
+{
+    return MuPoint2I((Point.x() + 1) * SCREEN_WIDTH / 2, (Point.y() + 1) * SCREEN_HEIGHT / 2);
+}
+
 
 /*
  * Model Transform Matrix
