@@ -31,6 +31,14 @@ public:
 
     bool DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint4I& Point, const MuRGB& Color);
 
+    /**
+     * \brief 画线，使用Bresenham算法
+     * \param PointBitFrameBuffer 
+     * \param StartPoint 
+     * \param EndPoint 
+     * \param Color 
+     * \return 绘制结果
+     */
     bool DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& StartPoint, const MuPoint2I& EndPoint, const MuRGB& Color);
 
     bool DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color);

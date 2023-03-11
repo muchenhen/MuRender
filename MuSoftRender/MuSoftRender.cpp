@@ -10,7 +10,6 @@
 #include "framework.h"
 #include "MuLog.h"
 
-
 #define MAX_LOADSTRING 100
 
 // 全局变量:
@@ -299,7 +298,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 for (auto vertex : Vertices)
                 {
                     // 先全部直接丢掉Z值变成2D点 映射到屏幕空间
-                    auto point2D = MuMath::Point3IToScreenPoint(vertex.cast<int>());
+                    auto point2D = MuMath::Point3FToScreenPointWithAspectRatio(vertex);
                     MuLog::LogInfo("Point x: %d, y: %d", point2D.x(), point2D.y());
                     Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), point2D, MuColor::White);
                 }

@@ -113,7 +113,7 @@ bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, 
 {
     const FMuObjFace Face = ObjModel->GetFace(0);
     const int ObjFaceVertexCount = Face.GetVertexCount();
-    MuLog::LogInfo( "DrawObj: Face Vertex Count = %d" , ObjFaceVertexCount);
+    MuLog::LogInfo("DrawObj: Face Vertex Count = %d", ObjFaceVertexCount);
     // 画出obj模型
     for (int i = 0; i < ObjModel->GetFaceCount(); i++)
     {
@@ -123,9 +123,10 @@ bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, 
             const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
             const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
             const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
-            // const MuPoint2I Point1 = ObjModel->GetVertexByIndex(VertexIndex1).cast<int>();
-            // const MuPoint2I Point2 = ObjModel->GetVertexByIndex(VertexIndex2).cast<int>();
-            // const MuPoint2I Point3 = ObjModel->GetVertexByIndex(VertexIndex3).cast<int>();
+            
+            const MuPoint2I Point1 = ObjModel->GetVertexByIndex(VertexIndex1);
+            const MuPoint2I Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
+            const MuPoint2I Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
             // DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, Color);
         }
         else if (ObjFaceVertexCount == 4)
@@ -134,15 +135,15 @@ bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, 
             const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
             const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
             const int VertexIndex4 = Face.GetVertex(3).VertexIndex;
-             MuPoint2I Point1 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex1).cast<int>());
-             MuPoint2I Point2 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex2).cast<int>());
-             MuPoint2I Point3 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex3).cast<int>());
-             MuPoint2I Point4 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex4).cast<int>());
+            MuPoint2I Point1 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex1).cast<int>());
+            MuPoint2I Point2 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex2).cast<int>());
+            MuPoint2I Point3 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex3).cast<int>());
+            MuPoint2I Point4 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex4).cast<int>());
             // 打印四个点的坐标 x y
-            MuLog::LogInfo( "DrawObj: Point1 = %d %d" , Point1.x(), Point1.y());
-            MuLog::LogInfo( "DrawObj: Point2 = %d %d" , Point2.x(), Point2.y());
-            MuLog::LogInfo( "DrawObj: Point3 = %d %d" , Point3.x(), Point3.y());
-            MuLog::LogInfo( "DrawObj: Point4 = %d %d" , Point4.x(), Point4.y());
+            MuLog::LogInfo("DrawObj: Point1 = %d %d", Point1.x(), Point1.y());
+            MuLog::LogInfo("DrawObj: Point2 = %d %d", Point2.x(), Point2.y());
+            MuLog::LogInfo("DrawObj: Point3 = %d %d", Point3.x(), Point3.y());
+            MuLog::LogInfo("DrawObj: Point4 = %d %d", Point4.x(), Point4.y());
             DrawQuad(PointBitFrameBuffer, Point1, Point2, Point3, Point4, Color);
         }
     }
