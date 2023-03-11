@@ -74,6 +74,12 @@ inline MuPoint2I Point4IToPoint2I(const MuPoint4I& Point)
        return MuPoint2I(Point.x(), Point.y());
 }
 
+// Point2FToPoint2I
+inline MuPoint2I Point2FToPoint2I(const MuPoint2F& Point)
+{
+    return MuPoint2I(Point.x(), Point.y());
+}
+
 // 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内
 inline MuPoint2I Point3IToScreenPoint(const MuPoint3I& Point)
 {
@@ -87,18 +93,21 @@ inline MuPoint2I Point3FToScreenPoint(const MuPoint3F& Point)
 
 // 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内 但是要保持宽高比不变
 // 并且 按照宽高比较大的那个方向进行缩放
-inline MuPoint2I Point3FToScreenPointWithAspectRatio(const MuPoint3F& Point)
+inline MuPoint2F Point3FToScreenPointWithAspectRatio(const MuPoint3F& Point)
 {
     const float AspectRatio = SCREEN_WIDTH / (float)SCREEN_HEIGHT;
     const float x = (Point.x() + 1) * SCREEN_WIDTH / 2;
     const float y = (Point.y() + 1) * SCREEN_HEIGHT / 2;
+    MuPoint2F ScreenPoint;
     if (AspectRatio < 1.0f)
     {
-        return MuPoint2I(x, y * AspectRatio);
+        ScreenPoint = MuPoint2F(x, y * AspectRatio);
+        return ScreenPoint;
     }
     else
     {
-        return MuPoint2I(x / AspectRatio, y);
+        ScreenPoint = MuPoint2F(x / AspectRatio, y);
+        return ScreenPoint;
     }
 }
 

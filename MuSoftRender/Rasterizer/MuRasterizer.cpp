@@ -1,6 +1,6 @@
 #include "MuRasterizer.h"
 #include "../Function//MuLog.h"
-#include"MuMath.h"
+#include "../Math/MuMath.h"
 
 MuRasterizer::MuRasterizer():
     WidthBound(0),
@@ -71,7 +71,26 @@ bool MuRasterizer::DrawLine(unsigned* PointBitFrameBuffer, const MuPoint2I& Star
     return true;
 }
 
+bool MuRasterizer::DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& StartPoint, const MuPoint2F& EndPoint, const MuRGB& Color)
+{
+    // 将FLoat点转换为Int点
+    const MuPoint2I StartPointInt = MuMath::Point2FToPoint2I(StartPoint);
+    const MuPoint2I EndPointInt = MuMath::Point2FToPoint2I(EndPoint);
+    return DrawLine(PointBitFrameBuffer, StartPointInt, EndPointInt, Color);
+}
+
 bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color)
+{
+    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
+        DrawLine(PointBitFrameBuffer, Point2, Point3, Color) &&
+        DrawLine(PointBitFrameBuffer, Point3, Point1, Color))
+    {
+        return true;
+    }
+    return false;
+}
+
+bool MuRasterizer::DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3, const MuRGB& Color)
 {
     if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
         DrawLine(PointBitFrameBuffer, Point2, Point3, Color) &&
@@ -111,23 +130,51 @@ bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Poin
 
 bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, const MuRGB& Color)
 {
+    const int FaceCount = ObjModel->GetFaceCount();
+    if (FaceCount <= 0)
+    {
+        return false;
+    }
+
     const FMuObjFace Face = ObjModel->GetFace(0);
     const int ObjFaceVertexCount = Face.GetVertexCount();
     MuLog::LogInfo("DrawObj: Face Vertex Count = %d", ObjFaceVertexCount);
+
     // 画出obj模型
-    for (int i = 0; i < ObjModel->GetFaceCount(); i++)
+    for (int i = 0; i < FaceCount; i++)
     {
+        const FMuObjFace Face = ObjModel->GetFace(i);
         // 确认 Face 顶点数量
         if (ObjFaceVertexCount == 3)
         {
             const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
             const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
             const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
-            
-            const MuPoint2I Point1 = ObjModel->GetVertexByIndex(VertexIndex1);
-            const MuPoint2I Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
-            const MuPoint2I Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
-            // DrawTriangle(PointBitFrameBuffer, Point1, Point2, Point3, Color);
+
+            MuPoint3F Point1 = ObjModel->GetVertexByIndex(VertexIndex1);
+            MuPoint3F Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
+            MuPoint3F Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
+
+            // Point1 = MuMath::Point3FToScreenPointWithAspectRatio(Point1);
+            // Point2 = MuMath::Point3FToScreenPointWithAspectRatio(Point2);
+            // Point3 = MuMath::Point3FToScreenPointWithAspectRatio(Point3);
+
+            // 打印3个点
+            // MuLog::LogInfo("DrawObj: Point1 = (%f, %f), Point1 = (%f, %f), Point1 = (%f, %f)",
+            //                Point1.x(), Point1.y(),
+            //                Point2.x(), Point2.y(),
+            //                Point3.x(), Point3.y());
+
+            const MuPoint2F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatio(Point1);
+            const MuPoint2F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatio(Point2);
+            const MuPoint2F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatio(Point3);
+            // 一行打印3个点的坐标
+            // MuLog::LogInfo("DrawObj: Point2F1 = (%f, %f), Point2F2 = (%f, %f), Point2F3 = (%f, %f)",
+            //                Point2F1.x(), Point2F1.y(),
+            //                Point2F2.x(), Point2F2.y(),
+            //                Point2F3.x(), Point2F3.y());
+            MuLog::LogInfo("i: %d)", i);
+            DrawTriangle(PointBitFrameBuffer, Point2F1, Point2F2, Point2F3, Color);
         }
         else if (ObjFaceVertexCount == 4)
         {
@@ -147,6 +194,7 @@ bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, 
             DrawQuad(PointBitFrameBuffer, Point1, Point2, Point3, Point4, Color);
         }
     }
+    
     return true;
 }
 
