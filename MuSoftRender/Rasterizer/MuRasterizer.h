@@ -42,14 +42,21 @@ public:
     bool DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& StartPoint, const MuPoint2I& EndPoint, const MuRGB& Color);
 
     bool DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& StartPoint, const MuPoint2F& EndPoint, const MuRGB& Color);
+
+    bool DrawLine(MuDevice* Device, const MuPoint3F& StartPoint, const MuPoint3F& EndPoint, const MuRGB& Color);
     
     bool DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color);
 
     bool DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3, const MuRGB& Color);
+
+    bool DrawTriangle(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuRGB& Color);
+
+    // 画出实心三角形
+    bool DrawTriangleSolid(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3);
     
     bool DrawQuad(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color);
 
-    bool DrawObj(FrameBuffer* PointBitFrameBuffer, MuObjModel* ObjModel, const MuRGB& Color);
+    bool DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& Color);
     
     MuVector2I GetRandomPoint2I();
     

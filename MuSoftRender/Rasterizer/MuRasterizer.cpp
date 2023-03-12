@@ -79,6 +79,42 @@ bool MuRasterizer::DrawLine(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& S
     return DrawLine(PointBitFrameBuffer, StartPointInt, EndPointInt, Color);
 }
 
+bool MuRasterizer::DrawLine(MuDevice* Device, const MuPoint3F& StartPoint, const MuPoint3F& EndPoint, const MuRGB& Color)
+{
+    // Bresenham算法
+    int X0 = StartPoint(0);
+    int Y0 = StartPoint(1);
+    const int X1 = EndPoint(0);
+    const int Y1 = EndPoint(1);
+    const int dX = abs(X1 - X0);
+    const int dY = abs(Y1 - Y0);
+    const int sX = (X0 < X1) ? 1 : -1; // 增量方向
+    const int sY = (Y0 < Y1) ? 1 : -1;
+    int Err = dX - dY;
+    
+    while (true)
+    {
+        DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(X0, Y0), Color);
+        if (X0 == X1 && Y0 == Y1)
+        {
+            break;
+        }
+        const int E2 = Err * 2;
+        if (E2 > -dY)
+        {
+            Err = Err - dY;
+            X0 = X0 + sX;
+        }
+        if (E2 < dX)
+        {
+            Err = Err + dX;
+            Y0 = Y0 + sY;
+        }
+    }
+    return true;
+    
+}
+
 bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color)
 {
     if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
@@ -99,6 +135,61 @@ bool MuRasterizer::DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2
         return true;
     }
     return false;
+}
+
+bool MuRasterizer::DrawTriangle(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuRGB& Color)
+{
+    if (DrawLine(Device, Point1, Point2, Color) &&
+        DrawLine(Device, Point2, Point3, Color) &&
+        DrawLine(Device, Point3, Point1, Color))
+    {
+        return true;
+    }
+    return false;
+}
+
+// 中心插值颜色填充
+bool MuRasterizer::DrawTriangleSolid(unsigned* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3)
+{
+    const float x1 = Point1.x();
+    const float y1 = Point1.y();
+    const float x2 = Point2.x();
+    const float y2 = Point2.y();
+    const float x3 = Point3.x();
+    const float y3 = Point3.y();
+    // 计算三角形面积
+    const float Area = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)) / 2;
+    // 计算三角形内部的最小和最大的X和Y坐标
+    const int MinY = min(y1, min(y2, y3));
+    const int MaxY = max(y1, max(y2, y3));
+    const int MinX = min(x1, min(x2, x3));
+    const int MaxX = max(x1, max(x2, x3));
+    // 遍历三角形内部的每个像素点
+    for (int i= MinY; i<= MaxY; i++)
+    {
+        for (int j= MinX; j<= MaxX; j++)
+        {
+            // 计算当前点相对于三个顶点的权重值
+            const float w1 = ((x2 - j) * (y3 - i) - (x3 - j) * (y2 - i)) / 2 / Area;
+            const float w2 = ((x3 - j) * (y1 - i) - (x1 - j) * (y3 - i)) / 2 / Area;
+            const float w3 = ((x1 - j) * (y2 - i) - (x2 - j) * (y1 - i)) / 2 / Area;
+            // 三个值都为正数时，当前点在三角形内部
+            if (w1 < 0 || w2 < 0 || w3 < 0)
+            {
+                continue;
+            }
+            // 根据权重值和顶点颜色插值得到当前点的颜色
+            const int R = abs(w1) * MuColor::Red.x();
+            const int G = abs(w2) * MuColor::Green.y();
+            const int B = abs(w3) * MuColor::Blue.z();
+            const MuRGB Color = MuRGB(R, G, B);
+            // 打印颜色
+            MuLog::LogInfo( "Color: %f", R);
+            // 画点
+            DrawPoint(PointBitFrameBuffer, MuPoint2I(j, i), Color);
+        }
+    }
+    return true;
 }
 
 bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color)
@@ -128,8 +219,14 @@ bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Poin
     return true;
 }
 
-bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, const MuRGB& Color)
+bool MuRasterizer::DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& Color)
 {
+    const auto PointBitFrameBuffer = Device->GetPointBitFrameBuffer();
+    if (PointBitFrameBuffer == nullptr)
+    {
+        return false;
+    }
+    
     const int FaceCount = ObjModel->GetFaceCount();
     if (FaceCount <= 0)
     {
@@ -155,26 +252,11 @@ bool MuRasterizer::DrawObj(unsigned* PointBitFrameBuffer, MuObjModel* ObjModel, 
             MuPoint3F Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
             MuPoint3F Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
 
-            // Point1 = MuMath::Point3FToScreenPointWithAspectRatio(Point1);
-            // Point2 = MuMath::Point3FToScreenPointWithAspectRatio(Point2);
-            // Point3 = MuMath::Point3FToScreenPointWithAspectRatio(Point3);
-
-            // 打印3个点
-            // MuLog::LogInfo("DrawObj: Point1 = (%f, %f), Point1 = (%f, %f), Point1 = (%f, %f)",
-            //                Point1.x(), Point1.y(),
-            //                Point2.x(), Point2.y(),
-            //                Point3.x(), Point3.y());
-
             const MuPoint2F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatio(Point1);
             const MuPoint2F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatio(Point2);
             const MuPoint2F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatio(Point3);
-            // 一行打印3个点的坐标
-            // MuLog::LogInfo("DrawObj: Point2F1 = (%f, %f), Point2F2 = (%f, %f), Point2F3 = (%f, %f)",
-            //                Point2F1.x(), Point2F1.y(),
-            //                Point2F2.x(), Point2F2.y(),
-            //                Point2F3.x(), Point2F3.y());
-            MuLog::LogInfo("i: %d)", i);
-            DrawTriangle(PointBitFrameBuffer, Point2F1, Point2F2, Point2F3, Color);
+            
+            DrawTriangleSolid(Device->GetPointBitFrameBuffer(), Point2F1, Point2F2, Point2F3);
         }
         else if (ObjFaceVertexCount == 4)
         {

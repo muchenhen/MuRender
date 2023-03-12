@@ -293,7 +293,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
                 //Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
                 //Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
-                 Rasterizer->DrawObj(Device->GetPointBitFrameBuffer(), ObjModel, MuColor::GetRandomMuRGB());
+                 Rasterizer->DrawObj(Device, ObjModel, MuColor::GetRandomMuRGB());
                 // auto Vertices = ObjModel->GetAllVertices();
                 // for (auto vertex : Vertices)
                 // {

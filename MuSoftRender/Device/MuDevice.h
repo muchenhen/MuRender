@@ -1,6 +1,7 @@
 #pragma once
 
 #define FrameBuffer unsigned int
+#define FrameZBuffer float
 
 enum class EMuRenderMode
 {
@@ -24,11 +25,16 @@ public:
 
 	FrameBuffer* GetPointBitFrameBuffer();
 
+    FrameZBuffer* GetZBuffer();
+
     // void Tick();
 
 private:
 	// 存储位图信息 最后绘制完成的像素会保存在这个地址，用于win api绘制
     FrameBuffer* PointBitFrameBuffer;
+
+    // 存储深度信息
+    FrameZBuffer* ZBuffer;
 
 	// 窗口宽度
 	int Width;
