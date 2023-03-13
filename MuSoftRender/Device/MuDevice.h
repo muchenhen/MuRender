@@ -2,6 +2,7 @@
 
 #define FrameBuffer unsigned int
 #define FrameZBuffer float
+#include "MuMath.h"
 
 enum class EMuRenderMode
 {
@@ -26,6 +27,8 @@ public:
 	FrameBuffer* GetPointBitFrameBuffer();
 
     FrameZBuffer* GetZBuffer();
+    float GetDepth(MuPoint2I Point);
+    void SetDepth(MuPoint2I Point, float Z);
 
     // void Tick();
 

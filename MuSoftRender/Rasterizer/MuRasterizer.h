@@ -52,7 +52,7 @@ public:
     bool DrawTriangle(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuRGB& Color);
 
     // 画出实心三角形
-    bool DrawTriangleSolid(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3);
+    bool DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3);
     
     bool DrawQuad(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color);
 

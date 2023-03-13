@@ -149,7 +149,7 @@ bool MuRasterizer::DrawTriangle(MuDevice* Device, const MuPoint3F& Point1, const
 }
 
 // 中心插值颜色填充
-bool MuRasterizer::DrawTriangleSolid(unsigned* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3)
+bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3)
 {
     const float x1 = Point1.x();
     const float y1 = Point1.y();
@@ -157,6 +157,10 @@ bool MuRasterizer::DrawTriangleSolid(unsigned* PointBitFrameBuffer, const MuPoin
     const float y2 = Point2.y();
     const float x3 = Point3.x();
     const float y3 = Point3.y();
+    const float z1 = Point1.z();
+    const float z2 = Point2.z();
+    const float z3 = Point3.z();
+    
     // 计算三角形面积
     const float Area = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)) / 2;
     // 计算三角形内部的最小和最大的X和Y坐标
@@ -178,15 +182,34 @@ bool MuRasterizer::DrawTriangleSolid(unsigned* PointBitFrameBuffer, const MuPoin
             {
                 continue;
             }
+            // 计算点的重心坐标
+            // const float X = w1 * x1 + w2 * x2 + w3 * x3;
+            // const float Y = w1 * y1 + w2 * y2 + w3 * y3;
+            const float Z = w1 * z1 + w2 * z2 + w3 * z3;
+
+            const MuPoint2I P = MuPoint2I(j, i);
+            
+            // 获取当前点的深度值
+            const float Depth = Device->GetDepth(P);
+            
+            // 深度测试
+            if (Z < Depth)
+            {
+                continue;
+            }
+            // 更新深度缓冲区
+            {
+                Device->SetDepth(P, Z);
+            }
+            
+            
             // 根据权重值和顶点颜色插值得到当前点的颜色
             const int R = abs(w1) * MuColor::Red.x();
             const int G = abs(w2) * MuColor::Green.y();
             const int B = abs(w3) * MuColor::Blue.z();
             const MuRGB Color = MuRGB(R, G, B);
-            // 打印颜色
-            MuLog::LogInfo( "Color: %f", R);
             // 画点
-            DrawPoint(PointBitFrameBuffer, MuPoint2I(j, i), Color);
+            DrawPoint(Device->GetPointBitFrameBuffer(), P, Color);
         }
     }
     return true;
@@ -240,30 +263,30 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& 
     // 画出obj模型
     for (int i = 0; i < FaceCount; i++)
     {
-        const FMuObjFace Face = ObjModel->GetFace(i);
+        const FMuObjFace ObjFace = ObjModel->GetFace(i);
         // 确认 Face 顶点数量
         if (ObjFaceVertexCount == 3)
         {
-            const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
-            const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
-            const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
+            const int VertexIndex1 = ObjFace.GetVertex(0).VertexIndex;
+            const int VertexIndex2 = ObjFace.GetVertex(1).VertexIndex;
+            const int VertexIndex3 = ObjFace.GetVertex(2).VertexIndex;
 
             MuPoint3F Point1 = ObjModel->GetVertexByIndex(VertexIndex1);
             MuPoint3F Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
             MuPoint3F Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
 
-            const MuPoint2F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatio(Point1);
-            const MuPoint2F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatio(Point2);
-            const MuPoint2F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatio(Point3);
+            const MuPoint3F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point1);
+            const MuPoint3F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point2);
+            const MuPoint3F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point3);
             
-            DrawTriangleSolid(Device->GetPointBitFrameBuffer(), Point2F1, Point2F2, Point2F3);
+            DrawTriangleSolid(Device, Point2F1, Point2F2, Point2F3);
         }
         else if (ObjFaceVertexCount == 4)
         {
-            const int VertexIndex1 = Face.GetVertex(0).VertexIndex;
-            const int VertexIndex2 = Face.GetVertex(1).VertexIndex;
-            const int VertexIndex3 = Face.GetVertex(2).VertexIndex;
-            const int VertexIndex4 = Face.GetVertex(3).VertexIndex;
+            const int VertexIndex1 = ObjFace.GetVertex(0).VertexIndex;
+            const int VertexIndex2 = ObjFace.GetVertex(1).VertexIndex;
+            const int VertexIndex3 = ObjFace.GetVertex(2).VertexIndex;
+            const int VertexIndex4 = ObjFace.GetVertex(3).VertexIndex;
             MuPoint2I Point1 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex1).cast<int>());
             MuPoint2I Point2 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex2).cast<int>());
             MuPoint2I Point3 = MuMath::Point3IToPoint2I(ObjModel->GetVertexByIndex(VertexIndex3).cast<int>());

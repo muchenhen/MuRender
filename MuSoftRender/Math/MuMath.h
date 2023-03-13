@@ -111,6 +111,26 @@ inline MuPoint2F Point3FToScreenPointWithAspectRatio(const MuPoint3F& Point)
     }
 }
 
+// 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内 但是要保持宽高比不变
+// Z值保留 保持宽高比
+inline MuPoint3F Point3FToScreenPointWithAspectRatioWithDepth(const MuPoint3F& Point)
+{
+    constexpr float AspectRatio = static_cast<float>(SCREEN_WIDTH) / SCREEN_HEIGHT;
+    const float x = (Point.x() + 1) * SCREEN_WIDTH / 2;
+    const float y = (Point.y() + 1) * SCREEN_HEIGHT / 2;
+    
+    MuPoint3F ScreenPoint;
+    if (AspectRatio < 1.0f)
+    {
+        ScreenPoint = MuPoint3F(x, y * AspectRatio, Point.z());
+        return ScreenPoint;
+    }
+    else
+    {
+        ScreenPoint = MuPoint3F(x / AspectRatio, y, Point.z());
+        return ScreenPoint;
+    }
+}
 
 /*
  * Model Transform Matrix
