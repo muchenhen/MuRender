@@ -222,6 +222,91 @@ bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, 
     return true;
 }
 
+bool MuRasterizer::DrawTriangleTexture(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuPoint2F& UV1, const MuPoint2F& UV2, const MuPoint2F& UV3, MuTexture* Texture)
+{
+    const float x1 = Point1.x();
+    const float y1 = Point1.y();
+    const float x2 = Point2.x();
+    const float y2 = Point2.y();
+    const float x3 = Point3.x();
+    const float y3 = Point3.y();
+    const float z1 = Point1.z();
+    const float z2 = Point2.z();
+    const float z3 = Point3.z();
+
+    const float u1 = UV1.x();
+    const float v1 = UV1.y();
+    const float u2 = UV2.x();
+    const float v2 = UV2.y();
+    const float u3 = UV3.x();
+    const float v3 = UV3.y();
+
+    // 计算三角形面的法向量
+    const MuPoint3F Normal = (Point2 - Point1).cross(Point3 - Point1);
+    // 背面剔除
+    if (Normal.z() < 0)
+    {
+        MuLog::LogInfo("Backface culling");
+        return false;
+    }
+
+    // 计算三角形面积
+    const float Area = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)) / 2;
+    // 计算三角形内部的最小和最大的X和Y坐标
+    const int MinY = min(y1, min(y2, y3));
+    const int MaxY = max(y1, max(y2, y3));
+    const int MinX = min(x1, min(x2, x3));
+    const int MaxX = max(x1, max(x2, x3));
+    // 遍历三角形内部的每个像素点
+    for (int i = MinY; i <= MaxY; i++)
+    {
+        for (int j = MinX; j <= MaxX; j++)
+        {
+            // 计算当前点相对于三个顶点的权重值
+            const float w1 = ((x2 - j) * (y3 - i) - (x3 - j) * (y2 - i)) / 2 / Area;
+            const float w2 = ((x3 - j) * (y1 - i) - (x1 - j) * (y3 - i)) / 2 / Area;
+            const float w3 = ((x1 - j) * (y2 - i) - (x2 - j) * (y1 - i)) / 2 / Area;
+            // 三个值都为正数时，当前点在三角形内部
+            if (w1 < 0 || w2 < 0 || w3 < 0)
+            {
+                continue;
+            }
+            // 计算点的重心坐标
+            // const float X = w1 * x1 + w2 * x2 + w3 * x3;
+            // const float Y = w1 * y1 + w2 * y2 + w3 * y3;
+            const float Z = w1 * z1 + w2 * z2 + w3 * z3;
+
+            const MuPoint2I P = MuPoint2I(j, i);
+
+            // 获取当前点的深度值
+            const float Depth = Device->GetDepth(P);
+
+            // 深度测试
+            if (Z < Depth)
+            {
+                continue;
+            }
+            // 更新深度缓冲区
+            {
+                Device->SetDepth(P, Z);
+            }
+
+            // 计算点的纹理坐标
+            const float U = w1 * u1 + w2 * u2 + w3 * u3;
+            const float V = w1 * v1 + w2 * v2 + w3 * v3;
+            // 根据纹理坐标获取纹理颜色
+            auto TGAColor = Texture->get(U, V);
+            const auto R = TGAColor[2];
+            const auto G = TGAColor[1];
+            const auto B = TGAColor[0];
+            MuLog::LogInfo( "R: %d, G: %d, B: %d", R, G, B);
+            // const MuRGB Color = MuRGB(R, G, B);
+            // 画点
+            // DrawPoint(Device->GetPointBitFrameBuffer(), P, Color);
+        }
+    }
+}
+
 bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color)
 {
     MuPoint2I CenterPoint;
@@ -282,6 +367,14 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
             MuPoint3F Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
             MuPoint3F Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
 
+            auto UVIndex1 = ObjFace.GetVertex(0).TexcoordIndex;
+            auto UVIndex2 = ObjFace.GetVertex(1).TexcoordIndex;
+            auto UVIndex3 = ObjFace.GetVertex(2).TexcoordIndex;
+
+            auto UV1 = ObjModel->GetTexcoordByIndex(UVIndex1);
+            auto UV2 = ObjModel->GetTexcoordByIndex(UVIndex2);
+            auto UV3 = ObjModel->GetTexcoordByIndex(UVIndex3);
+
             const MuPoint3F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point1);
             const MuPoint3F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point2);
             const MuPoint3F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point3);
@@ -299,6 +392,10 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
             else if (Device->GetRenderMode() == EMuRenderMode::Color)
             {
                 DrawTriangleSolid(Device, Point2F1, Point2F2, Point2F3);
+            }
+            else if (Device->GetRenderMode() == EMuRenderMode::Texture)
+            {
+                DrawTriangleTexture(Device, Point2F1, Point2F2, Point2F3, UV1, UV2, UV3, ObjModel->GetTexture());
             }
         }
         else if (ObjFaceVertexCount == 4)
