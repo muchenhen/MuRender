@@ -1,24 +1,13 @@
 #include "MuCamera.h"
 
-MuCamera::MuCamera():
-    NearPlane(0),
-    FarPlane(0)
-{
-    FieldOfView = 90.0f;
-    AspectRatio = 1.777778f;
-    OrthoWidth = 512.0f;
-    OrthoNearClipPlane = 0.0f;
-    OrthoFarClipPlane = 1000.0f;
-}
+MuCamera::MuCamera()
+= default;
 
-MuCamera::MuCamera(const MuPoint4I& InPosition, const MuPoint4I& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode):
-    OrthoWidth(512.0f),
-    OrthoNearClipPlane(0.0f),
-    OrthoFarClipPlane(1000.0f)
+MuCamera::MuCamera(const MuPoint4F& InPosition, const MuVector4F& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode)
 {
     CameraPosition = InPosition;
     LookAtDirection = InLookAtDirection;
-    FieldOfView = InFOV;
+    FOVy = InFOV;
     AspectRatio = InAspectRatio;
     NearPlane = InNearPlane;
     FarPlane = InFarPlane;
@@ -33,7 +22,7 @@ bool MuCamera::Init()
         return false;
     }
     // 确认fov y在0.1-180度之间
-    if (FieldOfView < 0.1f || FieldOfView > 180.f)
+    if (FOVy < 0.1f || FOVy > 180.f)
     {
         return false;
     }
@@ -53,7 +42,7 @@ bool MuCamera::Init()
     LookAtDirection.normalize();
 
     // ViewTransform = MuMath::GetViewTransformMatrix(CameraPosition, LookAtDirection, UpDirection);
-    // PerspectiveTransform = MuMath::GetPerspectiveProjectionMatrix(FieldOfView, AspectRatio, NearPlane, FarPlane);
+    // PerspectivTransform = MuMath::GetPerspectiveProjectionMatrix(FOVy, AspectRatio, NearPlane, FarPlane);
     
     return true;
 }
@@ -65,5 +54,5 @@ MuMatrix4F MuCamera::GetViewTransformMatrix()
 
 MuMatrix4F MuCamera::GetPerspectiveTransformMatrix()
 {
-    return PerspectiveTransform;
+    return PerspectivTransform;
 }
