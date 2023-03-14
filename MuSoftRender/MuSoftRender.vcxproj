@@ -148,6 +148,7 @@
     <ClCompile Include="Device\MuDevice.cpp" />
     <ClCompile Include="Camera\MuCamera.cpp" />
     <ClCompile Include="Function\MuLog.cpp" />
+    <ClCompile Include="Math\MuMath.cpp" />
     <ClCompile Include="MuFunctions.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Obj\MuObjModel.cpp" />

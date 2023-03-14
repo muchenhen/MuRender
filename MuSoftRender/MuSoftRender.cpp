@@ -154,9 +154,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     //Camera->SetAspectRatio(1.777f);
     //Camera->SetFOVy(90);
     //Camera->SetProjectionMode(EProjectionMode::Perspective);
-    //Camera->SetCameraPosition(MuPoint4I(5,5,5,0));
-    //Camera->SetLookAtPoint(MuPoint4I(0,0,0,0));
-    //Camera->Init();
+    Camera->SetCameraPosition(MuPoint4F(0,0,5,0));
+    Camera->SetLookAtPoint(MuPoint4F(0,0,0,0));
+    Camera->Init();
     // ModelTransformMatrix 单位矩阵
     // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵 TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
     // static auto ModelTransformMatrix = MuMatrix4F::Identity();
@@ -250,7 +250,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              */
             hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &Pointer, nullptr, 0);
             
-            Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::wireframe);
+            Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::Wireframe);
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
 
             ObjModel->Load("../african_head.obj");
@@ -293,7 +293,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
                 //Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
                 //Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
-                 Rasterizer->DrawObj(Device, ObjModel, MuColor::GetRandomMuRGB());
+                 Rasterizer->DrawObj(Device, Camera, ObjModel, MuColor::GetRandomMuRGB());
                 // auto Vertices = ObjModel->GetAllVertices();
                 // for (auto vertex : Vertices)
                 // {

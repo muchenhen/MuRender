@@ -2,6 +2,10 @@
 #include <string>
 #include "framework.h"
 
+#define ADD_GET_SET_METHOD(ClassName, MemberName) \
+ClassName Get##MemberName() const { return MemberName; } \
+void Set##MemberName(ClassName In##MemberName) { MemberName = In##MemberName; }
+
 class MuFunctions
 {
 public:

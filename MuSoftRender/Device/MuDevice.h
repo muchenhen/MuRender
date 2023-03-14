@@ -2,16 +2,17 @@
 
 #define FrameBuffer unsigned int
 #define FrameZBuffer float
+#include "MuFunctions.h"
 #include "MuMath.h"
 
 enum class EMuRenderMode
 {
 	// 线框
-    wireframe,
+    Wireframe,
 	// 随机颜色填充
-    color,
+    Color,
 	// 贴图
-	texture
+	Texture
 };
 
 class MuDevice
@@ -29,6 +30,8 @@ public:
     FrameZBuffer* GetZBuffer();
     float GetDepth(MuPoint2I Point);
     void SetDepth(MuPoint2I Point, float Z);
+
+    ADD_GET_SET_METHOD(EMuRenderMode, RenderMode);
 
     // void Tick();
 

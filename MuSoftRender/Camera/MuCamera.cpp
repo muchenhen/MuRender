@@ -3,7 +3,7 @@
 MuCamera::MuCamera()
 = default;
 
-MuCamera::MuCamera(const MuPoint4I& InPosition, const MuPoint4I& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode)
+MuCamera::MuCamera(const MuPoint4F& InPosition, const MuVector4F& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode)
 {
     CameraPosition = InPosition;
     LookAtDirection = InLookAtDirection;

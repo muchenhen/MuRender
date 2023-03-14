@@ -28,7 +28,7 @@ bool MuRasterizer::DrawPoint(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& 
 bool MuRasterizer::DrawPoint(unsigned* PointBitFrameBuffer, const MuPoint3I& Point, const MuRGB& Color)
 {
     const MuPoint2I Point2D = MuMath::Point3IToPoint2I(Point);
-	return DrawPoint(PointBitFrameBuffer, Point2D, Color);
+    return DrawPoint(PointBitFrameBuffer, Point2D, Color);
 }
 
 bool MuRasterizer::DrawPoint(unsigned* PointBitFrameBuffer, const MuPoint4I& Point, const MuRGB& Color)
@@ -91,7 +91,7 @@ bool MuRasterizer::DrawLine(MuDevice* Device, const MuPoint3F& StartPoint, const
     const int sX = (X0 < X1) ? 1 : -1; // 增量方向
     const int sY = (Y0 < Y1) ? 1 : -1;
     int Err = dX - dY;
-    
+
     while (true)
     {
         DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(X0, Y0), Color);
@@ -112,7 +112,6 @@ bool MuRasterizer::DrawLine(MuDevice* Device, const MuPoint3F& StartPoint, const
         }
     }
     return true;
-    
 }
 
 bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color)
@@ -160,7 +159,16 @@ bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, 
     const float z1 = Point1.z();
     const float z2 = Point2.z();
     const float z3 = Point3.z();
-    
+
+    // 计算三角形面的法向量
+    const MuPoint3F Normal = (Point2 - Point1).cross(Point3 - Point1);
+    // 背面剔除
+    if (Normal.z() < 0)
+    {
+        MuLog::LogInfo("Backface culling");
+        return false;
+    }
+
     // 计算三角形面积
     const float Area = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)) / 2;
     // 计算三角形内部的最小和最大的X和Y坐标
@@ -169,9 +177,9 @@ bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, 
     const int MinX = min(x1, min(x2, x3));
     const int MaxX = max(x1, max(x2, x3));
     // 遍历三角形内部的每个像素点
-    for (int i= MinY; i<= MaxY; i++)
+    for (int i = MinY; i <= MaxY; i++)
     {
-        for (int j= MinX; j<= MaxX; j++)
+        for (int j = MinX; j <= MaxX; j++)
         {
             // 计算当前点相对于三个顶点的权重值
             const float w1 = ((x2 - j) * (y3 - i) - (x3 - j) * (y2 - i)) / 2 / Area;
@@ -188,10 +196,10 @@ bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, 
             const float Z = w1 * z1 + w2 * z2 + w3 * z3;
 
             const MuPoint2I P = MuPoint2I(j, i);
-            
+
             // 获取当前点的深度值
             const float Depth = Device->GetDepth(P);
-            
+
             // 深度测试
             if (Z < Depth)
             {
@@ -201,8 +209,7 @@ bool MuRasterizer::DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, 
             {
                 Device->SetDepth(P, Z);
             }
-            
-            
+
             // 根据权重值和顶点颜色插值得到当前点的颜色
             const int R = abs(w1) * MuColor::Red.x();
             const int G = abs(w2) * MuColor::Green.y();
@@ -221,15 +228,15 @@ bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Poin
     // 求出四个点的中心
     CenterPoint = (Point1 + Point2 + Point3 + Point4) / 4;
     // 以中心点为原点，x轴正方向开始逆时针排序四个点
-    vector<MuPoint2I> SortedPoint = { Point1, Point2, Point3, Point4 };
+    vector<MuPoint2I> SortedPoint = {Point1, Point2, Point3, Point4};
     sort(SortedPoint.begin(), SortedPoint.end(), [CenterPoint](const MuPoint2I& Point1, const MuPoint2I& Point2)
-        {
-            const MuPoint2I Vector1 = Point1 - CenterPoint;
-            const MuPoint2I Vector2 = Point2 - CenterPoint;
-            const float Angle1 = atan2(Vector1.y(), Vector1.x());
-            const float Angle2 = atan2(Vector2.y(), Vector2.x());
-            return Angle1 < Angle2;
-        });
+    {
+        const MuPoint2I Vector1 = Point1 - CenterPoint;
+        const MuPoint2I Vector2 = Point2 - CenterPoint;
+        const float Angle1 = atan2(Vector1.y(), Vector1.x());
+        const float Angle2 = atan2(Vector2.y(), Vector2.x());
+        return Angle1 < Angle2;
+    });
     // 按照顺序，12 23 34 41画线
     if (DrawLine(PointBitFrameBuffer, SortedPoint[0], SortedPoint[1], Color) &&
         DrawLine(PointBitFrameBuffer, SortedPoint[1], SortedPoint[2], Color) &&
@@ -242,14 +249,14 @@ bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Poin
     return true;
 }
 
-bool MuRasterizer::DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& Color)
+bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjModel, const MuRGB& Color)
 {
     const auto PointBitFrameBuffer = Device->GetPointBitFrameBuffer();
     if (PointBitFrameBuffer == nullptr)
     {
         return false;
     }
-    
+
     const int FaceCount = ObjModel->GetFaceCount();
     if (FaceCount <= 0)
     {
@@ -278,8 +285,21 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& 
             const MuPoint3F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point1);
             const MuPoint3F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point2);
             const MuPoint3F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point3);
-            
-            DrawTriangleSolid(Device, Point2F1, Point2F2, Point2F3);
+
+            const bool IsFaceVisible = MuMath::BackFaceCulling(Point2F1, Point2F2, Point2F3, MuMath::Point4FToPoint3F(Camera->GetLookAtDirection()));
+            if (!IsFaceVisible)
+            {
+                continue;
+            }
+
+            if (Device->GetRenderMode() == EMuRenderMode::Wireframe)
+            {
+                DrawTriangle(Device, Point2F1, Point2F2, Point2F3, Color);
+            }
+            else if (Device->GetRenderMode() == EMuRenderMode::Color)
+            {
+                DrawTriangleSolid(Device, Point2F1, Point2F2, Point2F3);
+            }
         }
         else if (ObjFaceVertexCount == 4)
         {
@@ -299,7 +319,7 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuObjModel* ObjModel, const MuRGB& 
             DrawQuad(PointBitFrameBuffer, Point1, Point2, Point3, Point4, Color);
         }
     }
-    
+
     return true;
 }
 
