@@ -292,14 +292,19 @@ bool MuRasterizer::DrawTriangleTexture(MuDevice* Device, const MuPoint3F& Point1
             }
 
             // 计算点的纹理坐标
-            const float U = w1 * u1 + w2 * u2 + w3 * u3;
-            const float V = w1 * v1 + w2 * v2 + w3 * v3;
+            float U = w1 * u1 + w2 * u2 + w3 * u3;
+            float V = w1 * v1 + w2 * v2 + w3 * v3;
+            MuLog::LogInfo("U: %f, V: %f", U, V);
+            U = U * Texture->get_width();
+            V = V * Texture->get_height();
+            MuLog::LogInfo("U: %f, V: %f", U, V);
+
             // 根据纹理坐标获取纹理颜色
             auto TGAColor = Texture->get(U, V);
             const auto R = TGAColor[2];
             const auto G = TGAColor[1];
             const auto B = TGAColor[0];
-            MuLog::LogInfo( "R: %d, G: %d, B: %d", R, G, B);
+            MuLog::LogInfo("R: %d, G: %d, B: %d", R, G, B);
             // const MuRGB Color = MuRGB(R, G, B);
             // 画点
             // DrawPoint(Device->GetPointBitFrameBuffer(), P, Color);

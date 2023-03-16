@@ -11,6 +11,9 @@ using namespace std;
 class MuObjModel
 {
 public:
+    MuObjModel();
+    ~MuObjModel();
+    
     bool Load(const string& Filename);
     int GetFaceCount() const;
     FMuObjFace GetFace(int I) const;
@@ -30,7 +33,7 @@ private:
     // 顶点索引
     vector<FMuObjFace> FaceIndices;
     // 贴图
-    TGAImage* Texture;
+    TGAImage* Texture = nullptr;
 
     void ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex);
 

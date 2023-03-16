@@ -9,6 +9,20 @@ bool IsFileExist(const std::string& Filename)
     return infile.good();
 }
 
+MuObjModel::MuObjModel()
+{
+    Texture = new TGAImage();
+}
+
+MuObjModel::~MuObjModel()
+{
+    if (Texture)
+    {
+        delete Texture;
+        Texture = nullptr;
+    }
+}
+
 bool MuObjModel::Load(const std::string& Filename)
 {
     if (!IsFileExist(Filename))
