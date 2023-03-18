@@ -117,7 +117,13 @@ vector<MuPoint3F> MuObjModel::GetAllVertices()
 bool MuObjModel::LoadTexture(const string& Filename)
 {
     // 读取指定路径的TGA文件
-    return Texture->read_tga_file(Filename.c_str());
+    const bool bSuccess = Texture->read_tga_file(Filename.c_str());
+    if (bSuccess)
+    {
+        Texture->flip_horizontally();
+        Texture->flip_vertically();
+    }
+    return bSuccess;
 }
 
 void MuObjModel::ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex)

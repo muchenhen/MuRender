@@ -2,7 +2,7 @@
 #include "../Function//MuLog.h"
 #include "../Math/MuMath.h"
 
-MuRasterizer::MuRasterizer():
+MuRasterizer::MuRasterizer() :
     WidthBound(0),
     HeightBound(0)
 {
@@ -116,9 +116,7 @@ bool MuRasterizer::DrawLine(MuDevice* Device, const MuPoint3F& StartPoint, const
 
 bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuRGB& Color)
 {
-    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
-        DrawLine(PointBitFrameBuffer, Point2, Point3, Color) &&
-        DrawLine(PointBitFrameBuffer, Point3, Point1, Color))
+    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) && DrawLine(PointBitFrameBuffer, Point2, Point3, Color) && DrawLine(PointBitFrameBuffer, Point3, Point1, Color))
     {
         return true;
     }
@@ -127,9 +125,7 @@ bool MuRasterizer::DrawTriangle(unsigned* PointBitFrameBuffer, const MuPoint2I& 
 
 bool MuRasterizer::DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2F& Point1, const MuPoint2F& Point2, const MuPoint2F& Point3, const MuRGB& Color)
 {
-    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) &&
-        DrawLine(PointBitFrameBuffer, Point2, Point3, Color) &&
-        DrawLine(PointBitFrameBuffer, Point3, Point1, Color))
+    if (DrawLine(PointBitFrameBuffer, Point1, Point2, Color) && DrawLine(PointBitFrameBuffer, Point2, Point3, Color) && DrawLine(PointBitFrameBuffer, Point3, Point1, Color))
     {
         return true;
     }
@@ -138,9 +134,7 @@ bool MuRasterizer::DrawTriangle(FrameBuffer* PointBitFrameBuffer, const MuPoint2
 
 bool MuRasterizer::DrawTriangle(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuRGB& Color)
 {
-    if (DrawLine(Device, Point1, Point2, Color) &&
-        DrawLine(Device, Point2, Point3, Color) &&
-        DrawLine(Device, Point3, Point1, Color))
+    if (DrawLine(Device, Point1, Point2, Color) && DrawLine(Device, Point2, Point3, Color) && DrawLine(Device, Point3, Point1, Color))
     {
         return true;
     }
@@ -305,9 +299,9 @@ bool MuRasterizer::DrawTriangleTexture(MuDevice* Device, const MuPoint3F& Point1
             const auto G = TGAColor[1];
             const auto B = TGAColor[0];
             MuLog::LogInfo("R: %d, G: %d, B: %d", R, G, B);
-            // const MuRGB Color = MuRGB(R, G, B);
+            const MuRGB Color = MuRGB(R, G, B);
             // 画点
-            // DrawPoint(Device->GetPointBitFrameBuffer(), P, Color);
+            DrawPoint(Device->GetPointBitFrameBuffer(), P, Color);
         }
     }
 }
@@ -320,18 +314,14 @@ bool MuRasterizer::DrawQuad(unsigned* PointBitFrameBuffer, const MuPoint2I& Poin
     // 以中心点为原点，x轴正方向开始逆时针排序四个点
     vector<MuPoint2I> SortedPoint = {Point1, Point2, Point3, Point4};
     sort(SortedPoint.begin(), SortedPoint.end(), [CenterPoint](const MuPoint2I& Point1, const MuPoint2I& Point2)
-    {
+         {
         const MuPoint2I Vector1 = Point1 - CenterPoint;
         const MuPoint2I Vector2 = Point2 - CenterPoint;
         const float Angle1 = atan2(Vector1.y(), Vector1.x());
         const float Angle2 = atan2(Vector2.y(), Vector2.x());
-        return Angle1 < Angle2;
-    });
+        return Angle1 < Angle2; });
     // 按照顺序，12 23 34 41画线
-    if (DrawLine(PointBitFrameBuffer, SortedPoint[0], SortedPoint[1], Color) &&
-        DrawLine(PointBitFrameBuffer, SortedPoint[1], SortedPoint[2], Color) &&
-        DrawLine(PointBitFrameBuffer, SortedPoint[2], SortedPoint[3], Color) &&
-        DrawLine(PointBitFrameBuffer, SortedPoint[3], SortedPoint[0], Color))
+    if (DrawLine(PointBitFrameBuffer, SortedPoint[0], SortedPoint[1], Color) && DrawLine(PointBitFrameBuffer, SortedPoint[1], SortedPoint[2], Color) && DrawLine(PointBitFrameBuffer, SortedPoint[2], SortedPoint[3], Color) && DrawLine(PointBitFrameBuffer, SortedPoint[3], SortedPoint[0], Color))
     {
         return true;
     }

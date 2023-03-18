@@ -255,7 +255,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
 
             ObjModel->Load("../african_head.obj");
-            ObjModel->LoadTexture("../african_head_diffuse.tga");
+            auto success = ObjModel->LoadTexture("../african_head_diffuse.tga");
+            MuLog:: LogInfo("LoadTexture success: %d", success);
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
              */
