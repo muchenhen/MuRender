@@ -53,6 +53,9 @@ public:
 
     // 画出实心三角形
     bool DrawTriangleSolid(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3);
+
+    // 贴图三角形
+    bool DrawTriangleTexture(MuDevice* Device, const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3, const MuPoint2F& UV1, const MuPoint2F& UV2, const MuPoint2F& UV3, MuTexture* Texture);
     
     bool DrawQuad(FrameBuffer* PointBitFrameBuffer, const MuPoint2I& Point1, const MuPoint2I& Point2, const MuPoint2I& Point3, const MuPoint2I& Point4, const MuRGB& Color);
 

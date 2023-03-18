@@ -4,19 +4,25 @@
 #include <vector>
 #include "../Math/MuMath.h"
 #include "../Function/MuStruct.h"
+#include "../TGA/TGAImage.h"
 
 using namespace std;
 
 class MuObjModel
 {
 public:
+    MuObjModel();
+    ~MuObjModel();
+    
     bool Load(const string& Filename);
     int GetFaceCount() const;
     FMuObjFace GetFace(int I) const;
     MuPoint3F GetVertexByIndex(int VertexIndex);
-
+    MuPoint2F GetTexcoordByIndex(int TexcoordIndex);
     vector<MuPoint3F> GetAllVertices();
-
+    bool LoadTexture(const string& Filename);
+    TGAImage* GetTexture() const;
+    
 private:
     // 顶点坐标
     vector<MuPoint3F> Vertices;
@@ -26,9 +32,16 @@ private:
     vector<MuPoint2F> Texcoords;
     // 顶点索引
     vector<FMuObjFace> FaceIndices;
+    // 贴图
+    TGAImage* Texture = nullptr;
 
     void ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex);
 
     int CountSubstring(string str, string sub);
 
 };
+
+inline TGAImage* MuObjModel::GetTexture() const
+{
+    return Texture;
+}

@@ -9,13 +9,27 @@ bool IsFileExist(const std::string& Filename)
     return infile.good();
 }
 
+MuObjModel::MuObjModel()
+{
+    Texture = new TGAImage();
+}
+
+MuObjModel::~MuObjModel()
+{
+    if (Texture)
+    {
+        delete Texture;
+        Texture = nullptr;
+    }
+}
+
 bool MuObjModel::Load(const std::string& Filename)
 {
-    if(!IsFileExist(Filename))
+    if (!IsFileExist(Filename))
     {
         return false;
     }
-    
+
     ifstream File(Filename.c_str());
     string Line;
 
@@ -90,9 +104,26 @@ MuPoint3F MuObjModel::GetVertexByIndex(int VertexIndex)
     return Vertices[VertexIndex];
 }
 
+MuPoint2F MuObjModel::GetTexcoordByIndex(int TexcoordIndex)
+{
+    return Texcoords[TexcoordIndex];
+}
+
 vector<MuPoint3F> MuObjModel::GetAllVertices()
 {
     return Vertices;
+}
+
+bool MuObjModel::LoadTexture(const string& Filename)
+{
+    // 读取指定路径的TGA文件
+    const bool bSuccess = Texture->read_tga_file(Filename.c_str());
+    if (bSuccess)
+    {
+        Texture->flip_horizontally();
+        Texture->flip_vertically();
+    }
+    return bSuccess;
 }
 
 void MuObjModel::ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex)

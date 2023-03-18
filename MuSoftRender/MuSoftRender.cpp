@@ -148,6 +148,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
     static auto* Device = new MuDevice;
+    Device->SetRenderMode(EMuRenderMode::Texture);
     static auto Rasterizer = new MuRasterizer;
     static auto* ObjModel = new MuObjModel;
     static auto* Camera = new MuCamera;
@@ -250,11 +251,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              */
             hBitmap = CreateDIBSection(hdcBackBuffer, &bitmapInfo, DIB_RGB_COLORS, &Pointer, nullptr, 0);
             
-            Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::Wireframe);
+            Device->InitDevice(Pointer, clientRectWidth, clientRectHeight, EMuRenderMode::Texture);
             Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
 
             ObjModel->Load("../african_head.obj");
-            
+            auto success = ObjModel->LoadTexture("../african_head_diffuse.tga");
+            MuLog:: LogInfo("LoadTexture success: %d", success);
             /*
              * SelectObject(HdcBackBuffer, HBitmap)将位图HBitmap选入后备缓冲区的设备上下文HdcBackBuffer中，以便在该设备上下文中使用该位图。
              */
