@@ -370,9 +370,9 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
             auto UV2 = ObjModel->GetTexcoordByIndex(UVIndex2);
             auto UV3 = ObjModel->GetTexcoordByIndex(UVIndex3);
 
-            const MuPoint3F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point1);
-            const MuPoint3F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point2);
-            const MuPoint3F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point3);
+            const MuPoint3F Point2F1 = MuMath::NDCtoScreen(Point1);
+            const MuPoint3F Point2F2 = MuMath::NDCtoScreen(Point2);
+            const MuPoint3F Point2F3 = MuMath::NDCtoScreen(Point3);
 
             const bool IsFaceVisible = MuMath::BackFaceCulling(Point2F1, Point2F2, Point2F3, MuMath::Point4FToPoint3F(Camera->GetLookAtDirection()));
             if (!IsFaceVisible)

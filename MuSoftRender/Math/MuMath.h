@@ -117,9 +117,12 @@ inline MuPoint2F Point3FToScreenPointWithAspectRatio(const MuPoint3F& Point)
     }
 }
 
-// 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内 但是要保持宽高比不变
-// Z值保留 保持宽高比
-MuPoint3F Point3FToScreenPointWithAspectRatioWithDepth(const MuPoint3F& Point);
+/*
+ * NDC坐标系 -> 屏幕坐标系
+ * 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内 但是要保持宽高比不变
+ * Z值保留 保持宽高比
+ */
+MuPoint3F NDCtoScreen(const MuPoint3F& Point);
 
 // 计算三角形面的法向量
 MuVector3F ComputeTriangleNormal(const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3);
@@ -234,19 +237,9 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
         MuPoint3F CameraPosition3F = MuPoint3F(CameraPosition.x(), CameraPosition.y(), CameraPosition.z());
         MuPoint3F CameraLookAt3F = MuPoint3F(CameraLookAt.x(), CameraLookAt.y(), CameraLookAt.z());
         MuPoint3F CameraUp3F = MuPoint3F(CameraUp.x(), CameraUp.y(), CameraUp.z());
-
         const MuPoint3F CameraZAxis = (CameraPosition3F - CameraLookAt3F).normalized();
         const MuPoint3F CameraXAxis = CameraUp3F.cross(CameraZAxis).normalized();
         const MuPoint3F CameraYAxis = CameraZAxis.cross(CameraXAxis).normalized();
-        // // 计算相机的Z轴方向
-        // const MuPoint4F CameraZAxis = (CameraPosition - CameraLookAt).normalized();
-        //
-        // // 计算相机的X轴方向
-        // const MuPoint4F CameraXAxis = CameraUp.cross(CameraZAxis).normalized();
-        //
-        // // 计算相机的Y轴方向
-        // const MuPoint4F CameraYAxis = CameraZAxis.cross(CameraXAxis).normalized();
-
         // 计算相机的旋转矩阵
         CameraRotationMatrix << CameraXAxis.x(), CameraYAxis.x(), CameraZAxis.x(), 0.0f,
             CameraXAxis.y(), CameraYAxis.y(), CameraZAxis.y(), 0.0f,
@@ -264,7 +257,10 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
  */
 
 // 正交投影矩阵
-
+/*
+ * 通过摄像机宽高比、近平面距离、远平面距离，计算出正交投影矩阵
+ */
+MuMatrix4F GetOrthographicProjectionMatrix(const float Aspect, const float Near, const float Far);
 
 // 透视投影矩阵
 /*

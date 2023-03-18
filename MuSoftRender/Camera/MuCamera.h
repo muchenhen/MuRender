@@ -16,12 +16,13 @@ public:
     ADD_GET_SET_METHOD(MuPoint4F, LookAtPoint)
     ADD_GET_SET_METHOD(MuVector4F, LookAtDirection)
     ADD_GET_SET_METHOD(MuVector4F, UpDirection)
-    ADD_GET_SET_METHOD(float, FOVy)
+    ADD_GET_SET_METHOD(float, FieldOfView)
     ADD_GET_SET_METHOD(float, AspectRatio)
     ADD_GET_SET_METHOD(float, NearPlane)
     ADD_GET_SET_METHOD(float, FarPlane)
     ADD_GET_SET_METHOD(EProjectionMode, ProjectionMode)
     MuMatrix4F GetViewTransformMatrix();
+    MuMatrix4F GetProjectionTransformMatrix();
     MuMatrix4F GetPerspectiveTransformMatrix();
 
 private:
@@ -47,9 +48,9 @@ private:
     MuVector4F UpDirection = G_POSITIVE_Y_DIRECTION;
     
     /*
-     * FOV y (角度制
+     * FOV (角度制)
      */
-    float FOVy = 60.f;
+    float FieldOfView = 90.f;
 
     /*
      * 相机宽高比
@@ -72,9 +73,14 @@ private:
     MuMatrix4F ViewTransform;
 
     /*
-     * PerspectivTransform 矩阵
+     * PerspectiveTransform 矩阵
      */
-    MuMatrix4F PerspectivTransform;
+    MuMatrix4F PerspectiveTransform;
+
+    /*
+     * 
+     */
+    MuMatrix4F OrthographicTransform;
 
     /*
      * 投影模式
