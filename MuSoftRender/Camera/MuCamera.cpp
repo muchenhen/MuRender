@@ -7,7 +7,7 @@ MuCamera::MuCamera(const MuPoint4F& InPosition, const MuVector4F& InLookAtDirect
 {
     CameraPosition = InPosition;
     LookAtDirection = InLookAtDirection;
-    FOVy = InFOV;
+    FieldOfView = InFOV;
     AspectRatio = InAspectRatio;
     NearPlane = InNearPlane;
     FarPlane = InFarPlane;
@@ -22,7 +22,7 @@ bool MuCamera::Init()
         return false;
     }
     // 确认fov y在0.1-180度之间
-    if (FOVy < 0.1f || FOVy > 180.f)
+    if (FieldOfView < 0.1f || FieldOfView > 180.f)
     {
         return false;
     }
@@ -41,10 +41,21 @@ bool MuCamera::Init()
     LookAtDirection = LookAtDirection - CameraPosition;
     LookAtDirection.normalize();
 
-    // ViewTransform = MuMath::GetViewTransformMatrix(CameraPosition, LookAtDirection, UpDirection);
-    // PerspectivTransform = MuMath::GetPerspectiveProjectionMatrix(FOVy, AspectRatio, NearPlane, FarPlane);
+    ViewTransform = MuMath::GetViewTransformMatrix(CameraPosition, LookAtDirection, UpDirection);
     
     return true;
+}
+
+MuMatrix4F MuCamera::GetProjectionMatrix()
+{
+    if (ProjectionMode == EProjectionMode::Perspective)
+    {
+        return MuMath::GetPerspectiveProjectionMatrix(FieldOfView, AspectRatio, NearPlane, FarPlane);
+    }
+    else
+    {
+        return MuMath::GetOrthographicProjectionMatrix(FieldOfView, AspectRatio, NearPlane, FarPlane);
+    }
 }
 
 MuMatrix4F MuCamera::GetViewTransformMatrix()
@@ -54,5 +65,5 @@ MuMatrix4F MuCamera::GetViewTransformMatrix()
 
 MuMatrix4F MuCamera::GetPerspectiveTransformMatrix()
 {
-    return PerspectivTransform;
+    return PerspectiveTransform;
 }

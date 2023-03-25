@@ -152,20 +152,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static auto Rasterizer = new MuRasterizer;
     static auto* ObjModel = new MuObjModel;
     static auto* Camera = new MuCamera;
-    //Camera->SetAspectRatio(1.777f);
-    //Camera->SetFOVy(90);
-    //Camera->SetProjectionMode(EProjectionMode::Perspective);
-    Camera->SetCameraPosition(MuPoint4F(0,0,5,0));
+    Camera->SetAspectRatio(1.777f);
+    Camera->SetFieldOfView(90);
+    Camera->SetNearPlane(1.0f);
+    Camera->SetFarPlane(2.0f);
+    Camera->SetProjectionMode(EProjectionMode::Orthographic);
+    Camera->SetCameraPosition(MuPoint4F(1,1,3,0));
     Camera->SetLookAtPoint(MuPoint4F(0,0,0,0));
+    Camera->SetUpDirection(MuVector4F(0,1,0,0));
     Camera->Init();
+    
     // ModelTransformMatrix 单位矩阵
-    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵 TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
-    // static auto ModelTransformMatrix = MuMatrix4F::Identity();
+    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵
+    // TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
+    static MuMatrix4F ModelTransformMatrix = MuMatrix4F::Identity();
     // 计算ViewTransformMatrix
-    //static auto ViewTransformMatrix = Camera->GetViewTransformMatrix();
-    //static auto PerspectiveTransformMatrix = Camera->GetPerspectiveTransformMatrix();
+    static MuMatrix4F ViewTransformMatrix = Camera->GetViewTransformMatrix();
+    // 获取ProjectionTransformMatrix
+    static MuMatrix4F ProjectionTransformMatrix = Camera->GetProjectionMatrix();
     // MVP矩阵 右手系
-    //static auto MVPMatrix = PerspectiveTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+    static MuMatrix4F MVPMatrix = ProjectionTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+
+    Camera->SetMVPMatrix(MVPMatrix);
     
     static int clientRectWidth;
     static int clientRectHeight;
@@ -296,14 +304,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
                 //Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
                  Rasterizer->DrawObj(Device, Camera, ObjModel, MuColor::GetRandomMuRGB());
-                // auto Vertices = ObjModel->GetAllVertices();
-                // for (auto vertex : Vertices)
-                // {
-                //     // 先全部直接丢掉Z值变成2D点 映射到屏幕空间
-                //     auto point2D = MuMath::Point3FToScreenPointWithAspectRatio(vertex);
-                //     MuLog::LogInfo("Point x: %d, y: %d", point2D.x(), point2D.y());
-                //     Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), point2D, MuColor::White);
-                // }
             }
 
             // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中

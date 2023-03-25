@@ -94,6 +94,11 @@ int MuObjModel::GetFaceCount() const
     return FaceIndices.size();
 }
 
+int MuObjModel::GetVertexCount() const
+{
+    return Vertices.size();
+}
+
 FMuObjFace MuObjModel::GetFace(int I) const
 {
     return FaceIndices[I];
@@ -102,6 +107,11 @@ FMuObjFace MuObjModel::GetFace(int I) const
 MuPoint3F MuObjModel::GetVertexByIndex(int VertexIndex)
 {
     return Vertices[VertexIndex];
+}
+
+MuPoint3F MuObjModel::GetScreenVertexByIndex(int VertexIndex)
+{
+    return ScreenVertices[VertexIndex];
 }
 
 MuPoint2F MuObjModel::GetTexcoordByIndex(int TexcoordIndex)
@@ -124,6 +134,11 @@ bool MuObjModel::LoadTexture(const string& Filename)
         Texture->flip_vertically();
     }
     return bSuccess;
+}
+
+void MuObjModel::SetScreenVertex(const vector<MuPoint3F>& ScreenVertices)
+{
+    this->ScreenVertices = ScreenVertices;
 }
 
 void MuObjModel::ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex)

@@ -15,13 +15,17 @@ public:
     ~MuObjModel();
     
     bool Load(const string& Filename);
+    bool LoadTexture(const string& Filename);
+
     int GetFaceCount() const;
+    int GetVertexCount() const;
     FMuObjFace GetFace(int I) const;
     MuPoint3F GetVertexByIndex(int VertexIndex);
+    MuPoint3F GetScreenVertexByIndex(int VertexIndex);
     MuPoint2F GetTexcoordByIndex(int TexcoordIndex);
     vector<MuPoint3F> GetAllVertices();
-    bool LoadTexture(const string& Filename);
     TGAImage* GetTexture() const;
+    void SetScreenVertex(const vector<MuPoint3F>& ScreenVertices);
     
 private:
     // 顶点坐标
@@ -35,6 +39,9 @@ private:
     // 贴图
     TGAImage* Texture = nullptr;
 
+    // 当前屏幕空间顶点坐标
+    vector<MuPoint3F> ScreenVertices;
+    
     void ParseVertexIndex(string Token, int* VertexIndex, int* TexcoordIndex, int* NormalIndex);
 
     int CountSubstring(string str, string sub);

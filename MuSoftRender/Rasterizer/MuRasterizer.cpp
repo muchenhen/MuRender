@@ -343,10 +343,25 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
         return false;
     }
 
+    const MuMatrix4F MVPMatrix = Camera->GetMVPMatrix();
+    
+    // 先对所有顶点进行变换
+    vector<MuPoint3F> TransformedVertexList;
+    for (int i = 0; i < ObjModel->GetVertexCount(); i++)
+    {
+        const MuPoint3F Vertex = ObjModel->GetVertexByIndex(i);
+        const MuPoint4F TransformedVertex4F = MVPMatrix * MuMath::Point3FToPoint4F(Vertex);
+        const MuPoint3F TransformedVertex3F = MuMath::Point4FToPoint3F(TransformedVertex4F);
+        const MuPoint3F TransformedVertex = MuMath::NDCtoScreen(TransformedVertex3F);
+        // 打印TransformedVertex
+        MuLog::LogInfo("TransformedVertex: %f, %f, %f", TransformedVertex.x(), TransformedVertex.y(), TransformedVertex.z());
+        TransformedVertexList.push_back(TransformedVertex);
+    }
+    ObjModel->SetScreenVertex(TransformedVertexList);
+    
     const FMuObjFace Face = ObjModel->GetFace(0);
     const int ObjFaceVertexCount = Face.GetVertexCount();
     MuLog::LogInfo("DrawObj: Face Vertex Count = %d", ObjFaceVertexCount);
-
     // 画出obj模型
     for (int i = 0; i < FaceCount; i++)
     {
@@ -354,27 +369,23 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
         // 确认 Face 顶点数量
         if (ObjFaceVertexCount == 3)
         {
-            const int VertexIndex1 = ObjFace.GetVertex(0).VertexIndex;
-            const int VertexIndex2 = ObjFace.GetVertex(1).VertexIndex;
-            const int VertexIndex3 = ObjFace.GetVertex(2).VertexIndex;
-
-            MuPoint3F Point1 = ObjModel->GetVertexByIndex(VertexIndex1);
-            MuPoint3F Point2 = ObjModel->GetVertexByIndex(VertexIndex2);
-            MuPoint3F Point3 = ObjModel->GetVertexByIndex(VertexIndex3);
-
-            auto UVIndex1 = ObjFace.GetVertex(0).TexcoordIndex;
-            auto UVIndex2 = ObjFace.GetVertex(1).TexcoordIndex;
-            auto UVIndex3 = ObjFace.GetVertex(2).TexcoordIndex;
+            const auto UVIndex1 = ObjFace.GetVertex(0).TexcoordIndex;
+            const auto UVIndex2 = ObjFace.GetVertex(1).TexcoordIndex;
+            const auto UVIndex3 = ObjFace.GetVertex(2).TexcoordIndex;
 
             auto UV1 = ObjModel->GetTexcoordByIndex(UVIndex1);
             auto UV2 = ObjModel->GetTexcoordByIndex(UVIndex2);
             auto UV3 = ObjModel->GetTexcoordByIndex(UVIndex3);
 
-            const MuPoint3F Point2F1 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point1);
-            const MuPoint3F Point2F2 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point2);
-            const MuPoint3F Point2F3 = MuMath::Point3FToScreenPointWithAspectRatioWithDepth(Point3);
+            const int VertexIndex1 = ObjFace.GetVertex(0).VertexIndex;
+            const int VertexIndex2 = ObjFace.GetVertex(1).VertexIndex;
+            const int VertexIndex3 = ObjFace.GetVertex(2).VertexIndex;
 
-            const bool IsFaceVisible = MuMath::BackFaceCulling(Point2F1, Point2F2, Point2F3, MuMath::Point4FToPoint3F(Camera->GetLookAtDirection()));
+            MuPoint3F Point1 = ObjModel->GetScreenVertexByIndex(VertexIndex1);
+            MuPoint3F Point2 = ObjModel->GetScreenVertexByIndex(VertexIndex2);
+            MuPoint3F Point3 = ObjModel->GetScreenVertexByIndex(VertexIndex3);
+
+            const bool IsFaceVisible = MuMath::BackFaceCulling(Point1, Point2, Point3, MuMath::Point4FToPoint3F(Camera->GetLookAtDirection()));
             if (!IsFaceVisible)
             {
                 continue;
@@ -382,15 +393,15 @@ bool MuRasterizer::DrawObj(MuDevice* Device, MuCamera* Camera, MuObjModel* ObjMo
 
             if (Device->GetRenderMode() == EMuRenderMode::Wireframe)
             {
-                DrawTriangle(Device, Point2F1, Point2F2, Point2F3, Color);
+                DrawTriangle(Device, Point1, Point2, Point3, Color);
             }
             else if (Device->GetRenderMode() == EMuRenderMode::Color)
             {
-                DrawTriangleSolid(Device, Point2F1, Point2F2, Point2F3);
+                DrawTriangleSolid(Device, Point1, Point2, Point3);
             }
             else if (Device->GetRenderMode() == EMuRenderMode::Texture)
             {
-                DrawTriangleTexture(Device, Point2F1, Point2F2, Point2F3, UV1, UV2, UV3, ObjModel->GetTexture());
+                DrawTriangleTexture(Device, Point1, Point2, Point3, UV1, UV2, UV3, ObjModel->GetTexture());
             }
         }
         else if (ObjFaceVertexCount == 4)
