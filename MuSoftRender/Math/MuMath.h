@@ -80,6 +80,12 @@ inline MuPoint3F Point4FToPoint3F(const MuPoint4F& Point)
     return MuPoint3F(Point.x(), Point.y(), Point.z());
 }
 
+// MuPoint4F -> MuPoint2I
+inline MuPoint2I Point4FToPoint2I(const MuPoint4F& Point)
+{
+    return MuPoint2I(Point.x(), Point.y());
+}
+
 // MuPoint3F -> MuPoint4F
 inline MuPoint4F Point3FToPoint4F(const MuPoint3F& Point)
 {
