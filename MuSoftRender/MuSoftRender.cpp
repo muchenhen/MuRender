@@ -104,6 +104,18 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
+    // WNDCLASS wc = {CS_BYTEALIGNCLIENT, (WNDPROC)WndProc, 0, 0, 0,
+    //                NULL, NULL, NULL, NULL, _T("SCREEN3.1415926")};
+    //
+    // wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    // wc.hInstance = GetModuleHandle(NULL);
+    // wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    // if (!RegisterClass(&wc)) return -1;
+    //
+    // const HWND hWnd = CreateWindow(_T("SCREEN3.1415926"), szTitle,
+    //                              WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+    //                              0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, nullptr, nullptr, wc.hInstance, nullptr);
+    
     const HWND hWnd = CreateWindowW(
         szWindowClass, 
         szTitle, 
@@ -152,20 +164,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static auto Rasterizer = new MuRasterizer;
     static auto* ObjModel = new MuObjModel;
     static auto* Camera = new MuCamera;
-    //Camera->SetAspectRatio(1.777f);
-    //Camera->SetFOVy(90);
-    //Camera->SetProjectionMode(EProjectionMode::Perspective);
-    Camera->SetCameraPosition(MuPoint4F(0,0,5,0));
+    Camera->SetAspectRatio(1.777f);
+    Camera->SetFieldOfView(90);
+    Camera->SetNearPlane(1.0f);
+    Camera->SetFarPlane(2.0f);
+    Camera->SetProjectionMode(EProjectionMode::Orthographic);
+    Camera->SetCameraPosition(MuPoint4F(0,0,2,0));
     Camera->SetLookAtPoint(MuPoint4F(0,0,0,0));
+    Camera->SetUpDirection(MuVector4F(0,1,0,0));
     Camera->Init();
+    
     // ModelTransformMatrix 单位矩阵
-    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵 TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
-    // static auto ModelTransformMatrix = MuMatrix4F::Identity();
-    // 计算ViewTransformMatrix
-    //static auto ViewTransformMatrix = Camera->GetViewTransformMatrix();
-    //static auto PerspectiveTransformMatrix = Camera->GetPerspectiveTransformMatrix();
+    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵
+    // TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
+    static MuMatrix4F ModelTransformMatrix = MuMatrix4F::Identity();
+    // 计算ViewTransformMatrix BUG:正交矩阵的计算有问题
+    static MuMatrix4F ViewTransformMatrix = MuMatrix4F::Identity();
+    // 获取ProjectionTransformMatrix
+    static MuMatrix4F ProjectionTransformMatrix = Camera->GetProjectionMatrix();
     // MVP矩阵 右手系
-    //static auto MVPMatrix = PerspectiveTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+    static MuMatrix4F MVPMatrix = ProjectionTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+
+    Camera->SetMVPMatrix(MVPMatrix);
     
     static int clientRectWidth;
     static int clientRectHeight;
@@ -180,12 +200,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             RECT Rect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+            AdjustWindowRect(&Rect, GetWindowLong(hWnd, GWL_STYLE), FALSE); 
             GetClientRect(hWnd, &Rect);
 
             clientRectWidth = Rect.right - Rect.left;
             clientRectHeight = Rect.bottom - Rect.top;
             MuLog::LogInfo( "clientRectWidth: %d, clientRectHeight: %d", clientRectWidth, clientRectHeight);
-
+            SetWindowPos( hWnd, HWND_TOP, 0, 0, clientRectWidth, clientRectHeight, SWP_NOMOVE);
              /*
              * 这段代码定义了一个 BITMAPINFO 结构体变量 Bi，并初始化了它的成员。
              * BITMAPINFO 结构体包含一个 BITMAPINFOHEADER 结构体和一个颜色表。
@@ -289,26 +310,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             
             {
                 // TODO: 在此处添加使用 hdc 的任何绘图代码...
-                // Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuPoint2I(clientRectWidth / 2, clientRectHeight / 2), MuColor::White);
-                // Rasterizer->RandomDraw(Device->GetPointBitFrameBuffer());
-                // Rasterizer->DrawLine( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuPoint2I(clientRectWidth-1, clientRectHeight-1), MuColor::White);
-                // Rasterizer->DrawPoint( Device->GetPointBitFrameBuffer(), MuPoint2I(0, 0), MuColor::Red);
-                //Rasterizer->RandomDrawTriangle(Device->GetPointBitFrameBuffer());
-                //Rasterizer->RandomDrawQuad(Device->GetPointBitFrameBuffer());
                  Rasterizer->DrawObj(Device, Camera, ObjModel, MuColor::GetRandomMuRGB());
-                // auto Vertices = ObjModel->GetAllVertices();
-                // for (auto vertex : Vertices)
-                // {
-                //     // 先全部直接丢掉Z值变成2D点 映射到屏幕空间
-                //     auto point2D = MuMath::Point3FToScreenPointWithAspectRatio(vertex);
-                //     MuLog::LogInfo("Point x: %d, y: %d", point2D.x(), point2D.y());
-                //     Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), point2D, MuColor::White);
-                // }
+                // 画出摄像机的位置
+                Rasterizer->DrawPoint(Device->GetPointBitFrameBuffer(), MuMath::Point4FToPoint2I(Camera->GetCameraPosition()), MuColor::GetRandomMuRGB());
             }
 
             // 将hdcBackBuffer中的位图绘制到paintStruct.hdc中
             BitBlt(paintStruct.hdc, 0, 0, clientRectWidth, clientRectHeight, hdcBackBuffer, 0, 0, SRCCOPY);
             EndPaint(hWnd, &paintStruct);
+        }
+        break;
+        case WM_SIZE:
+        {
+            RECT Rect; 
+            GetClientRect(hWnd, &Rect);
+            int width = Rect.right - Rect.left; 
+            int height = Rect.bottom - Rect.top;
+            MuLog::LogInfo( "width: %d, height: %d", width, height);
         }
         break;
         case WM_DESTROY:

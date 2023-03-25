@@ -80,6 +80,18 @@ inline MuPoint3F Point4FToPoint3F(const MuPoint4F& Point)
     return MuPoint3F(Point.x(), Point.y(), Point.z());
 }
 
+// MuPoint4F -> MuPoint2I
+inline MuPoint2I Point4FToPoint2I(const MuPoint4F& Point)
+{
+    return MuPoint2I(Point.x(), Point.y());
+}
+
+// MuPoint3F -> MuPoint4F
+inline MuPoint4F Point3FToPoint4F(const MuPoint3F& Point)
+{
+    return MuPoint4F(Point.x(), Point.y(), Point.z(), 1.0f);
+}
+
 // Point2FToPoint2I
 inline MuPoint2I Point2FToPoint2I(const MuPoint2F& Point)
 {
@@ -119,7 +131,7 @@ inline MuPoint2F Point3FToScreenPointWithAspectRatio(const MuPoint3F& Point)
 
 // 将[-1,1]范围的点 映射到 [0, SCREEN_WIDTH] 和 [0, SCREEN_HEIGHT] 范围内 但是要保持宽高比不变
 // Z值保留 保持宽高比
-MuPoint3F Point3FToScreenPointWithAspectRatioWithDepth(const MuPoint3F& Point);
+MuPoint3F NDCtoScreen(const MuPoint3F& Point);
 
 // 计算三角形面的法向量
 MuVector3F ComputeTriangleNormal(const MuPoint3F& Point1, const MuPoint3F& Point2, const MuPoint3F& Point3);
@@ -231,9 +243,9 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
     }
     else
     {
-        MuPoint3F CameraPosition3F = MuPoint3F(CameraPosition.x(), CameraPosition.y(), CameraPosition.z());
-        MuPoint3F CameraLookAt3F = MuPoint3F(CameraLookAt.x(), CameraLookAt.y(), CameraLookAt.z());
-        MuPoint3F CameraUp3F = MuPoint3F(CameraUp.x(), CameraUp.y(), CameraUp.z());
+        const MuPoint3F CameraPosition3F = MuPoint3F(CameraPosition.x(), CameraPosition.y(), CameraPosition.z());
+        const MuPoint3F CameraLookAt3F = MuPoint3F(CameraLookAt.x(), CameraLookAt.y(), CameraLookAt.z());
+        const MuPoint3F CameraUp3F = MuPoint3F(CameraUp.x(), CameraUp.y(), CameraUp.z());
 
         const MuPoint3F CameraZAxis = (CameraPosition3F - CameraLookAt3F).normalized();
         const MuPoint3F CameraXAxis = CameraUp3F.cross(CameraZAxis).normalized();
@@ -264,26 +276,17 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
  */
 
 // 正交投影矩阵
-
+/*
+ * 通过摄像机宽高比、近平面距离、远平面距离，计算出正交投影矩阵
+ */
+MuMatrix4F GetOrthographicProjectionMatrix(float FieldOfView, float Aspect, float Near, float Far);
 
 // 透视投影矩阵
 /*
- * 通过摄像机FOVy、宽高比、近平面距离、远平面距离，计算出透视投影矩阵
+ * 通过摄像机FOV、宽高比、近平面距离、远平面距离，计算出透视投影矩阵
  */
-inline MuMatrix4F GetPerspectiveProjectionMatrix(float FOVy, float Aspect, float Near, float Far)
-{
-    // 角度转弧度
-    FOVy = FOVy * PI / 180.0f;
-    // 计算焦距
-    const float FocalLength = 1.0f / std::tan(FOVy / 2.0f);
-    // 计算透视投影矩阵
-    MuMatrix4F PerspectiveProjectionMatrix;
-    PerspectiveProjectionMatrix << FocalLength / Aspect, 0.0f, 0.0f, 0.0f,
-        0.0f, FocalLength, 0.0f, 0.0f,
-        0.0f, 0.0f, (Far + Near) / (Near - Far), 2.0f * Far * Near / (Near - Far),
-        0.0f, 0.0f, -1.0f, 0.0f;
-    return PerspectiveProjectionMatrix;
-}
+MuMatrix4F GetPerspectiveProjectionMatrix(float FieldOfView, float Aspect, float Near, float Far);
+
 }
 
 namespace MuColor
