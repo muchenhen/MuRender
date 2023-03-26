@@ -49,12 +49,26 @@ bool MuMath::BackFaceCulling(const MuPoint3F& Point1, const MuPoint3F& Point2, c
 MuMatrix4F MuMath::GetOrthographicProjectionMatrix(const float Aspect, const float Width, const float Near, const float Far)
 {
     MuMatrix4F OrthogonalMatrix = MuMatrix4F::Identity();
-    OrthogonalMatrix(0, 0) = 2.0f / Width;
-    OrthogonalMatrix(1, 1) = 2.0f / (Width * Aspect);
-    OrthogonalMatrix(2, 2) = -2.0f / (Far - Near);
-    OrthogonalMatrix(3, 0) = -1.0f;
-    OrthogonalMatrix(3, 1) = -1.0f / Aspect;
-    OrthogonalMatrix(3, 2) = -(Far + Near) / (Far - Near);
+    const float N = Near;
+    const float L = -Width / 2;
+    const float B = -Width / 2 / Aspect;
+    const float R = Width / 2;
+    const float T = Width / 2 / Aspect;
+    const float F = Far;
+    MuMatrix4F Scale = MuMatrix4F::Identity();
+    // 正交投影深度值不需要缩放
+    Scale <<
+        2 / (R - L), 0, 0, 0,
+        0, 2 / (T - B), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1;
+    MuMatrix4F Translate = MuMatrix4F::Identity();
+    Translate <<
+        1, 0, 0, -(R + L) / 2,
+        0, 1, 0, -(T + B) / 2,
+        0, 0, 1, 0,
+        0, 0, 0, 1;
+    OrthogonalMatrix = Scale * Translate;
     return OrthogonalMatrix;
 }
 
