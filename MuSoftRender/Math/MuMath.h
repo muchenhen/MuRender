@@ -279,7 +279,7 @@ inline MuMatrix4F GetViewTransformMatrix(const MuPoint4F& CameraPosition, const 
 /*
  * 通过摄像机宽高比、近平面距离、远平面距离，计算出正交投影矩阵
  */
-MuMatrix4F GetOrthographicProjectionMatrix(float FieldOfView, float Aspect, float Near, float Far);
+MuMatrix4F GetOrthographicProjectionMatrix(float Aspect, float Width, float Near, float Far);
 
 // 透视投影矩阵
 /*

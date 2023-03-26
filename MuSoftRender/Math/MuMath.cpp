@@ -38,24 +38,27 @@ bool MuMath::BackFaceCulling(const MuPoint3F& Point1, const MuPoint3F& Point2, c
     return Normal.dot(CameraDirection) < 0;
 }
 
-MuMatrix4F MuMath::GetOrthographicProjectionMatrix(float FieldOfView, float Aspect, float Near, float Far)
+/**
+ * \brief 计算摄像机的正交投影矩阵
+ * \param Width 正交投影的视锥宽度
+ * \param Aspect 宽高比
+ * \param Near 近平面距离
+ * \param Far 远平面距离
+ * \return 摄像机的正交投影矩阵
+ */
+MuMatrix4F MuMath::GetOrthographicProjectionMatrix(const float Aspect, const float Width, const float Near, const float Far)
 {
-    const float HalfWidth = FieldOfView / 2;
-    const float HalfHeight = HalfWidth / Aspect;
-    const float Width = HalfWidth * 2;
-    const float Height = HalfHeight * 2;
-    const float Depth = Far - Near;
-
-    MuMatrix4F OrthogonalMatrix;
-    OrthogonalMatrix << 2 / Width, 0, 0, 0,
-        0, 2 / Height, 0, 0,
-        0, 0, 2 / Depth, 0,
-        0, 0, 0, 1;
-
+    MuMatrix4F OrthogonalMatrix = MuMatrix4F::Identity();
+    OrthogonalMatrix(0, 0) = 2.0f / Width;
+    OrthogonalMatrix(1, 1) = 2.0f / (Width * Aspect);
+    OrthogonalMatrix(2, 2) = -2.0f / (Far - Near);
+    OrthogonalMatrix(3, 0) = -1.0f;
+    OrthogonalMatrix(3, 1) = -1.0f / Aspect;
+    OrthogonalMatrix(3, 2) = -(Far + Near) / (Far - Near);
     return OrthogonalMatrix;
 }
 
-MuMatrix4F MuMath::GetPerspectiveProjectionMatrix(float FieldOfView, float Aspect, float Near, float Far)
+MuMatrix4F MuMath::GetPerspectiveProjectionMatrix(const float FieldOfView, const float Aspect, const float Near, const float Far)
 {
     const float HalfWidth = FieldOfView / 2;
     const float HalfHeight = HalfWidth / Aspect;

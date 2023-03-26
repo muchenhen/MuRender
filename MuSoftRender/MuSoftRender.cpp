@@ -160,38 +160,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
     static auto* Device = new MuDevice;
-    Device->SetRenderMode(EMuRenderMode::Texture);
     static auto Rasterizer = new MuRasterizer;
     static auto* ObjModel = new MuObjModel;
     static auto* Camera = new MuCamera;
-    Camera->SetAspectRatio(1.777f);
-    Camera->SetFieldOfView(90);
-    Camera->SetNearPlane(1.0f);
-    Camera->SetFarPlane(2.0f);
-    Camera->SetProjectionMode(EProjectionMode::Orthographic);
-    Camera->SetCameraPosition(MuPoint4F(0,0,2,0));
-    Camera->SetLookAtPoint(MuPoint4F(0,0,0,0));
-    Camera->SetUpDirection(MuVector4F(0,1,0,0));
-    Camera->Init();
-    
-    // ModelTransformMatrix 单位矩阵
-    // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵
-    // TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
-    static MuMatrix4F ModelTransformMatrix = MuMatrix4F::Identity();
-    // 计算ViewTransformMatrix BUG:正交矩阵的计算有问题
-    static MuMatrix4F ViewTransformMatrix = MuMatrix4F::Identity();
-    // 获取ProjectionTransformMatrix
-    static MuMatrix4F ProjectionTransformMatrix = Camera->GetProjectionMatrix();
-    // MVP矩阵 右手系
-    static MuMatrix4F MVPMatrix = ProjectionTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
 
-    Camera->SetMVPMatrix(MVPMatrix);
     
     static int clientRectWidth;
     static int clientRectHeight;
-
-    Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
-
     // 用于保存位图句柄
     static HBITMAP hBitmap;
 
@@ -283,6 +258,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              */
             SelectObject(hdcBackBuffer, hBitmap);
             ReleaseDC(hWnd, Hdc);
+
+            Device->SetRenderMode(EMuRenderMode::Texture);
+            Camera->SetAspectRatio(1.0);
+            Camera->SetProjectionMode(EProjectionMode::Orthographic);
+            Camera->SetOrthographicWidth(2.0f);
+            Camera->SetOrthographicNearPlane(0.0f);
+            Camera->SetOrthographicFarPlane(1000.0f);
+            Camera->SetCameraPosition(MuPoint4F(0,0,10,0));
+            Camera->SetLookAtPoint(MuPoint4F(0,0,0,0));
+            Camera->SetUpDirection(MuVector4F(0,1,0,0));
+            Camera->Init();
+    
+            // ModelTransformMatrix 单位矩阵
+            // 由于目前直接假定了物体的中心在原点，物体的自身坐标系和世界坐标系重合，所以模型变换矩阵为单位矩阵
+            // TODO:设置物体自身的平移旋转和缩放，参考游戏引擎
+            static MuMatrix4F ModelTransformMatrix = MuMatrix4F::Identity();
+            // 计算ViewTransformMatrix BUG:正交矩阵的计算有问题
+            static MuMatrix4F ViewTransformMatrix = MuMatrix4F::Identity();
+            // 获取ProjectionTransformMatrix
+            static MuMatrix4F ProjectionTransformMatrix = Camera->GetProjectionMatrix();
+            // static MuMatrix4F ProjectionTransformMatrix = MuMatrix4F::Identity();
+            // 打印ProjectionTransformMatrix
+            std::cout << ProjectionTransformMatrix << std::endl;
+            // MVP矩阵 右手系
+            static MuMatrix4F MVPMatrix = ProjectionTransformMatrix * ViewTransformMatrix * ModelTransformMatrix;
+
+            Camera->SetMVPMatrix(MVPMatrix);
+            Rasterizer->InitRasterizer(clientRectWidth, clientRectHeight);
+
         }
         break;
         case WM_COMMAND:

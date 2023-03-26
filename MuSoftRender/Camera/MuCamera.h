@@ -10,7 +10,7 @@ public:
     MuCamera(const MuPoint4F& InPosition, const MuVector4F& InLookAtDirection, float InFOV, float InAspectRatio, float InNearPlane, float InFarPlane, EProjectionMode InProjectionMode);
 
     bool Init();
-    
+
     // 为所有private成员变量生成创建Get和Set方法
     ADD_GET_SET_METHOD(MuPoint4F, CameraPosition)
     ADD_GET_SET_METHOD(MuPoint4F, LookAtPoint)
@@ -22,73 +22,62 @@ public:
     ADD_GET_SET_METHOD(float, FarPlane)
     ADD_GET_SET_METHOD(EProjectionMode, ProjectionMode)
     ADD_GET_SET_METHOD(MuMatrix4F, MVPMatrix)
+    ADD_GET_SET_METHOD(float, OrthographicWidth)
+    ADD_GET_SET_METHOD(float, OrthographicNearPlane)
+    ADD_GET_SET_METHOD(float, OrthographicFarPlane)
 
     // 获取Projection矩阵
     MuMatrix4F GetProjectionMatrix();
     // 获取ViewTransform矩阵
     MuMatrix4F GetViewTransformMatrix();
+
+    MuMatrix4F GetOrthographicProjectionMatrix();
     
     MuMatrix4F GetPerspectiveTransformMatrix();
-    
+
 private:
-
-    /*
-     * 相机位置
-     */
+    // 相机位置
     MuPoint4F CameraPosition = G_ORIGIN_POINT;
-
-    /*
-     * LookAt 点
-     */
+    
+    // LookAt 点
     MuPoint4F LookAtPoint = G_ORIGIN_POINT;
 
-    /*
-     * LookAt 方向
-     */
+    // LookAt 方向
     MuVector4F LookAtDirection = G_NEGATIVE_Z_DIRECTION;
 
-    /*
-     * 向上方向
-     */
+    // 向上方向
     MuVector4F UpDirection = G_POSITIVE_Y_DIRECTION;
     
-    /*
-     * FOV (角度制)
-     */
+    // FOV (角度制)
     float FieldOfView = 60.f;
 
-    /*
-     * 相机宽高比
-     */
+    // 相机宽高比
     float AspectRatio = 1.7f;
 
-    /*
-     * 视锥体近平面距离
-     */
+    // 视锥体近平面距离
     float NearPlane = 5.0f;
 
-    /*
-     *  视锥体远平面距离
-     */
+    //  视锥体远平面距离
     float FarPlane = 1000.f;
 
-    /*
-     * ViewTransform 矩阵
-     */
+    // ViewTransform 矩阵
     MuMatrix4F ViewTransform;
 
-    /*
-     * PerspectiveTransform 矩阵
-     */
+    // PerspectiveTransform 矩阵
     MuMatrix4F PerspectiveTransform;
 
-    /*
-     * 投影模式
-     */
+    // 投影模式
     EProjectionMode ProjectionMode = EProjectionMode::Perspective;
 
-    /*
-     *  MVPMatrix
-     */
+    // MVPMatrix
     MuMatrix4F MVPMatrix;
+
+    // 正交投影视锥体宽度
+    float OrthographicWidth = 0.f;
+
+    // 正交投影视锥体近平面
+    float OrthographicNearPlane = 0.f;
+
+    // 正交投影视锥体远平面
+    float OrthographicFarPlane = 0.f;
 };

@@ -54,13 +54,22 @@ MuMatrix4F MuCamera::GetProjectionMatrix()
     }
     else
     {
-        return MuMath::GetOrthographicProjectionMatrix(FieldOfView, AspectRatio, NearPlane, FarPlane);
+        return MuMath::GetOrthographicProjectionMatrix(AspectRatio, OrthographicWidth, OrthographicNearPlane, OrthographicFarPlane);
     }
 }
 
 MuMatrix4F MuCamera::GetViewTransformMatrix()
 {
     return ViewTransform;
+}
+
+MuMatrix4F MuCamera::GetOrthographicProjectionMatrix()
+{
+    MuMatrix4F OrthogonalMatrix = MuMatrix4F::Identity();
+
+    
+    
+    return OrthogonalMatrix;
 }
 
 MuMatrix4F MuCamera::GetPerspectiveTransformMatrix()
