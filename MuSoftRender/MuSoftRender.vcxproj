@@ -127,13 +127,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DrawFunction.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MuSoftRender.h" />
+    <ClInclude Include="Render.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DrawFunction.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
+    <ClCompile Include="MuStruct.cpp" />
+    <ClCompile Include="Render.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MuSoftRender.rc" />

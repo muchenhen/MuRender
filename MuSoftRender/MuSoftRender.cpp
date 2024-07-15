@@ -2,11 +2,24 @@
 #include <vector>
 #include <cstdint>
 
+#include "Render.h"
+
+#define SAFE_DELETE(p)     \
+    {                      \
+        if (p)             \
+        {                  \
+            delete (p);    \
+            (p) = nullptr; \
+        }                  \
+    }
+
 // 窗口过程函数声明
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+Renderer* G_Renderer = nullptr;
+
 // 渲染函数声明
-void Render(std::vector<uint32_t>& buffer, int width, int height);
+void Render();
 
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
@@ -34,13 +47,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         nullptr,                      // 父窗口
         nullptr,                      // 菜单
         hInstance,                    // 实例句柄
-        nullptr                              // 额外数据
+        nullptr                       // 额外数据
     );
 
     if (hwnd == nullptr)
     {
         return 0;
     }
+
+    // 创建Render实例
+    G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     ShowWindow(hwnd, nCmdShow);
 
@@ -52,6 +68,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         DispatchMessage(&msg);
     }
 
+    SAFE_DELETE(G_Renderer);
     return 0;
 }
 
@@ -68,29 +85,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             const HDC hdc = BeginPaint(hwnd, &ps);
 
-            // 获取客户区大小
-            RECT clientRect;
-            GetClientRect(hwnd, &clientRect);
-            const int width = clientRect.right - clientRect.left;
-            const int height = clientRect.bottom - clientRect.top;
-
-            // 创建像素缓冲区
-            std::vector<uint32_t> buffer(width * height);
-
-            // 渲染到缓冲区
-            Render(buffer, width, height);
+            Render();
 
             // 创建位图
             BITMAPINFO bmi = {};
             bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-            bmi.bmiHeader.biWidth = width;
-            bmi.bmiHeader.biHeight = -height; // 负值表示从上到下的位图
+            bmi.bmiHeader.biWidth = G_Renderer->GetWidth();
+            bmi.bmiHeader.biHeight = -G_Renderer->GetHeight(); // 负值表示从上到下的位图
             bmi.bmiHeader.biPlanes = 1;
             bmi.bmiHeader.biBitCount = 32;
             bmi.bmiHeader.biCompression = BI_RGB;
 
             // 将缓冲区内容绘制到窗口
-            SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, buffer.data(), &bmi, DIB_RGB_COLORS);
+            SetDIBitsToDevice(hdc, 0, 0, G_Renderer->GetWidth(), G_Renderer->GetHeight(), 0, 0, 0, G_Renderer->GetHeight(),
+                              G_Renderer->GetFrameBuffer().data(), &bmi, DIB_RGB_COLORS);
 
             EndPaint(hwnd, &ps);
         }
@@ -100,17 +108,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 // 简单的渲染函数
-void Render(std::vector<uint32_t>& buffer, int width, int height)
+void Render()
 {
-    // 这里只是一个示例，绘制一个简单的渐变
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            const uint8_t r = static_cast<uint8_t>(255.0f * x / width);
-            const uint8_t g = static_cast<uint8_t>(255.0f * y / height);
-            const uint8_t b = 128;
-            buffer[y * width + x] = (r << 16) | (g << 8) | b;
-        }
-    }
+    G_Renderer->Clear(0);
+
+    // 画线
+    G_Renderer->DrawLine(100, 100, 700, 500, 0xFFFF0000);
+    G_Renderer->DrawLine(100, 500, 700, 100, 0xFFFF0000);
+
+    // 画三角形
+    G_Renderer->DrawTriangle(100, 100, 700, 100, 400, 500, 0xFF00FF00);
 }
