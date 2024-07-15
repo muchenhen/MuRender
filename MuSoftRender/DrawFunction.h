@@ -1,5 +1,4 @@
 #pragma once
-#define uint_32 unsigned int
 
 class DrawFunctions
 {

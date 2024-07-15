@@ -3,6 +3,8 @@
 #include <vector>
 #include <cstdint>
 
+#define UINT_32 unsigned int
+
 class Renderer
 {
 private:
@@ -23,5 +25,9 @@ public:
 
 
 public:
-    
+    void DrawPixel(int x, int y, unsigned int color);
+
+    void DrawLine(int x1, int y1, int x2, int y2, unsigned int color);
+
+    void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned int color);
 };
