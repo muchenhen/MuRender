@@ -44,11 +44,9 @@ public:
         return indices;
     }
 
-    // 如果需要，可以重写 Update 方法
     void Update(float deltaTime) override
     {
-        // 在这里添加 Cube 特有的更新逻辑
-        Object::Update(deltaTime); // 调用基类的 Update 方法
+        Object::Update(deltaTime);
     }
 
 private:
