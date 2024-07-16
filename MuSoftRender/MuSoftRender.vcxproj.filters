@@ -27,9 +27,6 @@
     <ClInclude Include="MuSoftRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DrawFunction.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Render.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -50,25 +47,7 @@
     <ClCompile Include="MuSoftRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DrawFunction.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Render.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MuStruct.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Cube.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
