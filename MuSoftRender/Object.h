@@ -48,8 +48,11 @@ public:
     virtual Eigen::Matrix4f GetModelMatrix() const
     {
         Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
+        // 应用旋转
         model.block<3, 3>(0, 0) = (Eigen::AngleAxisf(rotation.x(), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(rotation.y(), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(rotation.z(), Eigen::Vector3f::UnitZ())).matrix();
+        // 应用位置
         model.block<3, 1>(0, 3) = position;
+        // 应用缩放
         model.block<3, 3>(0, 0) *= scale.asDiagonal();
         return model;
     }
