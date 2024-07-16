@@ -49,11 +49,15 @@ Camera* G_Camera = nullptr;
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
 
+constexpr float UNITS_PER_METER = 1.0f;
+
 // 渲染函数声明
 void Render(HWND Hwnd);
 // 更新并绘制 FPS
 void UpdateAndDrawFPS(HWND Hwnd);
 void UpdateDevice(HWND Hwnd);
+
+// 注意：本项目采用1单位 = 1米的比例，与UE4保持一致
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
@@ -128,21 +132,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例
     G_Scene = new Scene();
+
     // 创建Camera实例
-    G_Camera = new Camera();
+    std::unique_ptr<Camera> camera = std::make_unique<Camera>(
+        Eigen::Vector3f(3, 3, 3),
+        Eigen::Vector3f(0, 0, 0),
+        Eigen::Vector3f(0, 1, 0),
+        45.0f,
+        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT,
+        0.1f,
+        100.0f);
 
-    G_Camera = new Camera(
-        Eigen::Vector3f(3, 3, 3),                         // 相机位置
-        Eigen::Vector3f(0, 0, 0),                         // 目标位置 (立方体中心)
-        Eigen::Vector3f(0, 1, 0),                         // 上方向
-        45.0f,                                            // FOV
-        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT, // 宽高比
-        0.1f,                                             // 近平面
-        100.0f                                            // 远平面
-    );
+    G_Scene->AddCamera(std::move(camera));
 
-    std::unique_ptr<Cube> cube = std::make_unique<Cube>(2.0f); // 创建边长为2的立方体
-    cube->SetPosition(Eigen::Vector3f(0, 0, 0));               // 设置立方体位置
+    std::unique_ptr<Cube> cube = std::make_unique<Cube>(2.0f);
+    cube->SetPosition(Eigen::Vector3f(0, 0, 0));
     G_Scene->AddObject(std::move(cube));
 
     ShowWindow(Hwnd, nCmdShow);
@@ -280,55 +284,11 @@ void Render(HWND Hwnd)
 {
     G_Renderer->Clear(0x000000); // 清除为黑色
 
-    if (G_Scene && G_Camera)
+    if (G_Renderer && G_Scene && !G_Scene->GetCameras().empty())
     {
-        // 获取视图和投影矩阵
-        Eigen::Matrix4f viewMatrix = G_Camera->GetViewMatrix();
-        Eigen::Matrix4f projectionMatrix = G_Camera->GetProjectionMatrix();
-
-        // 遍历场景中的所有对象
-        for (const auto& obj : G_Scene->GetObjects())
-        {
-            // 获取模型矩阵
-            Eigen::Matrix4f modelMatrix = obj->GetModelMatrix();
-
-            // 计算 MVP 矩阵
-            Eigen::Matrix4f mvpMatrix = projectionMatrix * viewMatrix * modelMatrix;
-
-            // 如果是 Cube 对象
-            if (const Cube* cube = dynamic_cast<const Cube*>(obj.get()))
-            {
-                const auto& vertices = cube->getVertices();
-                const auto& indices = cube->getIndices();
-
-                // 遍历所有三角形
-                for (size_t i = 0; i < indices.size(); i += 3)
-                {
-                    Eigen::Vector4f v0 = mvpMatrix * vertices[indices[i]].homogeneous();
-                    Eigen::Vector4f v1 = mvpMatrix * vertices[indices[i + 1]].homogeneous();
-                    Eigen::Vector4f v2 = mvpMatrix * vertices[indices[i + 2]].homogeneous();
-
-                    // 执行透视除法
-                    v0 /= v0.w();
-                    v1 /= v1.w();
-                    v2 /= v2.w();
-
-                    // 视口变换
-                    int x0 = static_cast<int>((v0.x() + 1.0f) * 0.5f * WINDOW_WIDTH);
-                    int y0 = static_cast<int>((1.0f - v0.y()) * 0.5f * WINDOW_HEIGHT);
-                    int x1 = static_cast<int>((v1.x() + 1.0f) * 0.5f * WINDOW_WIDTH);
-                    int y1 = static_cast<int>((1.0f - v1.y()) * 0.5f * WINDOW_HEIGHT);
-                    int x2 = static_cast<int>((v2.x() + 1.0f) * 0.5f * WINDOW_WIDTH);
-                    int y2 = static_cast<int>((1.0f - v2.y()) * 0.5f * WINDOW_HEIGHT);
-
-                    // 绘制三角形边框
-                    G_Renderer->DrawLine(x0, y0, x1, y1, 0xFFFFFF);
-                    G_Renderer->DrawLine(x1, y1, x2, y2, 0xFFFFFF);
-                    G_Renderer->DrawLine(x2, y2, x0, y0, 0xFFFFFF);
-                }
-            }
-        }
+        G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
     }
+
 
     UpdateDevice(Hwnd);
 }

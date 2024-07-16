@@ -3,6 +3,9 @@
 #include <vector>
 #include <cstdint>
 
+#include "Camera.h"
+#include "Scene.h"
+
 #define UINT_32 unsigned int
 
 class Renderer
@@ -31,5 +34,6 @@ public:
 
     void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned int color);
 
-
+public:
+    void RenderCamera(const Scene& Scene, const Camera& Camera);
 };

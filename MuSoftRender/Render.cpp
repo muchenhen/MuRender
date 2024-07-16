@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "Cube.h"
+
 Renderer::Renderer(int width, int height)
 {
     ScreenWidth = width;
@@ -98,6 +100,50 @@ void Renderer::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsi
         for (int x = Ax; x <= Bx; x++)
         {
             DrawPixel(x, y, color);
+        }
+    }
+}
+
+void Renderer::RenderCamera(const Scene& Scene, const Camera& Camera)
+{
+    Eigen::Matrix4f viewMatrix = Camera.GetViewMatrix();
+    Eigen::Matrix4f projectionMatrix = Camera.GetProjectionMatrix();
+    Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
+
+    for (const auto& object : Scene.GetObjects())
+    {
+        Eigen::Matrix4f modelMatrix = object->GetModelMatrix();
+        Eigen::Matrix4f mvpMatrix = viewProjectionMatrix * modelMatrix;
+
+        if (const Cube* cube = dynamic_cast<const Cube*>(&*object))
+        {
+            const auto& vertices = cube->getVertices();
+            const auto& indices = cube->getIndices();
+
+            for (size_t i = 0; i < indices.size(); i += 3)
+            {
+                Eigen::Vector4f v0 = mvpMatrix * vertices[indices[i]].homogeneous();
+                Eigen::Vector4f v1 = mvpMatrix * vertices[indices[i + 1]].homogeneous();
+                Eigen::Vector4f v2 = mvpMatrix * vertices[indices[i + 2]].homogeneous();
+
+                // 执行透视除法
+                v0 /= v0.w();
+                v1 /= v1.w();
+                v2 /= v2.w();
+
+                // 视口变换
+                int x0 = static_cast<int>((v0.x() + 1.0f) * 0.5f * ScreenWidth);
+                int y0 = static_cast<int>((1.0f - v0.y()) * 0.5f * ScreenHeight);
+                int x1 = static_cast<int>((v1.x() + 1.0f) * 0.5f * ScreenWidth);
+                int y1 = static_cast<int>((1.0f - v1.y()) * 0.5f * ScreenHeight);
+                int x2 = static_cast<int>((v2.x() + 1.0f) * 0.5f * ScreenWidth);
+                int y2 = static_cast<int>((1.0f - v2.y()) * 0.5f * ScreenHeight);
+
+                // 绘制三角形边框
+                DrawLine(x0, y0, x1, y1, 0xFFFFFF);
+                DrawLine(x1, y1, x2, y2, 0xFFFFFF);
+                DrawLine(x2, y2, x0, y0, 0xFFFFFF);
+            }
         }
     }
 }
