@@ -11,6 +11,10 @@
 #include "Cube.h"
 #include "Render.h"
 #include "Scene.h"
+#include "Functions.h"
+
+#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
+#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
 
 #define SAFE_DELETE(p)     \
     {                      \
@@ -46,11 +50,18 @@ Renderer* G_Renderer = nullptr;
 Scene* G_Scene = nullptr;
 Camera* G_Camera = nullptr;
 
+// 鼠标控制相关
+bool g_IsMouseDown = false;
+int g_LastMouseX = 0;
+int g_LastMouseY = 0;
+float g_CameraDistance = 5.0f; // 初始摄像机距离
+
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 600;
 
 constexpr float UNITS_PER_METER = 1.0f;
 
+void Tick(HWND Hwnd, float deltaTime);
 // 渲染函数声明
 void Render(HWND Hwnd);
 // 更新并绘制 FPS
@@ -186,7 +197,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                     G_LastFPSUpdateTime = currentTime;
                 }
 
-                Render(Hwnd);
+                Tick(Hwnd, deltaTime);
+
                 UpdateAndDrawFPS(Hwnd);
                 lastFrameTime = currentTime;
             }
@@ -213,6 +225,47 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
 {
     switch (UMsg)
     {
+        case WM_LBUTTONDOWN:
+        {
+            g_IsMouseDown = true;
+            g_LastMouseX = GET_X_LPARAM(LParam);
+            g_LastMouseY = GET_Y_LPARAM(LParam);
+            return 0;
+        }
+        case WM_LBUTTONUP:
+        {
+            g_IsMouseDown = false;
+            return 0;
+        }
+        case WM_MOUSEMOVE:
+        {
+            if (g_IsMouseDown)
+            {
+                int x = GET_X_LPARAM(LParam);
+                int y = GET_Y_LPARAM(LParam);
+                int dx = x - g_LastMouseX;
+                int dy = y - g_LastMouseY;
+
+                // 更新 Cube 的旋转
+                Eigen::Vector3f targetRotation = G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f);
+                Eigen::Vector3f currentRotation = G_Scene->GetObjects()[0]->GetRotation();
+
+                Eigen::Vector3f newRotation = Lerp(currentRotation, targetRotation, 0.1f);
+                G_Scene->GetObjects()[0]->SetRotation(newRotation);
+                G_Scene->GetObjects()[0]->SetRotation(G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f));
+
+                g_LastMouseX = x;
+                g_LastMouseY = y;
+            }
+            return 0;
+        }
+        case WM_MOUSEWHEEL:
+        {
+            int zDelta = GET_WHEEL_DELTA_WPARAM(WParam);
+            g_CameraDistance -= zDelta * 0.001f;
+            //g_CameraDistance = std::max(1.0f, std::min(g_CameraDistance, 10.0f)); // 限制距离范围
+            return 0;
+        }
         case WM_COMMAND:
         {
             switch (LOWORD(WParam))
@@ -280,6 +333,13 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
     return DefWindowProc(Hwnd, UMsg, WParam, LParam);
 }
 
+void Tick(HWND Hwnd, float deltaTime)
+{
+    G_Scene->Update(deltaTime);
+
+    Render(Hwnd);
+}
+
 void Render(HWND Hwnd)
 {
     G_Renderer->Clear(0x000000); // 清除为黑色
@@ -288,7 +348,6 @@ void Render(HWND Hwnd)
     {
         G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
     }
-
 
     UpdateDevice(Hwnd);
 }

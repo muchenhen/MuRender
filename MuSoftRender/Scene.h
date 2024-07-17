@@ -35,5 +35,9 @@ public:
         {
             obj->Update(deltaTime);
         }
+        for (auto& camera : Cameras)
+        {
+            camera->Update(deltaTime);
+        }
     }
 };

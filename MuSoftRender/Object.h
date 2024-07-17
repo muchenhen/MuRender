@@ -17,6 +17,7 @@ public:
 
     virtual void Update(float deltaTime)
     {
+
     }
 
     void SetPosition(const Eigen::Vector3f& pos)
