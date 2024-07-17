@@ -134,6 +134,7 @@
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshObject.h" />
     <ClInclude Include="MuSoftRender.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Render.h" />

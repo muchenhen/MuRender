@@ -10,6 +10,8 @@ protected:
     Eigen::Vector3f scale;
 
 public:
+    virtual ~Object() = default;
+
     Object() :
         position(Eigen::Vector3f::Zero()), rotation(Eigen::Vector3f::Zero()), scale(Eigen::Vector3f::Ones())
     {

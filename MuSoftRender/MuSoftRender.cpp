@@ -246,13 +246,17 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
                 int dx = x - g_LastMouseX;
                 int dy = y - g_LastMouseY;
 
-                // 更新 Cube 的旋转
-                Eigen::Vector3f targetRotation = G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f);
-                Eigen::Vector3f currentRotation = G_Scene->GetObjects()[0]->GetRotation();
+                // 判断Object是否存在
+                if (!G_Scene->GetObjects().empty())
+                {
+                    // 更新 Cube 的旋转
+                    Eigen::Vector3f targetRotation = G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f);
+                    Eigen::Vector3f currentRotation = G_Scene->GetObjects()[0]->GetRotation();
 
-                Eigen::Vector3f newRotation = Lerp(currentRotation, targetRotation, 0.1f);
-                G_Scene->GetObjects()[0]->SetRotation(newRotation);
-                G_Scene->GetObjects()[0]->SetRotation(G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f));
+                    Eigen::Vector3f newRotation = Lerp(currentRotation, targetRotation, 0.1f);
+                    G_Scene->GetObjects()[0]->SetRotation(newRotation);
+                    G_Scene->GetObjects()[0]->SetRotation(G_Scene->GetObjects()[0]->GetRotation() + Eigen::Vector3f(dy * 0.01f, dx * 0.01f, 0.0f));
+                }
 
                 g_LastMouseX = x;
                 g_LastMouseY = y;
@@ -263,7 +267,7 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
         {
             int zDelta = GET_WHEEL_DELTA_WPARAM(WParam);
             g_CameraDistance -= zDelta * 0.001f;
-            //g_CameraDistance = std::max(1.0f, std::min(g_CameraDistance, 10.0f)); // 限制距离范围
+            // g_CameraDistance = std::max(1.0f, std::min(g_CameraDistance, 10.0f)); // 限制距离范围
             return 0;
         }
         case WM_COMMAND:

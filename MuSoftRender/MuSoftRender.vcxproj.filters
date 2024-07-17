@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{159ad7f0-779b-4629-855d-48e801e3f2c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{a06a7f3d-7722-460b-b153-5627dae9dd29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{72e522b3-e421-4921-a88c-9363611b8c99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -27,29 +36,32 @@
     <ClInclude Include="MuSoftRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Render.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Functions.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>头文件</Filter>
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshObject.h">
+      <Filter>Objects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
