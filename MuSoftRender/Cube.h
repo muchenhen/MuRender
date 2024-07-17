@@ -2,13 +2,13 @@
 #include "Object.h"
 #include <vector>
 
+#include "Mesh.h"
+
 class Cube : public Object
 {
 private:
     float sideLength;
-    std::vector<Eigen::Vector3f> vertices;
-    std::vector<Eigen::Vector3f> normals;
-    std::vector<unsigned int> indices;
+    Mesh mesh;
 
 public:
     Cube(float side = 1.0f) :
@@ -29,19 +29,9 @@ public:
         return sideLength;
     }
 
-    const std::vector<Eigen::Vector3f>& getVertices() const
+    const Mesh& GetMesh() const
     {
-        return vertices;
-    }
-
-    const std::vector<Eigen::Vector3f>& getNormals() const
-    {
-        return normals;
-    }
-
-    const std::vector<unsigned int>& getIndices() const
-    {
-        return indices;
+        return mesh;
     }
 
     void Update(float deltaTime) override
@@ -52,44 +42,30 @@ public:
 private:
     void generateGeometry()
     {
-        float halfSide = 0.5f; // 生成一个单位立方体，然后通过 scale 来调整大小
+        float halfSide = sideLength / 2.0f;
 
-        // 清空之前的数据
-        vertices.clear();
-        normals.clear();
-        indices.clear();
+        // 定义8个顶点
+        mesh.AddVertex(Eigen::Vector3f(-halfSide, -halfSide, -halfSide));
+        mesh.AddVertex(Eigen::Vector3f(halfSide, -halfSide, -halfSide));
+        mesh.AddVertex(Eigen::Vector3f(halfSide, halfSide, -halfSide));
+        mesh.AddVertex(Eigen::Vector3f(-halfSide, halfSide, -halfSide));
+        mesh.AddVertex(Eigen::Vector3f(-halfSide, -halfSide, halfSide));
+        mesh.AddVertex(Eigen::Vector3f(halfSide, -halfSide, halfSide));
+        mesh.AddVertex(Eigen::Vector3f(halfSide, halfSide, halfSide));
+        mesh.AddVertex(Eigen::Vector3f(-halfSide, halfSide, halfSide));
 
-        // 生成顶点
-        vertices = {
-            {-halfSide, -halfSide, -halfSide},
-            {halfSide, -halfSide, -halfSide},
-            {halfSide, halfSide, -halfSide},
-            {-halfSide, halfSide, -halfSide},
-            {-halfSide, -halfSide, halfSide},
-            {halfSide, -halfSide, halfSide},
-            {halfSide, halfSide, halfSide},
-            {-halfSide, halfSide, halfSide}};
-
-        // 生成法线 (简化处理，每个面一个法线)
-        normals = {
-            {0.0f, 0.0f, -1.0f},
-            {0.0f, 0.0f, 1.0f},
-            {1.0f, 0.0f, 0.0f},
-            {-1.0f, 0.0f, 0.0f},
-            {0.0f, 1.0f, 0.0f},
-            {0.0f, -1.0f, 0.0f}};
-
-        // 生成索引 (6个面，每个面2个三角形)
-        indices = {
-            0, 1, 2, 2, 3, 0, // 前面
-            4, 5, 6, 6, 7, 4, // 后面
-            1, 5, 6, 6, 2, 1, // 右面
-            0, 4, 7, 7, 3, 0, // 左面
-            3, 2, 6, 6, 7, 3, // 上面
-            0, 1, 5, 5, 4, 0  // 下面
-        };
-
-        // 使用 scale 来调整立方体大小
-        SetScale(Eigen::Vector3f(sideLength, sideLength, sideLength));
+        // 定义6个面，每个面2个三角形
+        mesh.AddTriangle(0, 1, 2);
+        mesh.AddTriangle(2, 3, 0); // 前面
+        mesh.AddTriangle(4, 5, 6);
+        mesh.AddTriangle(6, 7, 4); // 后面
+        mesh.AddTriangle(1, 5, 6);
+        mesh.AddTriangle(6, 2, 1); // 右面
+        mesh.AddTriangle(0, 4, 7);
+        mesh.AddTriangle(7, 3, 0); // 左面
+        mesh.AddTriangle(3, 2, 6);
+        mesh.AddTriangle(6, 7, 3); // 上面
+        mesh.AddTriangle(0, 1, 5);
+        mesh.AddTriangle(5, 4, 0); // 下面
     }
 };

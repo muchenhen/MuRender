@@ -104,27 +104,26 @@ void Renderer::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsi
     }
 }
 
-void Renderer::RenderCamera(const Scene& Scene, const Camera& Camera)
+void Renderer::RenderCamera(const Scene& scene, const Camera& camera)
 {
-    Eigen::Matrix4f viewMatrix = Camera.GetViewMatrix();
-    Eigen::Matrix4f projectionMatrix = Camera.GetProjectionMatrix();
+    Eigen::Matrix4f viewMatrix = camera.GetViewMatrix();
+    Eigen::Matrix4f projectionMatrix = camera.GetProjectionMatrix();
     Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
 
-    for (const auto& object : Scene.GetObjects())
+    for (const auto& object : scene.GetObjects())
     {
         Eigen::Matrix4f modelMatrix = object->GetModelMatrix();
         Eigen::Matrix4f mvpMatrix = viewProjectionMatrix * modelMatrix;
 
-        if (const Cube* cube = dynamic_cast<const Cube*>(&*object))
+        if (const Cube* cube = dynamic_cast<const Cube*>(object.get()))
         {
-            const auto& vertices = cube->getVertices();
-            const auto& indices = cube->getIndices();
+            const Mesh& mesh = cube->GetMesh();
 
-            for (size_t i = 0; i < indices.size(); i += 3)
+            for (size_t i = 0; i < mesh.indices.size(); i += 3)
             {
-                Eigen::Vector4f v0 = mvpMatrix * vertices[indices[i]].homogeneous();
-                Eigen::Vector4f v1 = mvpMatrix * vertices[indices[i + 1]].homogeneous();
-                Eigen::Vector4f v2 = mvpMatrix * vertices[indices[i + 2]].homogeneous();
+                Eigen::Vector4f v0 = mvpMatrix * mesh.vertices[mesh.indices[i]].position.homogeneous();
+                Eigen::Vector4f v1 = mvpMatrix * mesh.vertices[mesh.indices[i + 1]].position.homogeneous();
+                Eigen::Vector4f v2 = mvpMatrix * mesh.vertices[mesh.indices[i + 2]].position.homogeneous();
 
                 // 执行透视除法
                 v0 /= v0.w();
