@@ -1,5 +1,7 @@
 #pragma once
+#include "Logger.h"
 #include "Object.h"
+
 class Camera : public Object
 {
 private:
@@ -11,10 +13,16 @@ private:
     Eigen::Vector3f target;
 
 public:
-    Camera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tgt, const Eigen::Vector3f& up,
-           float fov, float aspect, float near, float far) :
+public:
+    Camera(const Eigen::Vector3f& pos, const Eigen::Vector3f& tgt, const Eigen::Vector3f& upVector,
+           float fieldOfView, float aspectRatio, float nearValue, float farValue) :
         Object(),
-        up(up), target(tgt), fov(fov), aspect(aspect), nearPlane(near), farPlane(far)
+        target(tgt),
+        up(upVector),
+        fov(fieldOfView),
+        aspect(aspectRatio),
+        nearPlane(nearValue),
+        farPlane(farValue)
     {
         SetPosition(pos);
     }
@@ -36,16 +44,22 @@ public:
 
     Eigen::Matrix4f GetProjectionMatrix() const
     {
-        float tanHalfFovy = tan(fov / 2);
-        float f = 1.0f / tanHalfFovy;
-        float nf = 1.0f / (nearPlane - farPlane);
+        float fovRadians = fov * (3.14 / 180.0f);
+        float tanHalfFovy = tan(fovRadians / 2);
+        float zRange = farPlane - nearPlane;
 
         Eigen::Matrix4f projMatrix = Eigen::Matrix4f::Zero();
-        projMatrix(0, 0) = f / aspect;
-        projMatrix(1, 1) = f;
-        projMatrix(2, 2) = (farPlane + nearPlane) * nf;
-        projMatrix(3, 2) = -1;
-        projMatrix(2, 3) = 2 * farPlane * nearPlane * nf;
+        projMatrix(0, 0) = 1.0f / (aspect * tanHalfFovy);
+        projMatrix(1, 1) = 1.0f / tanHalfFovy;
+        projMatrix(2, 2) = -(farPlane + nearPlane) / zRange;
+        projMatrix(2, 3) = -2.0f * farPlane * nearPlane / zRange;
+        projMatrix(3, 2) = -1.0f;
+
+        // °²È«¼ì²é
+        if (projMatrix.array().isNaN().any())
+        {
+            LOG_ERROR("Warning: Projection matrix contains NaN values!");
+        }
 
         return projMatrix;
     }

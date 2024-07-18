@@ -1,4 +1,5 @@
-﻿#include <windows.h>
+﻿#include "Logger.h"
+#include <windows.h>
 #include <vector>
 #include <cstdint>
 #include <algorithm>
@@ -72,6 +73,9 @@ void UpdateDevice(HWND Hwnd);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
+    Logger::GetInstance().SetLogLevel(Logger::LogLevel::DEBUG);
+    Logger::GetInstance().SetLogFile("debug_log.txt");
+
     // 注册窗口类
     constexpr wchar_t CLASS_NAME[] = L"Soft Renderer Window Class";
 
@@ -146,13 +150,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // 创建Camera实例
     std::unique_ptr<Camera> camera = std::make_unique<Camera>(
-        Eigen::Vector3f(3, 3, 3),
-        Eigen::Vector3f(0, 0, 0),
-        Eigen::Vector3f(0, 1, 0),
-        45.0f,
-        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT,
-        0.1f,
-        100.0f);
+        Eigen::Vector3f(3, 3, 3),                         // position
+        Eigen::Vector3f(0, 0, 0),                         // target
+        Eigen::Vector3f(0, 1, 0),                         // up
+        45.0f,                                            // FOV (in degrees)
+        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT, // aspect ratio
+        0.1f,                                             // near plane
+        100.0f                                            // far plane
+    );
 
     G_Scene->AddCamera(std::move(camera));
 
