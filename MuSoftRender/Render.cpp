@@ -117,13 +117,14 @@ void Renderer::RenderCamera(const Scene& scene, const Camera& camera)
 
         if (const Cube* cube = dynamic_cast<const Cube*>(object.get()))
         {
-            const Mesh& mesh = cube->GetMesh();
+            auto mesh = cube->GetMesh();
+            if (!mesh) continue;
 
-            for (size_t i = 0; i < mesh.indices.size(); i += 3)
+            for (size_t i = 0; i < mesh->indices.size(); i += 3)
             {
-                Eigen::Vector4f v0 = mvpMatrix * mesh.vertices[mesh.indices[i]].position.homogeneous();
-                Eigen::Vector4f v1 = mvpMatrix * mesh.vertices[mesh.indices[i + 1]].position.homogeneous();
-                Eigen::Vector4f v2 = mvpMatrix * mesh.vertices[mesh.indices[i + 2]].position.homogeneous();
+                Eigen::Vector4f v0 = mvpMatrix * mesh->vertices[mesh->indices[i]].position.homogeneous();
+                Eigen::Vector4f v1 = mvpMatrix * mesh->vertices[mesh->indices[i + 1]].position.homogeneous();
+                Eigen::Vector4f v2 = mvpMatrix * mesh->vertices[mesh->indices[i + 2]].position.homogeneous();
 
                 // 执行透视除法
                 v0 /= v0.w();
