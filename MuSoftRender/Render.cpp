@@ -31,7 +31,7 @@ int Renderer::GetHeight() const
     return ScreenHeight;
 }
 
-void Renderer::DrawPixel(int x, int y, unsigned int color)
+void Renderer::DrawPixel(int x, int y, uint32_t color)
 {
     if (x >= 0 && x < ScreenWidth && y >= 0 && y < ScreenHeight)
     {
@@ -39,7 +39,7 @@ void Renderer::DrawPixel(int x, int y, unsigned int color)
     }
 }
 
-void Renderer::DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
+void Renderer::DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 {
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);
@@ -65,7 +65,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2, unsigned int color)
     }
 }
 
-void Renderer::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned int color)
+void Renderer::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {
     // 按y坐标排序顶点
     if (y1 > y2)
@@ -98,6 +98,45 @@ void Renderer::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsi
         if (Ax > Bx) std::swap(Ax, Bx);
 
         for (int x = Ax; x <= Bx; x++)
+        {
+            DrawPixel(x, y, color);
+        }
+    }
+}
+
+void Renderer::FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
+{
+    // 按y坐标排序顶点
+    if (y1 > y2)
+    {
+        std::swap(x1, x2);
+        std::swap(y1, y2);
+    }
+    if (y1 > y3)
+    {
+        std::swap(x1, x3);
+        std::swap(y1, y3);
+    }
+    if (y2 > y3)
+    {
+        std::swap(x2, x3);
+        std::swap(y2, y3);
+    }
+
+    int totalHeight = y3 - y1;
+    for (int y = y1; y <= y3; y++)
+    {
+        bool secondHalf = y > y2 || y2 == y1;
+        int segmentHeight = secondHalf ? y3 - y2 : y2 - y1;
+        float alpha = (float)(y - y1) / totalHeight;
+        float beta = (float)(y - (secondHalf ? y2 : y1)) / segmentHeight;
+
+        int xa = x1 + (x3 - x1) * alpha;
+        int xb = secondHalf ? x2 + (x3 - x2) * beta : x1 + (x2 - x1) * beta;
+
+        if (xa > xb) std::swap(xa, xb);
+
+        for (int x = xa; x <= xb; x++)
         {
             DrawPixel(x, y, color);
         }
@@ -141,9 +180,14 @@ void Renderer::RenderCamera(const Scene& scene, const Camera& camera)
             int y2 = static_cast<int>((1.0f - v2.y()) * 0.5f * ScreenHeight);
 
             // 绘制三角形边框
-            DrawLine(x0, y0, x1, y1, 0xFFFFFF);
-            DrawLine(x1, y1, x2, y2, 0xFFFFFF);
-            DrawLine(x2, y2, x0, y0, 0xFFFFFF);
+            // DrawLine(x0, y0, x1, y1, 0xFFFFFF);
+            // DrawLine(x1, y1, x2, y2, 0xFFFFFF);
+            // DrawLine(x2, y2, x0, y0, 0xFFFFFF);
+
+            FillTriangle(x0, y0, x1, y1, x2, y2, 0xFFFFFF);
+            DrawLine(x0, y0, x1, y1, 0xFF0000);
+            DrawLine(x1, y1, x2, y2, 0xFF0000);
+            DrawLine(x2, y2, x0, y0, 0xFF0000);
         }
     }
 }

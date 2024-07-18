@@ -6,8 +6,6 @@
 #include "Camera.h"
 #include "Scene.h"
 
-#define UINT_32 unsigned int
-
 class Renderer
 {
 private:
@@ -28,11 +26,13 @@ public:
 
 
 public:
-    void DrawPixel(int x, int y, unsigned int color);
+    void DrawPixel(int x, int y, uint32_t color);
 
-    void DrawLine(int x1, int y1, int x2, int y2, unsigned int color);
+    void DrawLine(int x1, int y1, int x2, int y2, uint32_t color);
 
-    void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned int color);
+    void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
+
+    void FillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 
 public:
     void RenderCamera(const Scene& Scene, const Camera& Camera);
