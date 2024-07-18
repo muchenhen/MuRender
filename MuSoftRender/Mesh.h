@@ -5,6 +5,8 @@
 class Mesh
 {
 public:
+    Mesh() = default;
+
     struct Vertex
     {
         Eigen::Vector3f position;

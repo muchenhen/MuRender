@@ -6,48 +6,44 @@
 class MeshObject : public Object
 {
 private:
-    std::shared_ptr<Mesh> mesh;
-    std::shared_ptr<Material> material;
+    std::shared_ptr<Mesh> m_mesh;
+    std::shared_ptr<Material> m_material;
 
 public:
-    MeshObject()
-    {
-        mesh = nullptr;
-        material = nullptr;
-    }
+    MeshObject() = default;
 
     MeshObject(std::shared_ptr<Mesh> mesh) :
-        mesh(std::move(mesh))
+        m_mesh(std::move(mesh))
     {
     }
 
     MeshObject(std::shared_ptr<Material> material) :
-        material(std::move(material))
+        m_material(std::move(material))
     {
     }
 
     MeshObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material) :
-        mesh(std::move(mesh)), material(std::move(material))
+        m_mesh(std::move(mesh)), m_material(std::move(material))
     {
     }
 
-    const Mesh& GetMesh() const
+    virtual Mesh* GetMesh() const
     {
-        return *mesh;
+        return m_mesh.get();
     }
-    const Material& GetMaterial() const
+
+    const Material* GetMaterial() const
     {
-        return *material;
+        return m_material.get();
     }
 
     void SetMesh(std::shared_ptr<Mesh> mesh)
     {
-        mesh = std::move(mesh);
+        m_mesh = std::move(mesh);
     }
 
     void SetMaterial(std::shared_ptr<Material> material)
     {
-        material = std::move(material);
+        m_material = std::move(material);
     }
-
 };

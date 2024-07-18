@@ -38,11 +38,13 @@ public:
         int y = static_cast<int>(texCoord.y() * texture.height) % texture.height;
         int index = (y * texture.width + x) * 3;
 
-        return Eigen::Vector3f(
-                   texture.data[index] / 255.0f,
-                   texture.data[index + 1] / 255.0f,
-                   texture.data[index + 2] / 255.0f)
-               * baseColor;
+        Eigen::Vector3f textureColor(
+            texture.data[index] / 255.0f,
+            texture.data[index + 1] / 255.0f,
+            texture.data[index + 2] / 255.0f);
+
+        // 使用 cwiseProduct 进行逐元素乘法
+        return textureColor.cwiseProduct(baseColor);
     }
 
 private:
