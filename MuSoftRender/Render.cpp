@@ -112,38 +112,38 @@ void Renderer::RenderCamera(const Scene& scene, const Camera& camera)
 
     for (const auto& object : scene.GetObjects())
     {
+        const MeshObject* meshObject = dynamic_cast<const MeshObject*>(object.get());
+        if (!meshObject) continue;
+
         Eigen::Matrix4f modelMatrix = object->GetModelMatrix();
         Eigen::Matrix4f mvpMatrix = viewProjectionMatrix * modelMatrix;
 
-        if (const Cube* cube = dynamic_cast<const Cube*>(object.get()))
+        const Mesh* mesh = meshObject->GetMesh();
+        if (!mesh) continue;
+
+        for (size_t i = 0; i < mesh->indices.size(); i += 3)
         {
-            auto mesh = cube->GetMesh();
-            if (!mesh) continue;
+            Eigen::Vector4f v0 = mvpMatrix * mesh->vertices[mesh->indices[i]].position.homogeneous();
+            Eigen::Vector4f v1 = mvpMatrix * mesh->vertices[mesh->indices[i + 1]].position.homogeneous();
+            Eigen::Vector4f v2 = mvpMatrix * mesh->vertices[mesh->indices[i + 2]].position.homogeneous();
 
-            for (size_t i = 0; i < mesh->indices.size(); i += 3)
-            {
-                Eigen::Vector4f v0 = mvpMatrix * mesh->vertices[mesh->indices[i]].position.homogeneous();
-                Eigen::Vector4f v1 = mvpMatrix * mesh->vertices[mesh->indices[i + 1]].position.homogeneous();
-                Eigen::Vector4f v2 = mvpMatrix * mesh->vertices[mesh->indices[i + 2]].position.homogeneous();
+            // 执行透视除法
+            v0 /= v0.w();
+            v1 /= v1.w();
+            v2 /= v2.w();
 
-                // 执行透视除法
-                v0 /= v0.w();
-                v1 /= v1.w();
-                v2 /= v2.w();
+            // 视口变换
+            int x0 = static_cast<int>((v0.x() + 1.0f) * 0.5f * ScreenWidth);
+            int y0 = static_cast<int>((1.0f - v0.y()) * 0.5f * ScreenHeight);
+            int x1 = static_cast<int>((v1.x() + 1.0f) * 0.5f * ScreenWidth);
+            int y1 = static_cast<int>((1.0f - v1.y()) * 0.5f * ScreenHeight);
+            int x2 = static_cast<int>((v2.x() + 1.0f) * 0.5f * ScreenWidth);
+            int y2 = static_cast<int>((1.0f - v2.y()) * 0.5f * ScreenHeight);
 
-                // 视口变换
-                int x0 = static_cast<int>((v0.x() + 1.0f) * 0.5f * ScreenWidth);
-                int y0 = static_cast<int>((1.0f - v0.y()) * 0.5f * ScreenHeight);
-                int x1 = static_cast<int>((v1.x() + 1.0f) * 0.5f * ScreenWidth);
-                int y1 = static_cast<int>((1.0f - v1.y()) * 0.5f * ScreenHeight);
-                int x2 = static_cast<int>((v2.x() + 1.0f) * 0.5f * ScreenWidth);
-                int y2 = static_cast<int>((1.0f - v2.y()) * 0.5f * ScreenHeight);
-
-                // 绘制三角形边框
-                DrawLine(x0, y0, x1, y1, 0xFFFFFF);
-                DrawLine(x1, y1, x2, y2, 0xFFFFFF);
-                DrawLine(x2, y2, x0, y0, 0xFFFFFF);
-            }
+            // 绘制三角形边框
+            DrawLine(x0, y0, x1, y1, 0xFFFFFF);
+            DrawLine(x1, y1, x2, y2, 0xFFFFFF);
+            DrawLine(x2, y2, x0, y0, 0xFFFFFF);
         }
     }
 }
