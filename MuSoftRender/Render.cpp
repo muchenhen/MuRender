@@ -294,9 +294,9 @@ void Renderer::RenderCamera(const Scene& scene, const Camera& camera)
 
             FillTriangle(x0, y0, z0, 0xFFFFFF, x1, y1, z1, 0xFFFFFF, x2, y2, z2, 0xFFFFFF);
 
-             DrawLine(x0, y0, x1, y1, 0xFF0000);
-             DrawLine(x1, y1, x2, y2, 0xFF0000);
-             DrawLine(x2, y2, x0, y0, 0xFF0000);
+             //DrawLine(x0, y0, x1, y1, 0xFF0000);
+             //DrawLine(x1, y1, x2, y2, 0xFF0000);
+             //DrawLine(x2, y2, x0, y0, 0xFF0000);
         }
     }
 }
