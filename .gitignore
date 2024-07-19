@@ -364,3 +364,5 @@ FodyWeavers.xsd
 .history/
 
 eigen-3.4.0/
+
+SFML/
