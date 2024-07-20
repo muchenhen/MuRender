@@ -7,32 +7,32 @@
 class Material
 {
 private:
-    Eigen::Vector3f baseColor;
-    std::shared_ptr<Texture> texture;
+    Eigen::Vector3f BaseColor;
+    std::shared_ptr<Texture> TexturePtr;
 
 public:
     Material() :
-        baseColor(1, 1, 1)
+        BaseColor(1, 1, 1)
     {
     }
 
-    void SetBaseColor(const Eigen::Vector3f& color)
+    void SetBaseColor(const Eigen::Vector3f& Color)
     {
-        baseColor = color;
+        BaseColor = Color;
     }
 
-    void SetTexture(std::shared_ptr<Texture> tex)
+    void SetTexture(const std::shared_ptr<Texture>& InTexture)
     {
-        texture = tex;
+        TexturePtr = InTexture;
     }
 
-    Eigen::Vector3f GetColor(const Eigen::Vector2f& texCoord) const
+    Eigen::Vector3f GetColor(const Eigen::Vector2f& TexCoord) const
     {
-        if (texture)
+        if (TexturePtr)
         {
-            Eigen::Vector3f textureColor = texture->Sample(texCoord);
-            return textureColor.cwiseProduct(baseColor);
+            Eigen::Vector3f TextureColor = TexturePtr->Sample(TexCoord);
+            return TextureColor.cwiseProduct(BaseColor);
         }
-        return baseColor;
+        return BaseColor;
     }
 };

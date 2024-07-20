@@ -146,6 +146,7 @@
     <ClInclude Include="ThirdParty\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Private\Mesh.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Render\Private\Render.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -230,9 +231,6 @@
   <ItemGroup>
     <Image Include="MuSoftRender.ico" />
     <Image Include="small.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Game\Private\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
