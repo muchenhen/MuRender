@@ -55,7 +55,7 @@ public:
         projMatrix(2, 3) = -2.0f * farPlane * nearPlane / zRange;
         projMatrix(3, 2) = -1.0f;
 
-        // °²È«¼ì²é
+        // å®‰å…¨æ£€æŸ¥
         if (projMatrix.array().isNaN().any())
         {
             LOG_ERROR("Warning: Projection matrix contains NaN values!");

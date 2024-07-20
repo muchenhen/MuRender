@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\eigen-3.4.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\eigen-3.4.0;$(ProjectDir)\ThirdParty;$(ProjectDir)\Render\Public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,20 +133,22 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Logger.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshObject.h" />
     <ClInclude Include="MuSoftRender.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Render.h" />
+    <ClInclude Include="Render\Public\Material.h" />
+    <ClInclude Include="Render\Public\Texture.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ThirdParty\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Render.cpp" />
+    <ClCompile Include="Render\Private\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MuSoftRender.rc" />

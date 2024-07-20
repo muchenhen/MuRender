@@ -49,17 +49,17 @@ private:
         CubeMesh->AddVertex(Eigen::Vector3f(-halfSide, halfSide, halfSide));
 
         CubeMesh->AddTriangle(0, 1, 2);
-        CubeMesh->AddTriangle(2, 3, 0); // 前面
+        CubeMesh->AddTriangle(2, 3, 0); // 鍓嶉潰
         CubeMesh->AddTriangle(4, 5, 6);
-        CubeMesh->AddTriangle(6, 7, 4); // 后面
+        CubeMesh->AddTriangle(6, 7, 4); // 鍚庨潰
         CubeMesh->AddTriangle(1, 5, 6);
-        CubeMesh->AddTriangle(6, 2, 1); // 右面
+        CubeMesh->AddTriangle(6, 2, 1); // 鍙抽潰
         CubeMesh->AddTriangle(0, 4, 7);
-        CubeMesh->AddTriangle(7, 3, 0); // 左面
+        CubeMesh->AddTriangle(7, 3, 0); // 宸﹂潰
         CubeMesh->AddTriangle(3, 2, 6);
-        CubeMesh->AddTriangle(6, 7, 3); // 上面
+        CubeMesh->AddTriangle(6, 7, 3); // 涓婇潰
         CubeMesh->AddTriangle(0, 1, 5);
-        CubeMesh->AddTriangle(5, 4, 0); // 下面
+        CubeMesh->AddTriangle(5, 4, 0); // 涓嬮潰
 
         return CubeMesh;
     }
