@@ -107,7 +107,7 @@ void Renderer::DrawTriangle(int X1, int Y1, int X2, int Y2, int X3, int Y3, cons
         const bool SecondHalf = Y > Y2 || Y2 == Y1;
         const int SegmentHeight = SecondHalf ? Y3 - Y2 : Y2 - Y1;
         const float Alpha = static_cast<float>(Y - Y1) / static_cast<float>(TotalHeight);
-        const float Beta = static_cast<float>(Y - (SecondHalf ? Y2 : Y1)) /  static_cast<float>(SegmentHeight);
+        const float Beta = static_cast<float>(Y - (SecondHalf ? Y2 : Y1)) / static_cast<float>(SegmentHeight);
 
         int Ax = X1 + static_cast<int>(static_cast<float>(X3 - X1) * Alpha);
         int Bx = SecondHalf ? X2 + static_cast<int>(static_cast<float>(X3 - X2) * Beta) : X1 + static_cast<int>(static_cast<float>(X2 - X1) * Beta);
@@ -161,11 +161,25 @@ void Renderer::FillTriangle(int X1, int Y1, int X2, int Y2, int X3, int Y3, cons
 }
 
 void Renderer::FillTriangle(
+    int X0, int Y0, float Z0, uint32_t Color0,
     int X1, int Y1, float Z1, uint32_t Color1,
-    int X2, int Y2, float Z2, uint32_t Color2,
-    int X3, int Y3, float Z3, uint32_t Color3)
+    int X2, int Y2, float Z2, uint32_t Color2)
 {
     // 按y坐标排序顶点
+    if (Y0 > Y1)
+    {
+        std::swap(X0, X1);
+        std::swap(Y0, Y1);
+        std::swap(Z0, Z1);
+        std::swap(Color0, Color1);
+    }
+    if (Y0 > Y2)
+    {
+        std::swap(X0, X2);
+        std::swap(Y0, Y2);
+        std::swap(Z0, Z2);
+        std::swap(Color0, Color2);
+    }
     if (Y1 > Y2)
     {
         std::swap(X1, X2);
@@ -173,40 +187,26 @@ void Renderer::FillTriangle(
         std::swap(Z1, Z2);
         std::swap(Color1, Color2);
     }
-    if (Y1 > Y3)
+
+    const int TotalHeight = Y2 - Y0;
+    for (int Y = Y0; Y <= Y2; Y++)
     {
-        std::swap(X1, X3);
-        std::swap(Y1, Y3);
-        std::swap(Z1, Z3);
-        std::swap(Color1, Color3);
-    }
-    if (Y2 > Y3)
-    {
-        std::swap(X2, X3);
-        std::swap(Y2, Y3);
-        std::swap(Z2, Z3);
-        std::swap(Color2, Color3);
-    }
+        const bool SecondHalf = Y > Y1 || Y1 == Y0;
+        const int SegmentHeight = SecondHalf ? Y2 - Y1 : Y1 - Y0;
+        const float Alpha = static_cast<float>(Y - Y0) / static_cast<float>(TotalHeight);
+        const float Beta = static_cast<float>(Y - (SecondHalf ? Y1 : Y0)) / static_cast<float>(SegmentHeight);
 
-    const int TotalHeight = Y3 - Y1;
-    for (int Y = Y1; Y <= Y3; Y++)
-    {
-        const bool SecondHalf = Y > Y2 || Y2 == Y1;
-        const int SegmentHeight = SecondHalf ? Y3 - Y2 : Y2 - Y1;
-        const float Alpha = static_cast<float>(Y - Y1) / static_cast<float>(TotalHeight);
-        const float Beta = static_cast<float>(Y - (SecondHalf ? Y2 : Y1)) / static_cast<float>(SegmentHeight);
+        int Ax = X0 + static_cast<int>(static_cast<float>(X2 - X0) * Alpha);
+        int Bx = SecondHalf ? X1 + static_cast<int>(static_cast<float>(X2 - X1) * Beta) : X0 + static_cast<int>(static_cast<float>(X1 - X0) * Beta);
 
-        int Ax = X1 + static_cast<int>(static_cast<float>(X3 - X1) * Alpha);
-        int Bx = SecondHalf ? X2 + static_cast<int>(static_cast<float>(X3 - X2) * Beta) : X1 + static_cast<int>(static_cast<float>(X2 - X1) * Beta);
+        float Az = Z0 + (Z2 - Z0) * Alpha;
+        float Bz = SecondHalf ? Z1 + (Z2 - Z1) * Beta : Z0 + (Z1 - Z0) * Beta;
 
-        float Az = Z1 + (Z3 - Z1) * Alpha;
-        float Bz = SecondHalf ? Z2 + (Z3 - Z2) * Beta : Z1 + (Z2 - Z1) * Beta;
-
-        auto InterpolateColor = [](const uint32_t Color1, const uint32_t Color2, const float Alpha)
+        auto InterpolateColor = [](const uint32_t Color0, const uint32_t Color1, const float Alpha)
         {
-            uint8_t R1 = (Color1 >> 16) & 0xFF, R2 = (Color2 >> 16) & 0xFF;
-            uint8_t G1 = (Color1 >> 8) & 0xFF, G2 = (Color2 >> 8) & 0xFF;
-            uint8_t B1 = Color1 & 0xFF, B2 = Color2 & 0xFF;
+            uint8_t R1 = (Color0 >> 16) & 0xFF, R2 = (Color1 >> 16) & 0xFF;
+            uint8_t G1 = (Color0 >> 8) & 0xFF, G2 = (Color1 >> 8) & 0xFF;
+            uint8_t B1 = Color0 & 0xFF, B2 = Color1 & 0xFF;
 
             const uint8_t R = R1 + static_cast<uint8_t>(static_cast<float>(R2 - R1) * Alpha);
             const uint8_t G = G1 + static_cast<uint8_t>(static_cast<float>(G2 - G1) * Alpha);
@@ -215,12 +215,10 @@ void Renderer::FillTriangle(
             return (R << 16) | (G << 8) | B;
         };
 
-        uint32_t ColorA = InterpolateColor(Color1, Color3, Alpha);
+        uint32_t ColorA = InterpolateColor(Color0, Color2, Alpha);
         uint32_t ColorB;
-        if (SecondHalf)
-            ColorB = InterpolateColor(Color2, Color3, Beta);  // NOLINT(readability-suspicious-call-argument)
-        else
-            ColorB = InterpolateColor(Color1, Color2, Beta);
+        if (SecondHalf) ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
+        else ColorB = InterpolateColor(Color0, Color1, Beta);
 
         if (Ax > Bx)
         {
@@ -252,55 +250,63 @@ void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
 
         Eigen::Matrix4f ModelMatrix = Object->GetModelMatrix();
         Eigen::Matrix4f MVPMatrix = ViewProjectionMatrix * ModelMatrix;
-        if (MVPMatrix.array().isNaN().any())
-        {
-            std::cerr << "Warning: MVP matrix contains NaN values!\n";
-            LOG_ERROR("Warning: MVP matrix contains NaN values!");
-            LOG_ERROR("View Matrix:\n", ViewMatrix);
-            LOG_ERROR("Projection Matrix:\n", ProjectionMatrix);
-            LOG_ERROR("View Projection Matrix:\n", ViewProjectionMatrix);
-            LOG_ERROR("Model Matrix:\n", ModelMatrix);
-            LOG_ERROR("MVP Matrix:\n", MVPMatrix);
-        }
 
         const Mesh* MeshPtr = MeshObjectPtr->GetMesh();
         if (!MeshPtr) continue;
 
+        const Material* MaterialPtr = MeshObjectPtr->GetMaterial();
+
         for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
         {
-            Eigen::Vector4f V0 = MVPMatrix * MeshPtr->Vertices[MeshPtr->Indices[i]].Position.homogeneous();
-            Eigen::Vector4f V1 = MVPMatrix * MeshPtr->Vertices[MeshPtr->Indices[i + 1]].Position.homogeneous();
-            Eigen::Vector4f V2 = MVPMatrix * MeshPtr->Vertices[MeshPtr->Indices[i + 2]].Position.homogeneous();
+            const Vertex& V0 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+            const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+            const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-            // 执行透视除法
-            V0 /= V0.w();
-            V1 /= V1.w();
-            V2 /= V2.w();
+            Eigen::Vector4f Pos0 = MVPMatrix * V0.Position.homogeneous();
+            Eigen::Vector4f Pos1 = MVPMatrix * V1.Position.homogeneous();
+            Eigen::Vector4f Pos2 = MVPMatrix * V2.Position.homogeneous();
 
-            // 视口变换
-            const int X0 = static_cast<int>((V0.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
-            const int Y0 = static_cast<int>((1.0f - V0.y()) * 0.5f * static_cast<float>(ScreenHeight));
-            const int X1 = static_cast<int>((V1.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
-            const int Y1 = static_cast<int>((1.0f - V1.y()) * 0.5f * static_cast<float>(ScreenHeight));
-            const int X2 = static_cast<int>((V2.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
-            const int Y2 = static_cast<int>((1.0f - V2.y()) * 0.5f * static_cast<float>(ScreenHeight));
+            float W0 = Pos0.w();
+            float W1 = Pos1.w();
+            float W2 = Pos2.w();
 
-            const float Z0 = V0.z();
-            const float Z1 = V1.z();
-            const float Z2 = V2.z();
+            Pos0 /= W0;
+            Pos1 /= W1;
+            Pos2 /= W2;
 
-            // 绘制三角形边框
-            /*DrawLine(x0, y0, x1, y1, 0xFFFFFF);
-            DrawLine(x1, y1, x2, y2, 0xFFFFFF);
-            DrawLine(x2, y2, x0, y0, 0xFFFFFF);*/
+            int X0 = static_cast<int>((Pos0.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
+            int Y0 = static_cast<int>((1.0f - Pos0.y()) * 0.5f * static_cast<float>(ScreenHeight));
+            int X1 = static_cast<int>((Pos1.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
+            int Y1 = static_cast<int>((1.0f - Pos1.y()) * 0.5f * static_cast<float>(ScreenHeight));
+            int X2 = static_cast<int>((Pos2.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth));
+            int Y2 = static_cast<int>((1.0f - Pos2.y()) * 0.5f * static_cast<float>(ScreenHeight));
 
-            // FillTriangle(x0, y0, x1, y1, x2, y2, 0xFFFFFF);
-
-            FillTriangle(X0, Y0, Z0, 0xFFFFFF, X1, Y1, Z1, 0xFFFFFF, X2, Y2, Z2, 0xFFFFFF);
-
-            //DrawLine(x0, y0, x1, y1, 0xFF0000);
-            //DrawLine(x1, y1, x2, y2, 0xFF0000);
-            //DrawLine(x2, y2, x0, y0, 0xFF0000);
+            FillTriangle(X0, Y0, Pos0.z(), 0x0000FF,
+                         X1, Y1, Pos1.z(), 0x00FF00,
+                         X2, Y2, Pos2.z(), 0x00FF00);
         }
     }
+}
+
+Eigen::Vector3f Renderer::ComputeBarycentric(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2)
+{
+    float Det = (X1 - X0) * (Y2 - Y0) - (X2 - X0) * (Y1 - Y0);
+    float L1 = ((X1 - X) * (Y2 - Y) - (X2 - X) * (Y1 - Y)) / Det;
+    float L2 = ((X2 - X) * (Y0 - Y) - (X0 - X) * (Y2 - Y)) / Det;
+    float L3 = 1.0f - L1 - L2;
+    return Eigen::Vector3f(L1, L2, L3);
+}
+
+bool Renderer::IsInsideTriangle(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2)
+{
+    Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, X0, Y0, X1, Y1, X2, Y2);
+    return Barycentric.x() >= 0 && Barycentric.y() >= 0 && Barycentric.z() >= 0;
+}
+
+uint32_t Renderer::ColorToUint32(const Eigen::Vector3f& Color)
+{
+    uint8_t R = static_cast<uint8_t>(std::min(std::max(Color.x() * 255.0f, 0.0f), 255.0f));
+    uint8_t G = static_cast<uint8_t>(std::min(std::max(Color.y() * 255.0f, 0.0f), 255.0f));
+    uint8_t B = static_cast<uint8_t>(std::min(std::max(Color.z() * 255.0f, 0.0f), 255.0f));
+    return (R << 16) | (G << 8) | B;
 }

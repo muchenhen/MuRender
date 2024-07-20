@@ -1,18 +1,20 @@
 ﻿#include "Logger.h"
-#include <windows.h>
+#include "Camera.h"
+#include "Cube.h"
+#include "Render.h"
+#include "Scene.h"
+#include "Functions.h"
+
 #include <vector>
-#include <cstdint>
 #include <algorithm>
 #include <string>
 #include <chrono>
 #include <sstream>
 #include <iomanip>
 
-#include "Camera.h"
-#include "Cube.h"
-#include "Render.h"
-#include "Scene.h"
-#include "Functions.h"
+
+#include <windows.h>
+
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
@@ -149,21 +151,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene = new Scene();
 
     // 创建Camera实例
-    std::unique_ptr<Camera> camera = std::make_unique<Camera>(
-        Eigen::Vector3f(3, 3, 3),                         // position
-        Eigen::Vector3f(0, 0, 0),                         // target
-        Eigen::Vector3f(0, 1, 0),                         // up
-        45.0f,                                            // FOV (in degrees)
-        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT, // aspect ratio
-        0.1f,                                             // near plane
-        100.0f                                            // far plane
+    std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
+        Eigen::Vector3f(3, 3, 3),
+        Eigen::Vector3f(0, 0, 0),
+        Eigen::Vector3f(0, 1, 0),
+        45.0f,
+        static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT,
+        0.1f,
+        100.0f
         );
 
-    G_Scene->AddCamera(std::move(camera));
+    G_Scene->AddCamera(std::move(CameraPtr));
 
-    std::unique_ptr<Cube> cube = std::make_unique<Cube>(2.0f);
-    cube->SetPosition(Eigen::Vector3f(0, 0, 0));
-    G_Scene->AddObject(std::move(cube));
+    std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
+    TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
+
+    std::shared_ptr<Material> MaterialPtr = std::make_shared<Material>();
+    MaterialPtr->SetTexture(TexturePtr);
+
+    std::unique_ptr<Cube> CubePtr = std::make_unique<Cube>(2.0f);
+    CubePtr->SetMaterial(MaterialPtr);
+
+    G_Scene->AddObject(std::move(CubePtr));
 
     ShowWindow(Hwnd, nCmdShow);
 

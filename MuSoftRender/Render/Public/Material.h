@@ -26,13 +26,34 @@ public:
         TexturePtr = InTexture;
     }
 
+    bool HasTexture() const
+    {
+        return TexturePtr != nullptr;
+    }
+
+    Eigen::Vector3f SampleTexture(const Eigen::Vector2f& TexCoord) const
+    {
+        return TexturePtr->Sample(TexCoord);
+    }
+
+    Eigen::Vector3f GetBaseColor() const
+    {
+        return BaseColor;
+    }
+
     Eigen::Vector3f GetColor(const Eigen::Vector2f& TexCoord) const
     {
+        Eigen::Vector3f FinalColor;
         if (TexturePtr)
         {
             Eigen::Vector3f TextureColor = TexturePtr->Sample(TexCoord);
-            return TextureColor.cwiseProduct(BaseColor);
+            FinalColor = TextureColor.cwiseProduct(BaseColor);
         }
-        return BaseColor;
+        else
+        {
+            FinalColor = BaseColor;
+        }
+
+        return FinalColor;
     }
 };
