@@ -3,27 +3,31 @@
 #include "stb_image.h"
 
 
-bool Texture::LoadFromFile(const std::string& filename)
+bool Texture::LoadFromFile(const std::string& Filename)
 {
-    int channels;
-    unsigned char* img = stbi_load(filename.c_str(), &width, &height, &channels, 3);
-    if (!img) return false;
+    int Channels;
+    unsigned char* Image = stbi_load(Filename.c_str(), &Width, &Height, &Channels, 3);
+    if (!Image) return false;
 
-    data.assign(img, img + width * height * 3);
-    stbi_image_free(img);
+    std::ptrdiff_t DataSize = static_cast<std::ptrdiff_t>(Width) *
+                              static_cast<std::ptrdiff_t>(Height) *
+                              static_cast<std::ptrdiff_t>(3);
+    Data.assign(Image, Image + DataSize);
+    stbi_image_free(Image);
     return true;
 }
 
-Eigen::Vector3f Texture::Sample(const Eigen::Vector2f& texCoord) const
+Eigen::Vector3f Texture::Sample(const Eigen::Vector2f& TexCoord) const
 {
-    if (data.empty()) return Eigen::Vector3f(1, 1, 1);
+    if (Data.empty()) return Eigen::Vector3f::Ones();
 
-    int x = static_cast<int>(texCoord.x() * width) % width;
-    int y = static_cast<int>(texCoord.y() * height) % height;
-    int index = (y * width + x) * 3;
+    int X = static_cast<int>(TexCoord.x()) * Width % Width;
+    int Y = static_cast<int>(TexCoord.y()) * Height % Height;
+    int Index = (Y * Width + X) * 3;
 
-    return Eigen::Vector3f(
-        data[index] / 255.0f,
-        data[index + 1] / 255.0f,
-        data[index + 2] / 255.0f);
+    return {
+        static_cast<float>(Data[Index]) / 255.0f,
+        static_cast<float>(Data[Index + 1]) / 255.0f,
+        static_cast<float>(Data[Index + 2]) / 255.0f
+    };
 }

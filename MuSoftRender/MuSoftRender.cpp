@@ -73,7 +73,7 @@ void UpdateDevice(HWND Hwnd);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-    Logger::GetInstance().SetLogLevel(Logger::LogLevel::DEBUG);
+    Logger::GetInstance().SetLogLevel(Logger::ELogLevel::Debug);
     Logger::GetInstance().SetLogFile("debug_log.txt");
 
     // 注册窗口类
@@ -117,7 +117,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         nullptr,                      // 菜单
         hInstance,                    // 实例句柄
         nullptr                       // 额外数据
-    );
+        );
 
     if (Hwnd == nullptr)
     {
@@ -157,7 +157,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         static_cast<float>(WINDOW_WIDTH) / WINDOW_HEIGHT, // aspect ratio
         0.1f,                                             // near plane
         100.0f                                            // far plane
-    );
+        );
 
     G_Scene->AddCamera(std::move(camera));
 
@@ -176,8 +176,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     {
         if (PeekMessage(&Msg, nullptr, 0, 0, PM_REMOVE))
         {
-            if (Msg.message == WM_QUIT)
-                break;
+            if (Msg.message == WM_QUIT) break;
 
             TranslateMessage(&Msg);
             DispatchMessage(&Msg);
@@ -202,7 +201,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                     G_LastFPSUpdateTime = currentTime;
                 }
 
-                Tick(Hwnd, deltaTime);
+                Tick(Hwnd, static_cast<float>(deltaTime));
 
                 UpdateAndDrawFPS(Hwnd);
                 lastFrameTime = currentTime;
@@ -279,32 +278,23 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
         {
             switch (LOWORD(WParam))
             {
-                case ID_FRAMERATE_UNLIMITED:
-                    G_FrameRateLimit = 0;
+                case ID_FRAMERATE_UNLIMITED: G_FrameRateLimit = 0;
                     break;
-                case ID_FRAMERATE_24:
-                    G_FrameRateLimit = 24;
+                case ID_FRAMERATE_24: G_FrameRateLimit = 24;
                     break;
-                case ID_FRAMERATE_30:
-                    G_FrameRateLimit = 30;
+                case ID_FRAMERATE_30: G_FrameRateLimit = 30;
                     break;
-                case ID_FRAMERATE_60:
-                    G_FrameRateLimit = 60;
+                case ID_FRAMERATE_60: G_FrameRateLimit = 60;
                     break;
-                case ID_FRAMERATE_90:
-                    G_FrameRateLimit = 90;
+                case ID_FRAMERATE_90: G_FrameRateLimit = 90;
                     break;
-                case ID_FRAMERATE_120:
-                    G_FrameRateLimit = 120;
+                case ID_FRAMERATE_120: G_FrameRateLimit = 120;
                     break;
-                case ID_FRAMERATE_144:
-                    G_FrameRateLimit = 144;
+                case ID_FRAMERATE_144: G_FrameRateLimit = 144;
                     break;
-                case ID_FRAMERATE_160:
-                    G_FrameRateLimit = 160;
+                case ID_FRAMERATE_160: G_FrameRateLimit = 160;
                     break;
-                case ID_FRAMERATE_240:
-                    G_FrameRateLimit = 240;
+                case ID_FRAMERATE_240: G_FrameRateLimit = 240;
                     break;
             }
             return 0;
@@ -337,7 +327,7 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
             EndPaint(Hwnd, &Ps);
             return 0;
         }
-        default:;
+        default: ;
     }
     return DefWindowProc(Hwnd, UMsg, WParam, LParam);
 }
@@ -407,6 +397,6 @@ void UpdateAndDrawFPS(HWND Hwnd)
     HDC Hdc = GetDC(Hwnd);
     SetBkMode(Hdc, TRANSPARENT);
     SetTextColor(Hdc, RGB(255, 255, 255));
-    TextOutA(Hdc, 10, 10, lastFpsText.c_str(), lastFpsText.length());
+    TextOutA(Hdc, 10, 10, lastFpsText.c_str(), static_cast<int>(lastFpsText.length()));
     ReleaseDC(Hwnd, Hdc);
 }

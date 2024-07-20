@@ -6,47 +6,47 @@
 class Cube : public MeshObject
 {
 private:
-    float sideLength;
+    float SideLength;
 
 public:
-    Cube(float side = 1.0f) :
-        sideLength(side)
+    Cube(float InSide = 1.0f) :
+        SideLength(InSide)
     {
         std::shared_ptr<Mesh> CubeMesh = GenerateGeometry();
         SetMesh(CubeMesh);
     }
 
-    void SetSideLength(float side)
+    void SetSideLength(float InSide)
     {
-        sideLength = side;
+        SideLength = InSide;
         std::shared_ptr<Mesh> CubeMesh = GenerateGeometry();
         SetMesh(CubeMesh);
     }
 
     float GetSideLength() const
     {
-        return sideLength;
+        return SideLength;
     }
 
-    void Update(float deltaTime) override
+    void Update(float InDeltaTime) override
     {
-        Object::Update(deltaTime);
+        Object::Update(InDeltaTime);
     }
 
 private:
     std::shared_ptr<Mesh> GenerateGeometry() const
     {
         std::shared_ptr<Mesh> CubeMesh = std::make_shared<Mesh>();
-        float halfSide = sideLength / 2.0f;
+        float HalfSide = SideLength / 2.0f;
 
-        CubeMesh->AddVertex(Eigen::Vector3f(-halfSide, -halfSide, -halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(halfSide, -halfSide, -halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(halfSide, halfSide, -halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(-halfSide, halfSide, -halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(-halfSide, -halfSide, halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(halfSide, -halfSide, halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(halfSide, halfSide, halfSide));
-        CubeMesh->AddVertex(Eigen::Vector3f(-halfSide, halfSide, halfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(-HalfSide, -HalfSide, -HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(HalfSide, -HalfSide, -HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(HalfSide, HalfSide, -HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(-HalfSide, HalfSide, -HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(-HalfSide, -HalfSide, HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(HalfSide, -HalfSide, HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(HalfSide, HalfSide, HalfSide));
+        CubeMesh->AddVertex(Eigen::Vector3f(-HalfSide, HalfSide, HalfSide));
 
         CubeMesh->AddTriangle(0, 1, 2);
         CubeMesh->AddTriangle(2, 3, 0); // 前面

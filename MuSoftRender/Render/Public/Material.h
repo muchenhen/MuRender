@@ -1,6 +1,7 @@
 #pragma once
-#include <vector>
+#pragma warning(disable : 4819)
 #include <Eigen/Core>
+#pragma warning(default : 4819)
 #include "Texture.h"
 
 class Material

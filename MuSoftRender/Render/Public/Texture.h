@@ -1,28 +1,32 @@
 #pragma once
 #include <vector>
+#pragma warning(disable : 4819)
 #include <Eigen/Core>
+#pragma warning(default : 4819)
 #include <string>
 
 
 class Texture
 {
 private:
-    std::vector<unsigned char> data;
-    int width;
-    int height;
+    std::vector<unsigned char> Data;
+    int Width;
+    int Height;
 
 public:
     Texture() :
-        width(0), height(0)
+        Width(0), Height(0)
     {
     }
 
-    Texture(int w, int h) :
-        width(w), height(h), data(w * h * 3)
+    Texture(int InWidth, int InHeight)
     {
+        Width = InWidth;
+        Height = InHeight;
+        Data.resize(static_cast<size_t>(Width) * Height * 3);
     }
 
-    bool LoadFromFile(const std::string& filename);
+    bool LoadFromFile(const std::string& Filename);
 
-    Eigen::Vector3f Sample(const Eigen::Vector2f& texCoord) const;
+    Eigen::Vector3f Sample(const Eigen::Vector2f& TexCoord) const;
 };
