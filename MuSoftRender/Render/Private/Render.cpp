@@ -5,6 +5,9 @@
 
 #include "Cube.h"
 #include "Logger.h"
+#include <omp.h>
+#include <immintrin.h>
+
 
 Renderer::Renderer(const int Width, const int Height)
 {
@@ -238,13 +241,37 @@ void Renderer::FillTriangle(
     }
 }
 
+void ProcessColors(const float* r, const float* g, const float* b, uint32_t* output)
+{
+    __m128 rVec = _mm_loadu_ps(r);
+    __m128 gVec = _mm_loadu_ps(g);
+    __m128 bVec = _mm_loadu_ps(b);
+
+    // 将浮点数值 [0, 1] 转换为 [0, 255] 的整数
+    __m128 scale = _mm_set1_ps(255.0f);
+    rVec = _mm_mul_ps(rVec, scale);
+    gVec = _mm_mul_ps(gVec, scale);
+    bVec = _mm_mul_ps(bVec, scale);
+
+    __m128i rInt = _mm_cvtps_epi32(rVec);
+    __m128i gInt = _mm_cvtps_epi32(gVec);
+    __m128i bInt = _mm_cvtps_epi32(bVec);
+
+    // 将 R, G, B 组合成 ARGB (假设 A 总是 255)
+    __m128i argb = _mm_or_si128(_mm_slli_epi32(rInt, 16),
+                                _mm_or_si128(_mm_slli_epi32(gInt, 8),
+                                             _mm_or_si128(bInt, _mm_set1_epi32(0xFF000000))));
+
+    _mm_storeu_si128((__m128i*)output, argb);
+}
+
 void Renderer::DrawTexture(Texture* Texture)
 {
     if (Texture == nullptr)
     {
         return;
     }
- 
+
     auto Height = Texture->GetHeight();
     auto Width = Texture->GetWidth();
 
@@ -260,31 +287,40 @@ void Renderer::DrawTexture(Texture* Texture)
     const float InvWidth = 1.0f / Width;
     const float InvHeight = 1.0f / Height;
 
-    #pragma omp parallel for
-    for (int y = YStart; y < YEnd; ++y)
-    {
-        const float v = static_cast<float>(y - Y) * InvHeight;
-        uint32_t* row = &FrameBuffer[y * ScreenWidth + XStart];
-        
-        for (int x = XStart; x < XEnd; ++x)
-        {
-            const float u = static_cast<float>(x - X) * InvWidth;
-            const Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
-
-            const uint32_t r = static_cast<uint32_t>(color.x() * 255);
-            const uint32_t g = static_cast<uint32_t>(color.y() * 255);
-            const uint32_t b = static_cast<uint32_t>(color.z() * 255);
-
-            *row++ = (255 << 24) | (r << 16) | (g << 8) | b;
-        }
-    }
-
-    // for (int y = Y; y < ScreenHeight; ++y)
+    // for (int y = YStart; y < YEnd; y++)
     // {
-    //     for (int x = X; x < ScreenWidth; ++x)
+    //     for (int x = XStart; x < XEnd; x += 4)  // 每次处理 4 个像素
     //     {
-    //         float u = static_cast<float>(x) / ScreenWidth;
-    //         float v = static_cast<float>(y) / ScreenHeight;
+    //         float r[4], g[4], b[4];
+    //         for (int i = 0; i < 4; ++i)
+    //         {
+    //             float u = static_cast<float>(x + i - X) * InvWidth;
+    //             float v = static_cast<float>(y - Y) * InvHeight;
+    //             Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
+    //             r[i] = color.x();
+    //             g[i] = color.y();
+    //             b[i] = color.z();
+    //         }
+    //
+    //         uint32_t colors[4];
+    //         ProcessColors(r, g, b, colors);
+    //
+    //         for (int i = 0; i < 4; ++i)
+    //         {
+    //             if (x + i < XEnd)  // 确保不会越界
+    //             {
+    //                 FrameBuffer[y * ScreenWidth + x + i] = colors[i];
+    //             }
+    //         }
+    //     }
+    // }
+
+    // for (int y = YStart; y < YEnd; y++)
+    // {
+    //     for (int x = XStart; x < XEnd; x++)
+    //     {
+    //         float u = static_cast<float>(x - X) * InvWidth;
+    //         float v = static_cast<float>(y - Y) * InvHeight;
     //         Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
     //
     //         uint8_t r = static_cast<uint8_t>(color.x() * 255);
@@ -294,6 +330,41 @@ void Renderer::DrawTexture(Texture* Texture)
     //         FrameBuffer[y * ScreenWidth + x] = (255 << 24) | (r << 16) | (g << 8) | b;
     //     }
     // }
+
+    const int numThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads(numThreads);
+
+    auto renderSlice = [&](int yStart, int yEnd)
+    {
+        for (int y = yStart; y < yEnd; y++)
+        {
+            for (int x = XStart; x < XEnd; x++)
+            {
+                float u = static_cast<float>(x - X) * InvWidth;
+                float v = static_cast<float>(y - Y) * InvHeight;
+                Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
+
+                uint8_t r = static_cast<uint8_t>(color.x() * 255);
+                uint8_t g = static_cast<uint8_t>(color.y() * 255);
+                uint8_t b = static_cast<uint8_t>(color.z() * 255);
+
+                FrameBuffer[y * ScreenWidth + x] = (255 << 24) | (r << 16) | (g << 8) | b;
+            }
+        }
+    };
+
+    int sliceHeight = (YEnd - YStart) / numThreads;
+    for (int i = 0; i < numThreads; ++i)
+    {
+        int yStart = YStart + i * sliceHeight;
+        int yEnd = (i == numThreads - 1) ? YEnd : yStart + sliceHeight;
+        threads[i] = std::thread(renderSlice, yStart, yEnd);
+    }
+
+    for (auto& thread : threads)
+    {
+        thread.join();
+    }
 }
 
 void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const VertexShader& VS, const FragmentShader& FS, const Material* Material)
