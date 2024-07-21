@@ -29,4 +29,14 @@ public:
     bool LoadFromFile(const std::string& Filename);
 
     Eigen::Vector3f Sample(const Eigen::Vector2f& TexCoord) const;
+
+    int GetWidth() const
+    {
+        return Width;
+    }
+
+    int GetHeight() const
+    {
+        return Height;
+    }
 };

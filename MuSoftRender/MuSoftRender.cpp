@@ -49,6 +49,7 @@ int G_FrameRateLimit = 60; // 0 表示无限制
 // 窗口过程函数声明
 LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam);
 
+RenderPipeline* G_RenderPipeline = nullptr;
 Renderer* G_Renderer = nullptr;
 Scene* G_Scene = nullptr;
 Camera* G_Camera = nullptr;
@@ -145,6 +146,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     QueryPerformanceFrequency(&G_Frequency);
     QueryPerformanceCounter(&G_LastFPSUpdateTime);
 
+    
+    // 创建RenderPipeline实例
+    G_RenderPipeline = new RenderPipeline(DefaultVertexShader, DefaultFragmentShader);
     // 创建Render实例
     G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例
@@ -169,10 +173,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     std::shared_ptr<Material> MaterialPtr = std::make_shared<Material>();
     MaterialPtr->SetTexture(TexturePtr);
 
-    std::unique_ptr<Cube> CubePtr = std::make_unique<Cube>(2.0f);
+    std::shared_ptr<Cube> CubePtr = std::make_shared<Cube>(2.0f);
     CubePtr->SetMaterial(MaterialPtr);
 
-    G_Scene->AddObject(std::move(CubePtr));
+    G_Scene->AddObject(CubePtr);
 
     ShowWindow(Hwnd, nCmdShow);
 
@@ -319,7 +323,7 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
             PAINTSTRUCT Ps;
             HDC Hdc = BeginPaint(Hwnd, &Ps);
 
-            Render(Hwnd);
+            // Render(Hwnd);
 
             // 创建位图
             BITMAPINFO Bmi = {};
@@ -354,7 +358,11 @@ void Render(HWND Hwnd)
 
     if (G_Renderer && G_Scene && !G_Scene->GetCameras().empty())
     {
-        G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
+        // G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
+        // G_Renderer->RenderScene(G_Scene, G_Scene->GetCameras()[0].get(), G_RenderPipeline);
+        std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
+        TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
+        G_Renderer->DrawTexture(TexturePtr.get());
     }
 
     UpdateDevice(Hwnd);

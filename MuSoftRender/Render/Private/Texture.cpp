@@ -21,10 +21,15 @@ Eigen::Vector3f Texture::Sample(const Eigen::Vector2f& TexCoord) const
 {
     if (Data.empty()) return Eigen::Vector3f::Ones();
 
-    int X = static_cast<int>(TexCoord.x()) * Width % Width;
-    int Y = static_cast<int>(TexCoord.y()) * Height % Height;
-    int Index = (Y * Width + X) * 3;
+    float u = std::fmod(TexCoord.x(), 1.0f);
+    float v = std::fmod(TexCoord.y(), 1.0f);
+    if (u < 0) u += 1.0f;
+    if (v < 0) v += 1.0f;
 
+    int X = static_cast<int>(u * (Width - 1));
+    int Y = static_cast<int>(v * (Height - 1));
+    int Index = (Y * Width + X) * 3;
+    
     return {
         static_cast<float>(Data[Index]) / 255.0f,
         static_cast<float>(Data[Index + 1]) / 255.0f,

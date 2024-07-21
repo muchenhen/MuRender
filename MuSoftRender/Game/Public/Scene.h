@@ -4,27 +4,27 @@
 class Scene
 {
 private:
-    std::vector<std::unique_ptr<Object>> Objects;
+    std::vector<std::shared_ptr<Object>> Objects;
 
-    std::vector<std::unique_ptr<Camera>> Cameras;
+    std::vector<std::shared_ptr<Camera>> Cameras;
 
 public:
-    void AddObject(std::unique_ptr<Object> InObject)
+    void AddObject(std::shared_ptr<Object> InObject)
     {
         Objects.push_back(std::move(InObject));
     }
 
-    void AddCamera(std::unique_ptr<Camera> InCamera)
+    void AddCamera(std::shared_ptr<Camera> InCamera)
     {
         Cameras.push_back(std::move(InCamera));
     }
 
-    const std::vector<std::unique_ptr<Object>>& GetObjects() const
+    const std::vector<std::shared_ptr<Object>>& GetObjects() const
     {
         return Objects;
     }
 
-    const std::vector<std::unique_ptr<Camera>>& GetCameras() const
+    const std::vector<std::shared_ptr<Camera>>& GetCameras() const
     {
         return Cameras;
     }
