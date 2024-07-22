@@ -241,30 +241,6 @@ void Renderer::FillTriangle(
     }
 }
 
-void ProcessColors(const float* r, const float* g, const float* b, uint32_t* output)
-{
-    __m128 rVec = _mm_loadu_ps(r);
-    __m128 gVec = _mm_loadu_ps(g);
-    __m128 bVec = _mm_loadu_ps(b);
-
-    // 将浮点数值 [0, 1] 转换为 [0, 255] 的整数
-    __m128 scale = _mm_set1_ps(255.0f);
-    rVec = _mm_mul_ps(rVec, scale);
-    gVec = _mm_mul_ps(gVec, scale);
-    bVec = _mm_mul_ps(bVec, scale);
-
-    __m128i rInt = _mm_cvtps_epi32(rVec);
-    __m128i gInt = _mm_cvtps_epi32(gVec);
-    __m128i bInt = _mm_cvtps_epi32(bVec);
-
-    // 将 R, G, B 组合成 ARGB (假设 A 总是 255)
-    __m128i argb = _mm_or_si128(_mm_slli_epi32(rInt, 16),
-                                _mm_or_si128(_mm_slli_epi32(gInt, 8),
-                                             _mm_or_si128(bInt, _mm_set1_epi32(0xFF000000))));
-
-    _mm_storeu_si128((__m128i*)output, argb);
-}
-
 void Renderer::DrawTexture(Texture* Texture)
 {
     if (Texture == nullptr)
@@ -287,51 +263,7 @@ void Renderer::DrawTexture(Texture* Texture)
     const float InvWidth = 1.0f / Width;
     const float InvHeight = 1.0f / Height;
 
-    // for (int y = YStart; y < YEnd; y++)
-    // {
-    //     for (int x = XStart; x < XEnd; x += 4)  // 每次处理 4 个像素
-    //     {
-    //         float r[4], g[4], b[4];
-    //         for (int i = 0; i < 4; ++i)
-    //         {
-    //             float u = static_cast<float>(x + i - X) * InvWidth;
-    //             float v = static_cast<float>(y - Y) * InvHeight;
-    //             Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
-    //             r[i] = color.x();
-    //             g[i] = color.y();
-    //             b[i] = color.z();
-    //         }
-    //
-    //         uint32_t colors[4];
-    //         ProcessColors(r, g, b, colors);
-    //
-    //         for (int i = 0; i < 4; ++i)
-    //         {
-    //             if (x + i < XEnd)  // 确保不会越界
-    //             {
-    //                 FrameBuffer[y * ScreenWidth + x + i] = colors[i];
-    //             }
-    //         }
-    //     }
-    // }
-
-    // for (int y = YStart; y < YEnd; y++)
-    // {
-    //     for (int x = XStart; x < XEnd; x++)
-    //     {
-    //         float u = static_cast<float>(x - X) * InvWidth;
-    //         float v = static_cast<float>(y - Y) * InvHeight;
-    //         Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
-    //
-    //         uint8_t r = static_cast<uint8_t>(color.x() * 255);
-    //         uint8_t g = static_cast<uint8_t>(color.y() * 255);
-    //         uint8_t b = static_cast<uint8_t>(color.z() * 255);
-    //
-    //         FrameBuffer[y * ScreenWidth + x] = (255 << 24) | (r << 16) | (g << 8) | b;
-    //     }
-    // }
-
-    const int numThreads = std::thread::hardware_concurrency();
+    const unsigned int numThreads = std::thread::hardware_concurrency();
     std::vector<std::thread> threads(numThreads);
 
     auto renderSlice = [&](int yStart, int yEnd)
@@ -343,12 +275,7 @@ void Renderer::DrawTexture(Texture* Texture)
                 float u = static_cast<float>(x - X) * InvWidth;
                 float v = static_cast<float>(y - Y) * InvHeight;
                 Eigen::Vector3f color = Texture->Sample(Eigen::Vector2f(u, v));
-
-                uint8_t r = static_cast<uint8_t>(color.x() * 255);
-                uint8_t g = static_cast<uint8_t>(color.y() * 255);
-                uint8_t b = static_cast<uint8_t>(color.z() * 255);
-
-                FrameBuffer[y * ScreenWidth + x] = (255 << 24) | (r << 16) | (g << 8) | b;
+                FrameBuffer[y * ScreenWidth + x] = ColorToUint32(color);
             }
         }
     };
@@ -399,19 +326,43 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
     Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
 
-    for (int Y = MinPoint.y(); Y <= MaxPoint.y(); Y++)
-    {
-        for (int X = MinPoint.x(); X <= MaxPoint.x(); X++)
-        {
-            Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
-            if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
-            FragmentShaderInput FSI;
-            FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
-            FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
-            Eigen::Vector4f Color = FS(FSI, Material);
+    const unsigned int NumThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> Threads(NumThreads);
 
-            DrawPixel(X, Y, ColorToUint32(Color));
+    int YStart = MinPoint.y();
+    int YEnd = MaxPoint.y();
+    int XStart = MinPoint.x();
+    int XEnd = MaxPoint.x();
+
+    auto DrawSlice = [&](int yStart, int yEnd)
+    {
+        for (int Y = yStart; Y <= yEnd; Y++)
+        {
+            for (int X = XStart; X <= XEnd; X++)
+            {
+                Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
+                if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+                FragmentShaderInput FSI;
+                FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
+                FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
+                Eigen::Vector4f Color = FS(FSI, Material);
+
+                DrawPixel(X, Y, ColorToUint32(Color));
+            }
         }
+    };
+
+    int SliceHeight = (YEnd - YStart) / NumThreads;
+    for (int i = 0; i < NumThreads; ++i)
+    {
+        int yStart = YStart + i * SliceHeight;
+        int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
+        Threads[i] = std::thread(DrawSlice, YStart, yEnd);
+    }
+
+    for (auto& Thread : Threads)
+    {
+        Thread.join();
     }
 }
 
@@ -533,6 +484,14 @@ bool Renderer::IsInsideTriangle(int X, int Y, int X0, int Y0, int X1, int Y1, in
 }
 
 uint32_t Renderer::ColorToUint32(const Eigen::Vector4f& Color)
+{
+    uint8_t R = static_cast<uint8_t>(std::min(std::max(Color.x() * 255.0f, 0.0f), 255.0f));
+    uint8_t G = static_cast<uint8_t>(std::min(std::max(Color.y() * 255.0f, 0.0f), 255.0f));
+    uint8_t B = static_cast<uint8_t>(std::min(std::max(Color.z() * 255.0f, 0.0f), 255.0f));
+    return (R << 16) | (G << 8) | B;
+}
+
+uint32_t Renderer::ColorToUint32(const Eigen::Vector3f& Color)
 {
     uint8_t R = static_cast<uint8_t>(std::min(std::max(Color.x() * 255.0f, 0.0f), 255.0f));
     uint8_t G = static_cast<uint8_t>(std::min(std::max(Color.y() * 255.0f, 0.0f), 255.0f));

@@ -359,10 +359,10 @@ void Render(HWND Hwnd)
     if (G_Renderer && G_Scene && !G_Scene->GetCameras().empty())
     {
         // G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
-        // G_Renderer->RenderScene(G_Scene, G_Scene->GetCameras()[0].get(), G_RenderPipeline);
-        std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
-        TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
-        G_Renderer->DrawTexture(TexturePtr.get());
+        G_Renderer->RenderScene(G_Scene, G_Scene->GetCameras()[0].get(), G_RenderPipeline);
+        // std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
+        // TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
+        // G_Renderer->DrawTexture(TexturePtr.get());
     }
 
     UpdateDevice(Hwnd);

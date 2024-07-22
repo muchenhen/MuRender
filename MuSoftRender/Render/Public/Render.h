@@ -36,6 +36,8 @@ private:
 
     uint32_t ColorToUint32(const Eigen::Vector4f& Color);
 
+    uint32_t ColorToUint32(const Eigen::Vector3f& Color);
+
 public:
     void DrawPixel(int X, int Y, uint32_t Color);
 
