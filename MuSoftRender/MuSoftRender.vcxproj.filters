@@ -36,34 +36,49 @@
     <ClInclude Include="MuSoftRender.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Functions.h">
+    <ClInclude Include="Game\Public\Camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Objects</Filter>
+    <ClInclude Include="Game\Public\Cube.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>Objects</Filter>
+    <ClInclude Include="Game\Public\Functions.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>Objects</Filter>
+    <ClInclude Include="Game\Public\Logger.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Objects</Filter>
+    <ClInclude Include="Game\Public\Mesh.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Render</Filter>
+    <ClInclude Include="Game\Public\MeshObject.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Render.h">
-      <Filter>Render</Filter>
+    <ClInclude Include="Game\Public\Object.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Resource</Filter>
+    <ClInclude Include="Game\Public\Scene.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MeshObject.h">
-      <Filter>Objects</Filter>
+    <ClInclude Include="Render\Public\FragmentShaderInput.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="Render\Public\Material.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\Render.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\RenderPipeline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\Texture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\VertexShaderInput.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,7 +86,22 @@
     <ClCompile Include="MuSoftRender.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Render.cpp">
+    <ClCompile Include="Game\Private\Mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\Render.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\FragmentShaderInput.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\RenderPipeline.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\VertexShaderInput.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
