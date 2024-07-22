@@ -21,5 +21,19 @@
     <ClInclude Include="Include\RHI\RHIDevice.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Renderer\Vulkan\VulkanDevice.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Include\RHI\RHIDevice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Renderer\Vulkan\VulkanDevice.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
