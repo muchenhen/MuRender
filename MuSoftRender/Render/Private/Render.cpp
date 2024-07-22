@@ -323,47 +323,51 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     Eigen::Vector2i P2 = ProjectToScreen(V2.Position);
     Eigen::Vector2i P3 = ProjectToScreen(V3.Position);
 
-    Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
-    Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
+    FillTriangle(P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y(), 0x00FF00);
 
-    const unsigned int NumThreads = std::thread::hardware_concurrency();
-    std::vector<std::thread> Threads(NumThreads);
+    //Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
+    //Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
 
-    int YStart = MinPoint.y();
-    int YEnd = MaxPoint.y();
-    int XStart = MinPoint.x();
-    int XEnd = MaxPoint.x();
+    //const unsigned int NumThreads = std::thread::hardware_concurrency();
+    //std::vector<std::thread> Threads(NumThreads);
 
-    auto DrawSlice = [&](int yStart, int yEnd)
-    {
-        for (int Y = yStart; Y <= yEnd; Y++)
-        {
-            for (int X = XStart; X <= XEnd; X++)
-            {
-                Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
-                if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
-                FragmentShaderInput FSI;
-                FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
-                FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
-                Eigen::Vector4f Color = FS(FSI, Material);
+    //int YStart = MinPoint.y();
+    //int YEnd = MaxPoint.y();
+    //int XStart = MinPoint.x();
+    //int XEnd = MaxPoint.x();
 
-                DrawPixel(X, Y, ColorToUint32(Color));
-            }
-        }
-    };
+    //auto DrawSlice = [&](int yStart, int yEnd)
+    //{
+    //    for (int Y = yStart; Y <= yEnd; Y++)
+    //    {
+    //        for (int X = XStart; X <= XEnd; X++)
+    //        {
+    //            //Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
+    //            //if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+    //            //FragmentShaderInput FSI;
+    //            //FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
+    //            //FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
+    //            //Eigen::Vector4f Color = FS(FSI, Material);
 
-    int SliceHeight = (YEnd - YStart) / NumThreads;
-    for (int i = 0; i < NumThreads; ++i)
-    {
-        int yStart = YStart + i * SliceHeight;
-        int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
-        Threads[i] = std::thread(DrawSlice, YStart, yEnd);
-    }
 
-    for (auto& Thread : Threads)
-    {
-        Thread.join();
-    }
+    //            Eigen::Vector4f Color = Eigen::Vector4f::Ones();
+    //            DrawPixel(X, Y, ColorToUint32(Color));
+    //        }
+    //    }
+    //};
+
+    //int SliceHeight = (YEnd - YStart) / NumThreads;
+    //for (int i = 0; i < NumThreads; ++i)
+    //{
+    //    int yStart = YStart + i * SliceHeight;
+    //    int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
+    //    Threads[i] = std::thread(DrawSlice, YStart, yEnd);
+    //}
+
+    //for (auto& Thread : Threads)
+    //{
+    //    Thread.join();
+    //}
 }
 
 void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
@@ -464,7 +468,15 @@ void Renderer::RenderMeshObject(MeshObject* MeshObject, Camera* Camera, RenderPi
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
+         ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
+
+        // auto ColorWhite = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+        /*FillTriangle(
+            V1.Position.x(), V1.Position.y(), V1.Position.z(), ColorToUint32(ColorWhite),
+            V2.Position.x(), V2.Position.y(), V2.Position.z(), ColorToUint32(ColorWhite),
+            V3.Position.x(), V3.Position.y(), V3.Position.z(), ColorToUint32(ColorWhite)
+        );*/
     }
 }
 
