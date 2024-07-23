@@ -133,6 +133,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game\Public\Camera.h" />
     <ClInclude Include="Game\Public\Cube.h" />
+    <ClInclude Include="Game\Public\DirectionalLight.h" />
     <ClInclude Include="Game\Public\Functions.h" />
     <ClInclude Include="Game\Public\Logger.h" />
     <ClInclude Include="Game\Public\Mesh.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="ThirdParty\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Game\Private\DirectionalLight.cpp" />
     <ClCompile Include="Game\Private\Mesh.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Render\Private\FragmentShaderInput.cpp" />

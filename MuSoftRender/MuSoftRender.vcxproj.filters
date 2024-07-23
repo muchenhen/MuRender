@@ -81,6 +81,9 @@
     <ClInclude Include="ThirdParty\stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Public\DirectionalLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuSoftRender.cpp">
@@ -102,6 +105,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Render\Private\VertexShaderInput.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Private\DirectionalLight.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

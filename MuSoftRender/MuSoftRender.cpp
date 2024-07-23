@@ -15,6 +15,8 @@
 
 #include <windows.h>
 
+#include "DirectionalLight.h"
+
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
@@ -177,6 +179,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     CubePtr->SetMaterial(MaterialPtr);
 
     G_Scene->AddObject(CubePtr);
+
+    std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
+        Eigen::Vector3f(1, -1, 1),
+        Eigen::Vector3f(1, 1, 1),
+        1.0f
+        );
+
+    G_Scene->SetDirectionalLight(LightPtr);
 
     ShowWindow(Hwnd, nCmdShow);
 
