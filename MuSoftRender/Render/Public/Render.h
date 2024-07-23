@@ -45,6 +45,9 @@ public:
 
     void DrawLine(int X1, int Y1, int X2, int Y2, uint32_t Color);
 
+    void DrawLine(int X1, int Y1, float Z1, uint32_t Color1,
+        				  int X2, int Y2, float Z2, uint32_t Color2);
+
     void DrawTriangle(int X1, int Y1, int X2, int Y2, int X3, int Y3, uint32_t Color);
 
     void FillTriangle(int X1, int Y1, int X2, int Y2, int X3, int Y3, uint32_t Color);
