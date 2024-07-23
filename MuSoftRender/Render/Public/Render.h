@@ -30,13 +30,13 @@ public:
     int GetHeight() const;
 
 private:
-    Eigen::Vector3f ComputeBarycentric(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2);
+    static Eigen::Vector3f ComputeBarycentric(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2);
 
-    bool IsInsideTriangle(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2);
+    static bool IsInsideTriangle(int X, int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2);
 
-    uint32_t ColorToUint32(const Eigen::Vector4f& Color);
+    static uint32_t ColorToUint32(const Eigen::Vector4f& Color);
 
-    uint32_t ColorToUint32(const Eigen::Vector3f& Color);
+    static uint32_t ColorToUint32(const Eigen::Vector3f& Color);
 
 public:
     void DrawPixel(int X, int Y, uint32_t Color);
@@ -46,7 +46,7 @@ public:
     void DrawLine(int X1, int Y1, int X2, int Y2, uint32_t Color);
 
     void DrawLine(int X1, int Y1, float Z1, uint32_t Color1,
-        				  int X2, int Y2, float Z2, uint32_t Color2);
+                  int X2, int Y2, float Z2, uint32_t Color2);
 
     void DrawTriangle(int X1, int Y1, int X2, int Y2, int X3, int Y3, uint32_t Color);
 
@@ -56,7 +56,7 @@ public:
                       int X1, int Y1, float Z1, uint32_t Color1,
                       int X2, int Y2, float Z2, uint32_t Color2);
 
-    void DrawTexture(Texture* Texture);
+    void DrawTexture(const Texture* Texture);
 
 private:
     void ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3,
@@ -70,7 +70,10 @@ private:
 public:
     void RenderCamera(const Scene& Scene, const Camera& Camera);
 
-    void RenderScene(Scene* Scene, Camera* Camera, RenderPipeline* Pipeline);
+    void RenderScene(const Scene* Scene, const Camera* Camera, const RenderPipeline* Pipeline);
 
-    void RenderMeshObject(MeshObject* MeshObject, Camera* Camera, RenderPipeline* Pipeline);
+    void RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline);
+
+private:
+    bool EarlyDepthTest(int X, int Y, float Depth);
 };

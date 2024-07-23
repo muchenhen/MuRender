@@ -1,12 +1,9 @@
 ﻿#include "Render.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 #include "Cube.h"
 #include "Logger.h"
-#include <omp.h>
-#include <immintrin.h>
 
 Renderer::Renderer(const int Width, const int Height)
 {
@@ -51,10 +48,10 @@ void Renderer::DrawPixel(const int X, const int Y, const float Depth, const uint
     if (X >= 0 && X < ScreenWidth && Y >= 0 && Y < ScreenHeight)
     {
         const int Index = Y * ScreenWidth + X;
-        if (Depth < DepthBuffer[Index])
+        // if (Depth < DepthBuffer[Index])
         {
             FrameBuffer[Index] = Color;
-            DepthBuffer[Index] = Depth;
+            // DepthBuffer[Index] = Depth;
         }
     }
 }
@@ -85,7 +82,7 @@ void Renderer::DrawLine(int X1, int Y1, const int X2, const int Y2, const uint32
     }
 }
 
-void Renderer::DrawLine(int X1, int Y1, float Z1, uint32_t Color1, int X2, int Y2, float Z2, uint32_t Color2)
+void Renderer::DrawLine(int X1, int Y1, const float Z1, const uint32_t Color1, const int X2, const int Y2, const float Z2, uint32_t Color2)
 {
     const int Dx = abs(X2 - X1);
     const int Dy = abs(Y2 - Y1);
@@ -249,10 +246,8 @@ void Renderer::FillTriangle(
 
         uint32_t ColorA = InterpolateColor(Color0, Color2, Alpha);
         uint32_t ColorB;
-        if (SecondHalf)
-            ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
-        else
-            ColorB = InterpolateColor(Color0, Color1, Beta);
+        if (SecondHalf) ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
+        else ColorB = InterpolateColor(Color0, Color1, Beta);
 
         if (Ax > Bx)
         {
@@ -271,7 +266,7 @@ void Renderer::FillTriangle(
     }
 }
 
-void Renderer::DrawTexture(Texture* Texture)
+void Renderer::DrawTexture(const Texture* Texture)
 {
     if (Texture == nullptr)
     {
@@ -290,13 +285,13 @@ void Renderer::DrawTexture(Texture* Texture)
     const int XEnd = std::min(ScreenWidth, X + Width);
     const int YEnd = std::min(ScreenHeight, Y + Height);
 
-    const float InvWidth = 1.0f / Width;
-    const float InvHeight = 1.0f / Height;
+    const float InvWidth = 1.0f / static_cast<float>(Width);
+    const float InvHeight = 1.0f / static_cast<float>(Height);
 
-    const unsigned int numThreads = std::thread::hardware_concurrency();
-    std::vector<std::thread> threads(numThreads);
+    const int NumThreads = static_cast<int>(std::thread::hardware_concurrency());
+    std::vector<std::thread> Threads(NumThreads);
 
-    auto renderSlice = [&](int yStart, int yEnd)
+    auto RenderSlice = [&](const int yStart, const int yEnd)
     {
         for (int y = yStart; y < yEnd; y++)
         {
@@ -310,15 +305,15 @@ void Renderer::DrawTexture(Texture* Texture)
         }
     };
 
-    int sliceHeight = (YEnd - YStart) / numThreads;
-    for (int i = 0; i < numThreads; ++i)
+    int SliceHeight = (YEnd - YStart) / NumThreads;
+    for (int i = 0; i < NumThreads; ++i)
     {
-        int yStart = YStart + i * sliceHeight;
-        int yEnd = (i == numThreads - 1) ? YEnd : yStart + sliceHeight;
-        threads[i] = std::thread(renderSlice, yStart, yEnd);
+        int yStart = YStart + i * SliceHeight;
+        int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
+        Threads[i] = std::thread(RenderSlice, yStart, yEnd);
     }
 
-    for (auto& thread : threads)
+    for (auto& thread : Threads)
     {
         thread.join();
     }
@@ -343,27 +338,21 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     auto ProjectToScreen = [this](const Eigen::Vector4f& v) -> Eigen::Vector3f
     {
         Eigen::Vector3f NDC = v.head<3>() / v.w();
-        return Eigen::Vector3f(
-            static_cast<float>((NDC.x() + 1.0f) * 0.5f * ScreenWidth),
-            static_cast<float>((1.0f - NDC.y()) * 0.5f * ScreenHeight),
+        return {
+            (NDC.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth),
+            (1.0f - NDC.y()) * 0.5f * static_cast<float>(ScreenHeight),
             NDC.z() // 保留深度信息
-        );
+        };
     };
 
     Eigen::Vector3f P1 = ProjectToScreen(V1.Position);
     Eigen::Vector3f P2 = ProjectToScreen(V2.Position);
     Eigen::Vector3f P3 = ProjectToScreen(V3.Position);
 
-    // DrawLine(P1.x(), P1.y(), P1.z(), 0x0000FF, P2.x(), P2.y(), P2.z(), 0xFF0000);
-    // DrawLine(P2.x(), P2.y(), P2.z(), 0x00FF00, P3.x(), P3.y(), P3.z(), 0x00FF00);
-    // DrawLine(P3.x(), P3.y(), P3.z(), 0x00FF00, P1.x(), P1.y(), P1.z(), 0x0000FF);
-
-    // FillTriangle(P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y(), 0x00FF00);
-
     Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
     Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
 
-    const unsigned int NumThreads = std::thread::hardware_concurrency();
+    const int NumThreads = static_cast<int>(std::thread::hardware_concurrency());
     std::vector<std::thread> Threads(NumThreads);
 
     int YStart = MinPoint.y();
@@ -371,7 +360,7 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     int XStart = MinPoint.x();
     int XEnd = MaxPoint.x();
 
-    auto DrawSlice = [&](int yStart, int yEnd)
+    auto DrawSlice = [&](const int yStart, const int yEnd)
     {
         for (int Y = yStart; Y <= yEnd; Y++)
         {
@@ -381,13 +370,17 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
 
                 if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
 
+                float Depth = Barycentric.x() * P1.z() + Barycentric.y() * P2.z() + Barycentric.z() * P3.z();
+
+                if (!EarlyDepthTest(X, Y, Depth)) continue;
+
                 FragmentShaderInput FSI;
                 FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
                 FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
                 Eigen::Vector4f Color = FS(FSI, Material);
 
                 //Eigen::Vector4f Color = Eigen::Vector4f::Ones();
-                DrawPixel(X, Y, ColorToUint32(Color));
+                DrawPixel(X, Y, Depth, ColorToUint32(Color));
             }
         }
     };
@@ -423,8 +416,6 @@ void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
         const Mesh* MeshPtr = MeshObjectPtr->GetMesh();
         if (!MeshPtr) continue;
 
-        const Material* MaterialPtr = MeshObjectPtr->GetMaterial();
-
         for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
         {
             const Vertex& V0 = MeshPtr->Vertices[MeshPtr->Indices[i]];
@@ -457,7 +448,7 @@ void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
     }
 }
 
-void Renderer::RenderScene(Scene* Scene, Camera* Camera, RenderPipeline* Pipeline)
+void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const RenderPipeline* Pipeline)
 {
     if (Scene == nullptr || Camera == nullptr || Pipeline == nullptr)
     {
@@ -480,7 +471,7 @@ void Renderer::RenderScene(Scene* Scene, Camera* Camera, RenderPipeline* Pipelin
     }
 }
 
-void Renderer::RenderMeshObject(MeshObject* MeshObject, Camera* Camera, RenderPipeline* Pipeline)
+void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
 {
     if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
     {
@@ -505,27 +496,30 @@ void Renderer::RenderMeshObject(MeshObject* MeshObject, Camera* Camera, RenderPi
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
         ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
-
-        // auto ColorWhite = Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        /*FillTriangle(
-            V1.Position.x(), V1.Position.y(), V1.Position.z(), ColorToUint32(ColorWhite),
-            V2.Position.x(), V2.Position.y(), V2.Position.z(), ColorToUint32(ColorWhite),
-            V3.Position.x(), V3.Position.y(), V3.Position.z(), ColorToUint32(ColorWhite)
-        );*/
     }
 }
 
-Eigen::Vector3f Renderer::ComputeBarycentric(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2)
+bool Renderer::EarlyDepthTest(int X, int Y, float Depth)
 {
-    float Det = (X1 - X0) * (Y2 - Y0) - (X2 - X0) * (Y1 - Y0);
-    float L1 = ((X1 - X) * (Y2 - Y) - (X2 - X) * (Y1 - Y)) / Det;
-    float L2 = ((X2 - X) * (Y0 - Y) - (X0 - X) * (Y2 - Y)) / Det;
-    float L3 = 1.0f - L1 - L2;
-    return Eigen::Vector3f(L1, L2, L3);
+    if (X < 0 || X >= ScreenWidth || Y < 0 || Y >= ScreenHeight) return false;
+
+    int index = Y * ScreenWidth + X;
+    if (Depth >= DepthBuffer[index]) return false;
+
+    DepthBuffer[index] = Depth;
+    return true;
 }
 
-bool Renderer::IsInsideTriangle(int X, int Y, int X0, int Y0, int X1, int Y1, int X2, int Y2)
+Eigen::Vector3f Renderer::ComputeBarycentric(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2)
+{
+    float Det = (X1 - X0) * (Y2 - Y0) - (X2 - X0) * (Y1 - Y0);
+    float L1 = ((X1 - static_cast<float>(X)) * (Y2 - static_cast<float>(Y)) - (X2 - static_cast<float>(X)) * (Y1 - static_cast<float>(Y))) / Det;
+    float L2 = ((X2 - static_cast<float>(X)) * (Y0 - static_cast<float>(Y)) - (X0 - static_cast<float>(X)) * (Y2 - static_cast<float>(Y))) / Det;
+    float L3 = 1.0f - L1 - L2;
+    return {L1, L2, L3};
+}
+
+bool Renderer::IsInsideTriangle(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2)
 {
     Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, X0, Y0, X1, Y1, X2, Y2);
     return Barycentric.x() >= 0 && Barycentric.y() >= 0 && Barycentric.z() >= 0;
