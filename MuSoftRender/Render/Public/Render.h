@@ -66,6 +66,11 @@ private:
                          const VertexShader& VS, const FragmentShader& FS,
                          const Material* Material);
 
+    void ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3,
+                         const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix3f& NormalMatrix, const Eigen::Matrix4f& MVPMatrix,
+                         const VertexShader& VS, const FragmentShader& FS,
+                         const Material* Material);
+
     void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
                            const FragmentShader& FS, const Material* Material);
 
