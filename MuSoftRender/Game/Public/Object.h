@@ -61,4 +61,7 @@ public:
         Model.block<3, 3>(0, 0) *= Scale.asDiagonal();
         return Model;
     }
+
+    virtual Eigen::Matrix3f GetNormalMatrix() const;
+
 };
