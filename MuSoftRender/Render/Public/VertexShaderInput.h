@@ -5,6 +5,7 @@ struct Vertex
 {
     Eigen::Vector3f Position;
     Eigen::Vector2f UV;
+    Eigen::Vector3f Normal;
 };
 
 struct VertexShaderInput

@@ -53,41 +53,54 @@ private:
         auto UV3 = Eigen::Vector2f(1, 1);
         auto UV4 = Eigen::Vector2f(0, 1);
 
-        CubeMesh->AddVertex(Point1, UV1);
-        CubeMesh->AddVertex(Point2, UV2);
-        CubeMesh->AddVertex(Point3, UV3);
-        CubeMesh->AddVertex(Point4, UV4);
+        auto NormalFront = Eigen::Vector3f(0, 0, -1);
+        auto NormalBack = Eigen::Vector3f(0, 0, 1);
+        auto NormalRight = Eigen::Vector3f(1, 0, 0);
+        auto NormalLeft = Eigen::Vector3f(-1, 0, 0);
+        auto NormalTop = Eigen::Vector3f(0, 1, 0);
+        auto NormalBottom = Eigen::Vector3f(0, -1, 0);
 
-        CubeMesh->AddVertex(Point6, UV1);
-        CubeMesh->AddVertex(Point5, UV2);
-        CubeMesh->AddVertex(Point8, UV3);
-        CubeMesh->AddVertex(Point7, UV4);
+        // Front
+        CubeMesh->AddVertex(Point1, UV1, NormalFront);
+        CubeMesh->AddVertex(Point2, UV2, NormalFront);
+        CubeMesh->AddVertex(Point3, UV3, NormalFront);
+        CubeMesh->AddVertex(Point4, UV4, NormalFront);
 
-        CubeMesh->AddVertex(Point2, UV1);
-        CubeMesh->AddVertex(Point6, UV2);
-        CubeMesh->AddVertex(Point7, UV3);
-        CubeMesh->AddVertex(Point3, UV4);
+        // Back
+        CubeMesh->AddVertex(Point6, UV1, NormalBack);
+        CubeMesh->AddVertex(Point5, UV2, NormalBack);
+        CubeMesh->AddVertex(Point8, UV3, NormalBack);
+        CubeMesh->AddVertex(Point7, UV4, NormalBack);
 
-        CubeMesh->AddVertex(Point5, UV1);
-        CubeMesh->AddVertex(Point1, UV2);
-        CubeMesh->AddVertex(Point4, UV3);
-        CubeMesh->AddVertex(Point8, UV4);
+        // Right
+        CubeMesh->AddVertex(Point2, UV1, NormalRight);
+        CubeMesh->AddVertex(Point6, UV2, NormalRight);
+        CubeMesh->AddVertex(Point7, UV3, NormalRight);
+        CubeMesh->AddVertex(Point3, UV4, NormalRight);
 
-        CubeMesh->AddVertex(Point4, UV1);
-        CubeMesh->AddVertex(Point3, UV2);
-        CubeMesh->AddVertex(Point7, UV3);
-        CubeMesh->AddVertex(Point8, UV4);
+        // Left
+        CubeMesh->AddVertex(Point5, UV1, NormalLeft);
+        CubeMesh->AddVertex(Point1, UV2, NormalLeft);
+        CubeMesh->AddVertex(Point4, UV3, NormalLeft);
+        CubeMesh->AddVertex(Point8, UV4, NormalLeft);
 
-        CubeMesh->AddVertex(Point5, UV1);
-        CubeMesh->AddVertex(Point6, UV2);
-        CubeMesh->AddVertex(Point2, UV3);
-        CubeMesh->AddVertex(Point1, UV4);
+        // Top
+        CubeMesh->AddVertex(Point4, UV1, NormalTop);
+        CubeMesh->AddVertex(Point3, UV2, NormalTop);
+        CubeMesh->AddVertex(Point7, UV3, NormalTop);
+        CubeMesh->AddVertex(Point8, UV4, NormalTop);
+
+        // Bottom
+        CubeMesh->AddVertex(Point5, UV1, NormalBottom);
+        CubeMesh->AddVertex(Point6, UV2, NormalBottom);
+        CubeMesh->AddVertex(Point2, UV3, NormalBottom);
+        CubeMesh->AddVertex(Point1, UV4, NormalBottom);
 
         for (int i = 0; i < 6; ++i)
         {
-            int baseIndex = i * 4;
-            CubeMesh->AddTriangle(baseIndex, baseIndex + 1, baseIndex + 2);
-            CubeMesh->AddTriangle(baseIndex, baseIndex + 2, baseIndex + 3);
+            int BaseIndex = i * 4;
+            CubeMesh->AddTriangle(BaseIndex, BaseIndex + 1, BaseIndex + 2);
+            CubeMesh->AddTriangle(BaseIndex, BaseIndex + 2, BaseIndex + 3);
         }
 
         return CubeMesh;
