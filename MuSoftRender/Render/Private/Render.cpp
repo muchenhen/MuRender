@@ -253,10 +253,8 @@ void Renderer::FillTriangle(
 
         uint32_t ColorA = InterpolateColor(Color0, Color2, Alpha);
         uint32_t ColorB;
-        if (SecondHalf)
-            ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
-        else
-            ColorB = InterpolateColor(Color0, Color1, Beta);
+        if (SecondHalf) ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
+        else ColorB = InterpolateColor(Color0, Color1, Beta);
 
         if (Ax > Bx)
         {
@@ -337,6 +335,19 @@ void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex&
     VertexShaderOutput VSO1 = VS(VSI1, ModelMatrix, MVPMatrix);
     VertexShaderOutput VSO2 = VS(VSI2, ModelMatrix, MVPMatrix);
     VertexShaderOutput VSO3 = VS(VSI3, ModelMatrix, MVPMatrix);
+
+    RasterizeTriangle(VSO1, VSO2, VSO3, FS, Material);
+}
+
+void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const Eigen::Matrix3f& NormalMatrix, const NormalVertexShader& VS, const FragmentShader& FS, const Material* Material)
+{
+    VertexShaderInput VSI1 = {V1.Position, V1.UV};
+    VertexShaderInput VSI2 = {V2.Position, V2.UV};
+    VertexShaderInput VSI3 = {V3.Position, V3.UV};
+
+    VertexShaderOutput VSO1 = VS(VSI1, ModelMatrix, MVPMatrix, NormalMatrix);
+    VertexShaderOutput VSO2 = VS(VSI2, ModelMatrix, MVPMatrix, NormalMatrix);
+    VertexShaderOutput VSO3 = VS(VSI3, ModelMatrix, MVPMatrix, NormalMatrix);
 
     RasterizeTriangle(VSO1, VSO2, VSO3, FS, Material);
 }
