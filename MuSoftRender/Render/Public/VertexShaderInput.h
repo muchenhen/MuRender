@@ -50,34 +50,3 @@ extern VertexShader DefaultVertexShader;
 using NormalVertexShader = std::function<VertexShaderOutput(const VertexShaderInput&, const Eigen::Matrix4f&, const Eigen::Matrix4f&, const Eigen::Matrix3f&)>;
 
 extern NormalVertexShader DefaultNormalVertexShader;
-
-template <typename T>
-class VertexShaderWrapper
-{
-private:
-    T Shader;
-    Eigen::Matrix3f NormalMatrix; // 只用在NormalVertexShader
-
-public:
-    VertexShaderWrapper(T s):
-        Shader(std::move(s))
-    {
-    }
-
-    void SetNormalMatrix(const Eigen::Matrix3f& InNormalMatrix)
-    {
-        NormalMatrix = InNormalMatrix;
-    }
-
-    VertexShaderOutput operator()(const VertexShaderInput& Input, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix) const
-    {
-        if constexpr (std::is_same<T, VertexShader>::value)
-        {
-            return Shader(Input, ModelMatrix, MVPMatrix);
-        }
-        else if constexpr (std::is_same<T, NormalVertexShader>::value)
-        {
-            return Shader(Input, ModelMatrix, MVPMatrix, NormalMatrix);
-        }
-    }
-};
