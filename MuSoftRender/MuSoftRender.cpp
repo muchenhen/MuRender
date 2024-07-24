@@ -150,7 +150,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     
     // 创建RenderPipeline实例
-    G_RenderPipeline = new RenderPipeline(DefaultVertexShader, DefaultFragmentShader);
+    G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
     // 创建Render实例
     G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例

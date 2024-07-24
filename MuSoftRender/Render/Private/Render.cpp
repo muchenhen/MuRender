@@ -328,7 +328,7 @@ void Renderer::DrawTexture(const Texture* Texture)
     }
 }
 
-void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const VertexShader& VS, const FragmentShader& FS, const Material* Material)
+void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const StandardVertexShader& VS, const FragmentShader& FS, const Material* Material)
 {
     VertexShaderInput VSI1 = {V1.Position, V1.UV};
     VertexShaderInput VSI2 = {V2.Position, V2.UV};
