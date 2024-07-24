@@ -18,6 +18,8 @@ private:
     std::vector<uint32_t> FrameBuffer;
     std::vector<float> DepthBuffer;
 
+    bool UseEarlyDepthTest = true;
+
 public:
     Renderer(int Width, int Height);
 
@@ -76,4 +78,7 @@ public:
 
 private:
     bool EarlyDepthTest(int X, int Y, float Depth);
+
+public:
+    void SetUseEarlyDepthTest(bool Enable);
 };

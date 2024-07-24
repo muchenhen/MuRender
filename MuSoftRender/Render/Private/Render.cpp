@@ -48,10 +48,17 @@ void Renderer::DrawPixel(const int X, const int Y, const float Depth, const uint
     if (X >= 0 && X < ScreenWidth && Y >= 0 && Y < ScreenHeight)
     {
         const int Index = Y * ScreenWidth + X;
-        // if (Depth < DepthBuffer[Index])
+        if (UseEarlyDepthTest)
         {
             FrameBuffer[Index] = Color;
-            // DepthBuffer[Index] = Depth;
+        }
+        else
+        {
+            if (Depth < DepthBuffer[Index])
+            {
+                DepthBuffer[Index] = Depth;
+                FrameBuffer[Index] = Color;
+            }
         }
     }
 }
@@ -246,8 +253,10 @@ void Renderer::FillTriangle(
 
         uint32_t ColorA = InterpolateColor(Color0, Color2, Alpha);
         uint32_t ColorB;
-        if (SecondHalf) ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
-        else ColorB = InterpolateColor(Color0, Color1, Beta);
+        if (SecondHalf)
+            ColorB = InterpolateColor(Color1, Color2, Beta); // NOLINT(readability-suspicious-call-argument)
+        else
+            ColorB = InterpolateColor(Color0, Color1, Beta);
 
         if (Ax > Bx)
         {
@@ -372,14 +381,16 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
 
                 float Depth = Barycentric.x() * P1.z() + Barycentric.y() * P2.z() + Barycentric.z() * P3.z();
 
-                if (!EarlyDepthTest(X, Y, Depth)) continue;
+                if (UseEarlyDepthTest)
+                {
+                    if (!EarlyDepthTest(X, Y, Depth)) continue;
+                }
 
                 FragmentShaderInput FSI;
                 FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
                 FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
                 Eigen::Vector4f Color = FS(FSI, Material);
 
-                //Eigen::Vector4f Color = Eigen::Vector4f::Ones();
                 DrawPixel(X, Y, Depth, ColorToUint32(Color));
             }
         }
@@ -508,6 +519,11 @@ bool Renderer::EarlyDepthTest(int X, int Y, float Depth)
 
     DepthBuffer[index] = Depth;
     return true;
+}
+
+void Renderer::SetUseEarlyDepthTest(bool Enable)
+{
+    UseEarlyDepthTest = Enable;
 }
 
 Eigen::Vector3f Renderer::ComputeBarycentric(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2)
