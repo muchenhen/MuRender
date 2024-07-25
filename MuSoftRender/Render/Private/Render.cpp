@@ -339,7 +339,7 @@ void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex&
     RasterizeTriangle(VSO1, VSO2, VSO3, FS, Material);
 }
 
-void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const Eigen::Matrix3f& NormalMatrix, const NormalVertexShader& VS, const FragmentShader& FS, const Material* Material)
+void Renderer::ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const Eigen::Matrix3f& NormalMatrix, const NormalVertexShader& VS, const FragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr)
 {
     VertexShaderInput VSI1 = {V1.Position, V1.UV};
     VertexShaderInput VSI2 = {V2.Position, V2.UV};
@@ -508,10 +508,16 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
         {
             continue;
         }
+        bool bIsSceneHasLight = Scene->HasLight();
         MeshObject* MeshObjectPtr = dynamic_cast<MeshObject*>(ObjectPtr);
-        if (MeshObjectPtr != nullptr)
+        if (MeshObjectPtr == nullptr)
         {
-            RenderMeshObject(MeshObjectPtr, Camera, Pipeline);
+            return;
+        }
+
+        if (bIsSceneHasLight)
+        {
+            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, Scene->GetDirectionalLight().get());
         }
     }
 }
@@ -544,7 +550,7 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
     }
 }
 
-void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline)
+void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline, const DirectionalLight* DirectionalLightPty)
 {
     if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
     {
@@ -562,14 +568,14 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
     auto ProjectionMatrix = Camera->GetProjectionMatrix();
     auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
     auto NormalMatrix = MeshObject->GetNormalMatrix();
-    
+
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {
         const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
+        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr, nullptr);
     }
 }
 

@@ -155,6 +155,7 @@
     <ClCompile Include="Game\Private\DirectionalLight.cpp" />
     <ClCompile Include="Game\Private\Mesh.cpp" />
     <ClCompile Include="Game\Private\Object.cpp" />
+    <ClCompile Include="Game\Private\Scene.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Render\Private\FragmentShaderInput.cpp" />
     <ClCompile Include="Render\Private\Render.cpp" />
