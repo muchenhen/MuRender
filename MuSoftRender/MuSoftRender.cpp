@@ -52,6 +52,7 @@ int G_FrameRateLimit = 60; // 0 表示无限制
 LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam);
 
 RenderPipeline* G_RenderPipeline = nullptr;
+NormalRenderPipeline* G_NormalRenderPipeline = nullptr;
 Renderer* G_Renderer = nullptr;
 Scene* G_Scene = nullptr;
 Camera* G_Camera = nullptr;
@@ -151,6 +152,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     
     // 创建RenderPipeline实例
     G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
+    G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultFragmentShader);
     // 创建Render实例
     G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例
