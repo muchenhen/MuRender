@@ -14,51 +14,23 @@ protected:
 public:
     virtual ~Object() = default;
 
-    Object() :
-        Position(Eigen::Vector3f::Zero()), Rotation(Eigen::Vector3f::Zero()), Scale(Eigen::Vector3f::Ones())
-    {
-    }
+    Object();
 
-    virtual void Update(float DeltaTime)
-    {
-    }
+    virtual void Update(float DeltaTime);
 
-    virtual void SetPosition(const Eigen::Vector3f& InPosition)
-    {
-        Position = InPosition;
-    }
+    virtual void SetPosition(const Eigen::Vector3f& InPosition);
 
-    void SetRotation(const Eigen::Vector3f& InRotation)
-    {
-        Rotation = InRotation;
-    }
+    void SetRotation(const Eigen::Vector3f& InRotation);
 
-    void SetScale(const Eigen::Vector3f& InScale)
-    {
-        Scale = InScale;
-    }
+    void SetScale(const Eigen::Vector3f& InScale);
 
-    Eigen::Vector3f GetPosition() const
-    {
-        return Position;
-    }
+    Eigen::Vector3f GetPosition() const;
 
-    Eigen::Vector3f GetRotation() const
-    {
-        return Rotation;
-    }
+    Eigen::Vector3f GetRotation() const;
 
-    Eigen::Vector3f GetScale() const
-    {
-        return Scale;
-    }
+    Eigen::Vector3f GetScale() const;
 
-    virtual Eigen::Matrix4f GetModelMatrix() const
-    {
-        Eigen::Matrix4f Model = Eigen::Matrix4f::Identity();
-        Model.block<3, 3>(0, 0) = (Eigen::AngleAxisf(Rotation.x(), Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(Rotation.y(), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(Rotation.z(), Eigen::Vector3f::UnitZ())).matrix();
-        Model.block<3, 1>(0, 3) = Position;
-        Model.block<3, 3>(0, 0) *= Scale.asDiagonal();
-        return Model;
-    }
+    virtual Eigen::Matrix4f GetModelMatrix() const;
+
+    virtual Eigen::Matrix3f GetNormalMatrix() const;
 };

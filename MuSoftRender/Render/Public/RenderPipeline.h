@@ -5,10 +5,10 @@
 class RenderPipeline
 {
 public:
-    VertexShader VS;
+    StandardVertexShader VS;
     FragmentShader FS;
 
-    RenderPipeline(VertexShader vs, FragmentShader fs) :
+    RenderPipeline(StandardVertexShader vs, FragmentShader fs) :
         VS(std::move(vs)), FS(std::move(fs))
     {
     }

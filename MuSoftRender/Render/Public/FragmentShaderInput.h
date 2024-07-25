@@ -1,5 +1,7 @@
 #pragma once
+#pragma warning(disable : 4819)
 #include <Eigen/Core>
+#pragma warning(default : 4819)
 
 #include "Material.h"
 
