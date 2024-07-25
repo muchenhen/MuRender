@@ -79,7 +79,11 @@ public:
 
     void RenderScene(const Scene* Scene, const Camera* Camera, const RenderPipeline* Pipeline);
 
+    void RenderScene(const Scene* Scene, const Camera* Camera, const NormalRenderPipeline* Pipeline);
+
     void RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline);
+
+    void RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline);
 
 private:
     bool EarlyDepthTest(int X, int Y, float Depth);

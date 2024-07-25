@@ -493,6 +493,29 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Rende
     }
 }
 
+void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const NormalRenderPipeline* Pipeline)
+{
+    if (Scene == nullptr || Camera == nullptr || Pipeline == nullptr)
+    {
+        return;
+    }
+
+    auto Objects = Scene->GetObjects();
+    for (auto& ObjectUPtr : Objects)
+    {
+        Object* ObjectPtr = ObjectUPtr.get();
+        if (ObjectPtr == nullptr)
+        {
+            continue;
+        }
+        MeshObject* MeshObjectPtr = dynamic_cast<MeshObject*>(ObjectPtr);
+        if (MeshObjectPtr != nullptr)
+        {
+            RenderMeshObject(MeshObjectPtr, Camera, Pipeline);
+        }
+    }
+}
+
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
 {
     if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
@@ -518,6 +541,35 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
         ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
+    }
+}
+
+void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline)
+{
+    if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
+    {
+        return;
+    }
+    const Mesh* MeshPtr = MeshObject->GetMesh();
+    const Material* MaterialPtr = MeshObject->GetMaterial();
+    if (MaterialPtr == nullptr)
+    {
+        return;
+    }
+
+    auto ModelMatrix = MeshObject->GetModelMatrix();
+    auto ViewMatrix = Camera->GetViewMatrix();
+    auto ProjectionMatrix = Camera->GetProjectionMatrix();
+    auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
+    auto NormalMatrix = MeshObject->GetNormalMatrix();
+    
+    for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
+    {
+        const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+        const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+        const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
+
+        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr);
     }
 }
 
