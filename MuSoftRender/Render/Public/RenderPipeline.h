@@ -13,3 +13,15 @@ public:
     {
     }
 };
+
+class NormalRenderPipeline
+{
+public:
+    NormalVertexShader VS;
+    FragmentShader FS;
+
+    NormalRenderPipeline(NormalVertexShader vs, FragmentShader fs) :
+        VS(std::move(vs)), FS(std::move(fs))
+    {
+    }
+};
