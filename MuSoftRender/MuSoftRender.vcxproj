@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\eigen-3.4.0;$(ProjectDir)Game\Public;$(ProjectDir)ThirdParty;$(ProjectDir)Render\Public;$(ProjectDir);$(ProjectDir)..\ORBIT_PROFILER_1.0.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,6 +135,7 @@
     <ClInclude Include="Game\Public\Camera.h" />
     <ClInclude Include="Game\Public\Cube.h" />
     <ClInclude Include="Game\Public\DirectionalLight.h" />
+    <ClInclude Include="Game\Public\Floor.h" />
     <ClInclude Include="Game\Public\Functions.h" />
     <ClInclude Include="Game\Public\Logger.h" />
     <ClInclude Include="Game\Public\Mesh.h" />

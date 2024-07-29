@@ -16,6 +16,7 @@
 #include <windows.h>
 
 #include "DirectionalLight.h"
+#include "Floor.h"
 
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
@@ -149,7 +150,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     QueryPerformanceFrequency(&G_Frequency);
     QueryPerformanceCounter(&G_LastFPSUpdateTime);
 
-    
     // 创建RenderPipeline实例
     G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
     G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultSimpleLitFragmentShader);
@@ -160,7 +160,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     // 创建Camera实例
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
-        Eigen::Vector3f(3, 3, 3),
+        Eigen::Vector3f(4, 4, 4),
         Eigen::Vector3f(0, 0, 0),
         Eigen::Vector3f(0, 1, 0),
         45.0f,
@@ -182,8 +182,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     G_Scene->AddObject(CubePtr);
 
+    std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
+    float PosY = - static_cast<float>(std::sqrt(2 * 2));
+    FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
+    FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
+    std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
+    FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
+    FloorPtr->SetMaterial(FloorMaterialPtr);
+
+    G_Scene->AddObject(FloorPtr);
+
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(-0.4082, -0.5774, 0.4082),
+        Eigen::Vector3f(-0.4082f, -0.5774f, 0.4082f),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );
@@ -373,9 +383,6 @@ void Render(HWND Hwnd)
         // G_Renderer->RenderCamera(*G_Scene, *G_Scene->GetCameras()[0]);
         // G_Renderer->RenderScene(G_Scene, G_Scene->GetCameras()[0].get(), G_RenderPipeline);
         G_Renderer->RenderScene(G_Scene, G_Scene->GetCameras()[0].get(), G_NormalRenderPipeline);
-        // std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
-        // TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
-        // G_Renderer->DrawTexture(TexturePtr.get());
     }
 
     UpdateDevice(Hwnd);

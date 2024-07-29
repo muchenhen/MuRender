@@ -598,10 +598,6 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
     }
     const Mesh* MeshPtr = MeshObject->GetMesh();
     const Material* MaterialPtr = MeshObject->GetMaterial();
-    if (MaterialPtr == nullptr)
-    {
-        return;
-    }
 
     auto ModelMatrix = MeshObject->GetModelMatrix();
     auto ViewMatrix = Camera->GetViewMatrix();
@@ -624,19 +620,16 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
     {
         return;
     }
+
     const Mesh* MeshPtr = MeshObject->GetMesh();
     const Material* MaterialPtr = MeshObject->GetMaterial();
-    if (MaterialPtr == nullptr)
-    {
-        return;
-    }
-
+    
     auto ModelMatrix = MeshObject->GetModelMatrix();
     auto ViewMatrix = Camera->GetViewMatrix();
     auto ProjectionMatrix = Camera->GetProjectionMatrix();
     auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
     auto NormalMatrix = MeshObject->GetNormalMatrix();
-
+    
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {
         const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];

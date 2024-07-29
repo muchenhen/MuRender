@@ -4,20 +4,28 @@
 
 FragmentShader DefaultFragmentShader = [](const FragmentShaderInput& Input, const Material* MaterialPtr)
 {
-    Eigen::Vector3f Color = MaterialPtr->GetBaseColor();
-    if (MaterialPtr->HasTexture())
+    Eigen::Vector3f Color = Eigen::Vector3f(1, 1, 1);
+    if (MaterialPtr != nullptr)
     {
-        Color = Color.cwiseProduct(MaterialPtr->SampleTexture(Input.UV));
+        Color = MaterialPtr->GetBaseColor();
+        if (MaterialPtr->HasTexture())
+        {
+            Color = Color.cwiseProduct(MaterialPtr->SampleTexture(Input.UV));
+        }
     }
     return Eigen::Vector4f(Color.x(), Color.y(), Color.z(), 1);
 };
 
 SimpleLitFragmentShader DefaultSimpleLitFragmentShader = [](const FragmentShaderInput& Input, const Material* MaterialPtr, const DirectionalLight* LightPtr)
 {
-    Eigen::Vector3f Color = MaterialPtr->GetBaseColor();
-    if (MaterialPtr->HasTexture())
+    Eigen::Vector3f Color = Eigen::Vector3f(1, 1, 1);
+    if (MaterialPtr != nullptr)
     {
-        Color = Color.cwiseProduct(MaterialPtr->SampleTexture(Input.UV));
+        Color = MaterialPtr->GetBaseColor();
+        if (MaterialPtr->HasTexture())
+        {
+            Color = Color.cwiseProduct(MaterialPtr->SampleTexture(Input.UV));
+        }
     }
 
     // Ambient

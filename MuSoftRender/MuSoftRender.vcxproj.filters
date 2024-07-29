@@ -60,9 +60,6 @@
     <ClInclude Include="Game\Public\Scene.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Render\Public\FragmentShaderInput.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Render\Public\Material.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -75,13 +72,19 @@
     <ClInclude Include="Render\Public\Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Render\Public\VertexShaderInput.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ThirdParty\stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Game\Public\DirectionalLight.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Public\Floor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\FragmentShader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Public\VertexShader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -98,16 +101,22 @@
     <ClCompile Include="Render\Private\Render.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Render\Private\FragmentShaderInput.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Render\Private\RenderPipeline.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Render\Private\VertexShaderInput.cpp">
+    <ClCompile Include="Game\Private\DirectionalLight.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Private\DirectionalLight.cpp">
+    <ClCompile Include="Game\Private\Object.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Private\Scene.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\FragmentShader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\VertexShader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
