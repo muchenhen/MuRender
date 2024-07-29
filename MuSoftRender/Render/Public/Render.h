@@ -68,11 +68,15 @@ private:
 
     void ProcessTriangle(const Vertex& V1, const Vertex& V2, const Vertex& V3,
                          const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix, const Eigen::Matrix3f& NormalMatrix,
-                         const NormalVertexShader& VS, const FragmentShader& FS,
+                         const NormalVertexShader& VS, const SimpleLitFragmentShader& FS,
                          const Material* Material, const DirectionalLight* DirectionalLightPtr);
 
     void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
                            const FragmentShader& FS, const Material* Material);
+
+    void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
+                           const SimpleLitFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr);
+    
 
 public:
     void RenderCamera(const Scene& Scene, const Camera& Camera);

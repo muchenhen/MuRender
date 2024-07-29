@@ -152,7 +152,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     
     // 创建RenderPipeline实例
     G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
-    G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultFragmentShader);
+    G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultSimpleLitFragmentShader);
     // 创建Render实例
     G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例
@@ -183,7 +183,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene->AddObject(CubePtr);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(1, -1, 1),
+        Eigen::Vector3f(-0.4082, -0.5774, 0.4082),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

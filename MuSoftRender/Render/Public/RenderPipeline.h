@@ -18,9 +18,9 @@ class NormalRenderPipeline
 {
 public:
     NormalVertexShader VS;
-    FragmentShader FS;
+    SimpleLitFragmentShader FS;
 
-    NormalRenderPipeline(NormalVertexShader vs, FragmentShader fs) :
+    NormalRenderPipeline(NormalVertexShader vs, SimpleLitFragmentShader fs) :
         VS(std::move(vs)), FS(std::move(fs))
     {
     }
