@@ -244,9 +244,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         }
     }
 
-    SAFE_DELETE(G_Renderer);
-    SAFE_DELETE(G_Scene);
-    SAFE_DELETE(G_Camera);
+    SAFE_DELETE(G_Renderer)
+    SAFE_DELETE(G_Scene)
+    SAFE_DELETE(G_Camera)
     return 0;
 }
 

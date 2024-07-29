@@ -4,11 +4,11 @@
 #include <cstdint>
 
 #include "Camera.h"
-#include "FragmentShaderInput.h"
+#include "FragmentShader.h"
 #include "MeshObject.h"
 #include "RenderPipeline.h"
 #include "Scene.h"
-#include "VertexShaderInput.h"
+#include "VertexShader.h"
 
 class Renderer
 {

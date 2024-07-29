@@ -3,7 +3,7 @@
 #pragma warning(disable : 4819)
 #include <Eigen/Core>
 #pragma warning(default : 4819)
-#include "VertexShaderInput.h"
+#include "VertexShader.h"
 
 
 class Mesh

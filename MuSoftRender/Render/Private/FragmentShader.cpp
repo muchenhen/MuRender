@@ -1,4 +1,4 @@
-#include "FragmentShaderInput.h"
+#include "FragmentShader.h"
 
 // #include "Logger.h"
 
@@ -20,15 +20,28 @@ SimpleLitFragmentShader DefaultSimpleLitFragmentShader = [](const FragmentShader
         Color = Color.cwiseProduct(MaterialPtr->SampleTexture(Input.UV));
     }
 
-    // Diffuse
+    // Ambient
+    float AmbientStrength = 0.1f;
+    Eigen::Vector3f AmbientColor = AmbientStrength * Color;
+
     Eigen::Vector3f LightDir = LightPtr->Direction;
+
+    // Half Lambert
+    float NdotL = -Input.WorldNormal.dot(LightDir);
+    float HalfLambert = 0.5f * NdotL + 0.5f;
+    // HalfLambert = HalfLambert * HalfLambert; 
+
+    // Diffuse
     Eigen::Vector3f LightColor = LightPtr->Color;
     float LightIntensity = LightPtr->Intensity;
 
-    float DiffuseFactor = std::max(0.0f, Input.WorldNormal.dot(-LightDir));
-    Eigen::Vector3f DiffuseColor = DiffuseFactor * LightColor * LightIntensity;
+    // float DiffuseFactor = std::max(0.0f, Input.WorldNormal.dot(-LightDir));
 
-    Eigen::Vector3f FinalColor = Color.cwiseProduct(DiffuseColor);
+    Eigen::Vector3f DiffuseColor = HalfLambert * LightColor * LightIntensity;
+
+    Eigen::Vector3f LightingColor = AmbientColor + DiffuseColor;
+
+    Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);
 
     FinalColor = FinalColor.cwiseMin(1.0f).cwiseMax(0.0f);
     return Eigen::Vector4f(FinalColor.x(), FinalColor.y(), FinalColor.z(), 1);

@@ -1,6 +1,6 @@
 #pragma once
-#include "FragmentShaderInput.h"
-#include "VertexShaderInput.h"
+#include "FragmentShader.h"
+#include "VertexShader.h"
 
 class RenderPipeline
 {

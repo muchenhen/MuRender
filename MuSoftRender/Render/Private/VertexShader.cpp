@@ -1,4 +1,4 @@
-#include "VertexShaderInput.h"
+#include "VertexShader.h"
 
 StandardVertexShader DefaultStandardVertexShader = [](const VertexShaderInput& Input, const Eigen::Matrix4f& ModelMatrix, const Eigen::Matrix4f& MVPMatrix)
 {
