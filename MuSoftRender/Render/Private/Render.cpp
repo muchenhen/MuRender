@@ -489,6 +489,31 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     }
 }
 
+void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& ScreenPos1, const Eigen::Vector3f& ScreenPos2, const Eigen::Vector3f& ScreenPos3, DepthTexture* DepthMap)
+{
+    int MinX = std::min({static_cast<int>(ScreenPos1.x()), static_cast<int>(ScreenPos2.x()), static_cast<int>(ScreenPos3.x())});
+    int MaxX = std::max({static_cast<int>(ScreenPos1.x()), static_cast<int>(ScreenPos2.x()), static_cast<int>(ScreenPos3.x())});
+    int MinY = std::min({static_cast<int>(ScreenPos1.y()), static_cast<int>(ScreenPos2.y()), static_cast<int>(ScreenPos3.y())});
+    int MaxY = std::max({static_cast<int>(ScreenPos1.y()), static_cast<int>(ScreenPos2.y()), static_cast<int>(ScreenPos3.y())});
+
+    for (int Y = MinY; Y <= MaxY; Y++)
+    {
+        for (int X = MinX; X <= MaxX; X++)
+        {
+            Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, ScreenPos1.x(), ScreenPos1.y(), ScreenPos2.x(), ScreenPos2.y(), ScreenPos3.x(), ScreenPos3.y());
+
+            if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+
+            float Depth = Barycentric.x() * ScreenPos1.z() + Barycentric.y() * ScreenPos2.z() + Barycentric.z() * ScreenPos3.z();
+
+            if (Depth < DepthMap->GetDepth(X, Y))
+            {
+                DepthMap->SetDepth(X, Y, Depth);
+            }
+        }
+    }
+}
+
 void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
 {
     const Eigen::Matrix4f ViewMatrix = InCamera.GetViewMatrix();
@@ -568,6 +593,9 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
         return;
     }
 
+    std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(1024, 1024);
+    RenderShadowMap(Scene, Scene->GetDirectionalLight().get(), DepthTexturePtr.get());
+
     auto Objects = Scene->GetObjects();
     for (auto& ObjectUPtr : Objects)
     {
@@ -623,13 +651,13 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
 
     const Mesh* MeshPtr = MeshObject->GetMesh();
     const Material* MaterialPtr = MeshObject->GetMaterial();
-    
+
     auto ModelMatrix = MeshObject->GetModelMatrix();
     auto ViewMatrix = Camera->GetViewMatrix();
     auto ProjectionMatrix = Camera->GetProjectionMatrix();
     auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
     auto NormalMatrix = MeshObject->GetNormalMatrix();
-    
+
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {
         const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
@@ -654,6 +682,100 @@ bool Renderer::EarlyDepthTest(int X, int Y, float Depth)
 void Renderer::SetUseEarlyDepthTest(bool Enable)
 {
     UseEarlyDepthTest = Enable;
+}
+
+void Renderer::RenderShadowMap(const Scene* Scene, const DirectionalLight* DirectionalLight, DepthTexture* DepthTexture)
+{
+    Eigen::Vector3f LightPosition = -DirectionalLight->Direction * 1000.0f;
+    Eigen::Vector3f LightTarget = Eigen::Vector3f::Zero();
+    Eigen::Vector3f LightUp = Eigen::Vector3f::UnitY();
+    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
+
+    float Left = -10.0f;
+    float Right = 10.0f;
+    float Bottom = -10.0f;
+    float Top = 10.0f;
+    float Near = 1.0f;
+    float Far = 100.0f;
+    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+
+    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+
+    for (const auto& Object : Scene->GetObjects())
+    {
+        const MeshObject* MeshObjectPtr = dynamic_cast<const MeshObject*>(Object.get());
+        if (!MeshObjectPtr) continue;
+        RenderObjectDepth(MeshObjectPtr, LightSpaceMatrix, DepthTexture);
+    }
+}
+
+void Renderer::RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture)
+{
+    const Mesh* MeshPtr = MeshObject->GetMesh();
+    if (!MeshPtr) return;
+
+    for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
+    {
+        const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+        const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+        const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
+
+        Eigen::Vector4f Pos1 = LightSpaceMVP * V1.Position.homogeneous();
+        Eigen::Vector4f Pos2 = LightSpaceMVP * V2.Position.homogeneous();
+        Eigen::Vector4f Pos3 = LightSpaceMVP * V3.Position.homogeneous();
+
+        Pos1 /= Pos1.w();
+        Pos2 /= Pos2.w();
+        Pos3 /= Pos3.w();
+
+        auto ToScreenSpace = [DepthTexture](const Eigen::Vector4f& pos) -> Eigen::Vector3f {
+            return Eigen::Vector3f(
+                (pos.x() * 0.5f + 0.5f) * DepthTexture->Width,
+                (pos.y() * 0.5f + 0.5f) * DepthTexture->Height,
+                (pos.z() * 0.5f + 0.5f)  // 将 z 从 [-1, 1] 映射到 [0, 1]
+            );
+        };
+
+        Eigen::Vector3f ScreenPos1 = ToScreenSpace(Pos1);
+        Eigen::Vector3f ScreenPos2 = ToScreenSpace(Pos2);
+        Eigen::Vector3f ScreenPos3 = ToScreenSpace(Pos3);
+
+        RasterizeTriangleDepth(ScreenPos1, ScreenPos2, ScreenPos3, DepthTexture);
+    }
+}
+
+Eigen::Matrix4f Renderer::Ortho(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far)
+{
+    Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
+    Result(0, 0) = 2.0f / (Right - Left);
+    Result(1, 1) = 2.0f / (Top - Bottom);
+    Result(2, 2) = -2.0f / (Far - Near);
+    Result(0, 3) = -(Right + Left) / (Right - Left);
+    Result(1, 3) = -(Top + Bottom) / (Top - Bottom);
+    Result(2, 3) = -(Far + Near) / (Far - Near);
+    return Result;
+}
+
+Eigen::Matrix4f Renderer::LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector3f& Center, const Eigen::Vector3f& Up)
+{
+    Eigen::Vector3f F = (Center - Eye).normalized();
+    Eigen::Vector3f S = F.cross(Up).normalized();
+    Eigen::Vector3f U = S.cross(F);
+
+    Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
+    Result(0, 0) = S.x();
+    Result(0, 1) = S.y();
+    Result(0, 2) = S.z();
+    Result(1, 0) = U.x();
+    Result(1, 1) = U.y();
+    Result(1, 2) = U.z();
+    Result(2, 0) = -F.x();
+    Result(2, 1) = -F.y();
+    Result(2, 2) = -F.z();
+    Result(0, 3) = -S.dot(Eye);
+    Result(1, 3) = -U.dot(Eye);
+    Result(2, 3) = F.dot(Eye);
+    return Result;
 }
 
 Eigen::Vector3f Renderer::ComputeBarycentric(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2)

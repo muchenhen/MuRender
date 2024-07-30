@@ -87,6 +87,9 @@
     <ClInclude Include="Render\Public\VertexShader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Render\Public\DepthTexture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MuSoftRender.cpp">
@@ -117,6 +120,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Render\Private\VertexShader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Private\DepthTexture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

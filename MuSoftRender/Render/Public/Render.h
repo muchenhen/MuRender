@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "Camera.h"
+#include "DepthTexture.h"
 #include "FragmentShader.h"
 #include "MeshObject.h"
 #include "RenderPipeline.h"
@@ -76,7 +77,8 @@ private:
 
     void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
                            const SimpleLitFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr);
-    
+
+    void RasterizeTriangleDepth(const Eigen::Vector3f& ScreenPos1, const Eigen::Vector3f& ScreenPos2, const Eigen::Vector3f& ScreenPos3, DepthTexture* DepthMap);
 
 public:
     void RenderCamera(const Scene& Scene, const Camera& Camera);
@@ -94,4 +96,13 @@ private:
 
 public:
     void SetUseEarlyDepthTest(bool Enable);
+
+    void RenderShadowMap(const Scene* Scene, const DirectionalLight* DirectionalLight, DepthTexture* DepthTexture);
+
+    void RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture);
+
+private:
+    Eigen::Matrix4f Ortho(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far);
+
+    Eigen::Matrix4f LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector3f& Center, const Eigen::Vector3f& Up);
 };
