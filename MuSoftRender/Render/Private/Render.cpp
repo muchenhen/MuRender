@@ -36,7 +36,6 @@ int Renderer::GetHeight() const
 
 void Renderer::DrawPixel(const int X, const int Y, const uint32_t Color)
 {
-    // LOG_DEBUG("DrawPixel: X = %d, Y = %d, Color = 0x%08X", X, Y, Color);
     if (X >= 0 && X < ScreenWidth && Y >= 0 && Y < ScreenHeight)
     {
         FrameBuffer[Y * ScreenWidth + X] = Color;
@@ -489,26 +488,36 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     }
 }
 
-void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& ScreenPos1, const Eigen::Vector3f& ScreenPos2, const Eigen::Vector3f& ScreenPos3, DepthTexture* DepthMap)
+void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Vector3f& V2, const Eigen::Vector3f& V3, DepthTexture* DepthTexturePtr)
 {
-    int MinX = std::min({static_cast<int>(ScreenPos1.x()), static_cast<int>(ScreenPos2.x()), static_cast<int>(ScreenPos3.x())});
-    int MaxX = std::max({static_cast<int>(ScreenPos1.x()), static_cast<int>(ScreenPos2.x()), static_cast<int>(ScreenPos3.x())});
-    int MinY = std::min({static_cast<int>(ScreenPos1.y()), static_cast<int>(ScreenPos2.y()), static_cast<int>(ScreenPos3.y())});
-    int MaxY = std::max({static_cast<int>(ScreenPos1.y()), static_cast<int>(ScreenPos2.y()), static_cast<int>(ScreenPos3.y())});
+    if (!DepthTexturePtr) return;
 
-    for (int Y = MinY; Y <= MaxY; Y++)
+    // 获取深度纹理的尺寸
+    int width = DepthTexturePtr->GetWidth();
+    int height = DepthTexturePtr->GetHeight();
+
+    // 计算三角形的包围盒
+    int minX = std::max(0, static_cast<int>(std::min({V1.x(), V2.x(), V3.x()})));
+    int maxX = std::min(width - 1, static_cast<int>(std::max({V1.x(), V2.x(), V3.x()})));
+    int minY = std::max(0, static_cast<int>(std::min({V1.y(), V2.y(), V3.y()})));
+    int maxY = std::min(height - 1, static_cast<int>(std::max({V1.y(), V2.y(), V3.y()})));
+
+    // 遍历包围盒中的每个像素
+    for (int y = minY; y <= maxY; ++y)
     {
-        for (int X = MinX; X <= MaxX; X++)
+        for (int x = minX; x <= maxX; ++x)
         {
-            Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, ScreenPos1.x(), ScreenPos1.y(), ScreenPos2.x(), ScreenPos2.y(), ScreenPos3.x(), ScreenPos3.y());
+            // 计算像素中心点与三角形的重心坐标
+            Eigen::Vector3f Barycentric = ComputeBarycentric(x + 0.5f, y + 0.5f, V1.x(), V1.y(), V2.x(), V2.y(), V3.x(), V3.y());
 
-            if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
-
-            float Depth = Barycentric.x() * ScreenPos1.z() + Barycentric.y() * ScreenPos2.z() + Barycentric.z() * ScreenPos3.z();
-
-            if (Depth < DepthMap->GetDepth(X, Y))
+            // 如果像素中心点在三角形内部
+            if (Barycentric.x() >= 0 && Barycentric.y() >= 0 && Barycentric.z() >= 0)
             {
-                DepthMap->SetDepth(X, Y, Depth);
+                // 计算像素深度
+                float Depth = Barycentric.x() * V1.z() + Barycentric.y() * V2.z() + Barycentric.z() * V3.z();
+
+                // 更新深度纹理
+                DepthTexturePtr->SetDepth(x, y, Depth);
             }
         }
     }
@@ -593,8 +602,35 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
         return;
     }
 
-    std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(1024, 1024);
-    RenderShadowMap(Scene, Scene->GetDirectionalLight().get(), DepthTexturePtr.get());
+    DirectionalLight* DirectionalLightPtr = Scene->GetDirectionalLight().get();
+
+    Eigen::Vector3f LightPosition = DirectionalLightPtr->Direction.normalized() * 1000.0f;
+    Eigen::Vector3f LightTarget = Eigen::Vector3f::Zero();
+    Eigen::Vector3f LightUp = Eigen::Vector3f::UnitY();
+    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
+
+    BoundingBox SceneBoundingBox = Scene->CalculateSceneBounds();
+
+    float SceneWidth = SceneBoundingBox.Max.x() - SceneBoundingBox.Min.x();
+    float SceneHeight = SceneBoundingBox.Max.y() - SceneBoundingBox.Min.y();
+    float SceneDepth = SceneBoundingBox.Max.z() - SceneBoundingBox.Min.z();
+
+    float Padding = std::max({SceneWidth, SceneHeight, SceneDepth}) * 0.1f;
+
+    float Left = SceneBoundingBox.Min.x() - Padding;
+    float Right = SceneBoundingBox.Max.x() + Padding;
+    float Bottom = SceneBoundingBox.Min.y() - Padding;
+    float Top = SceneBoundingBox.Max.y() + Padding;
+    float Near = SceneBoundingBox.Min.z() - Padding;
+    float Far = SceneBoundingBox.Max.z() + Padding;
+
+    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+
+    float depthBias = 0.005f;
+
+    std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(256, 256);
+    RenderShadowMap(Scene, DepthTexturePtr.get(), LightSpaceMatrix, depthBias);
 
     auto Objects = Scene->GetObjects();
     for (auto& ObjectUPtr : Objects)
@@ -613,7 +649,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
 
         if (bIsSceneHasLight)
         {
-            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, Scene->GetDirectionalLight().get());
+            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr);
         }
     }
 }
@@ -642,7 +678,7 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
     }
 }
 
-void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline, const DirectionalLight* DirectionalLightPty)
+void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline, const DirectionalLight* DirectionalLightPtr)
 {
     if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
     {
@@ -664,7 +700,33 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr, DirectionalLightPty);
+        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr, DirectionalLightPtr);
+    }
+}
+
+void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const NormalRenderPipeline* Pipeline, const DirectionalLight* DirectionalLightPtr, const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
+{
+    if (MeshObject == nullptr || Camera == nullptr || Pipeline == nullptr)
+    {
+        return;
+    }
+
+    const Mesh* MeshPtr = MeshObject->GetMesh();
+    const Material* MaterialPtr = MeshObject->GetMaterial();
+
+    auto ModelMatrix = MeshObject->GetModelMatrix();
+    auto ViewMatrix = Camera->GetViewMatrix();
+    auto ProjectionMatrix = Camera->GetProjectionMatrix();
+    auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
+    auto NormalMatrix = MeshObject->GetNormalMatrix();
+
+    for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
+    {
+        const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+        const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+        const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
+
+        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr, DirectionalLightPtr);
     }
 }
 
@@ -684,62 +746,61 @@ void Renderer::SetUseEarlyDepthTest(bool Enable)
     UseEarlyDepthTest = Enable;
 }
 
-void Renderer::RenderShadowMap(const Scene* Scene, const DirectionalLight* DirectionalLight, DepthTexture* DepthTexture)
+bool isSaved = false;
+
+void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, const Eigen::Matrix4f& LightSpaceMatrix, float DepthBias)
 {
-    Eigen::Vector3f LightPosition = -DirectionalLight->Direction * 1000.0f;
-    Eigen::Vector3f LightTarget = Eigen::Vector3f::Zero();
-    Eigen::Vector3f LightUp = Eigen::Vector3f::UnitY();
-    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
-
-    float Left = -10.0f;
-    float Right = 10.0f;
-    float Bottom = -10.0f;
-    float Top = 10.0f;
-    float Near = 1.0f;
-    float Far = 100.0f;
-    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
-
-    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
-
     for (const auto& Object : Scene->GetObjects())
     {
         const MeshObject* MeshObjectPtr = dynamic_cast<const MeshObject*>(Object.get());
         if (!MeshObjectPtr) continue;
-        RenderObjectDepth(MeshObjectPtr, LightSpaceMatrix, DepthTexture);
+
+        RenderObjectDepth(MeshObjectPtr, LightSpaceMatrix, DepthTexture, DepthBias);
+    }
+
+    if (!isSaved)
+    {
+        DepthTexture::SaveDepthTextureToBMP(DepthTexture, "ShadowMap.bmp");
     }
 }
 
-void Renderer::RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture)
+void Renderer::RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture, float DepthBias)
 {
     const Mesh* MeshPtr = MeshObject->GetMesh();
     if (!MeshPtr) return;
 
+    Eigen::Matrix4f ModelMatrix = MeshObject->GetModelMatrix();
+    Eigen::Matrix4f MVPMatrix = LightSpaceMVP * ModelMatrix;
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {
         const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        Eigen::Vector4f Pos1 = LightSpaceMVP * V1.Position.homogeneous();
-        Eigen::Vector4f Pos2 = LightSpaceMVP * V2.Position.homogeneous();
-        Eigen::Vector4f Pos3 = LightSpaceMVP * V3.Position.homogeneous();
+        Eigen::Vector4f Pos1 = MVPMatrix * V1.Position.homogeneous();
+        Eigen::Vector4f Pos2 = MVPMatrix * V2.Position.homogeneous();
+        Eigen::Vector4f Pos3 = MVPMatrix * V3.Position.homogeneous();
 
+        // 透视除法
         Pos1 /= Pos1.w();
         Pos2 /= Pos2.w();
         Pos3 /= Pos3.w();
 
-        auto ToScreenSpace = [DepthTexture](const Eigen::Vector4f& pos) -> Eigen::Vector3f {
+        // 将NDC坐标转换为屏幕空间坐标
+        auto ToScreenSpace = [DepthTexture](const Eigen::Vector4f& pos) -> Eigen::Vector3f
+        {
             return Eigen::Vector3f(
-                (pos.x() * 0.5f + 0.5f) * DepthTexture->Width,
-                (pos.y() * 0.5f + 0.5f) * DepthTexture->Height,
-                (pos.z() * 0.5f + 0.5f)  // 将 z 从 [-1, 1] 映射到 [0, 1]
-            );
+                (pos.x() * 0.5f + 0.5f) * static_cast<float>(DepthTexture->Width),
+                (pos.y() * 0.5f + 0.5f) * static_cast<float>(DepthTexture->Height),
+                pos.z()
+                );
         };
 
         Eigen::Vector3f ScreenPos1 = ToScreenSpace(Pos1);
         Eigen::Vector3f ScreenPos2 = ToScreenSpace(Pos2);
         Eigen::Vector3f ScreenPos3 = ToScreenSpace(Pos3);
 
+        // 对三角形进行光栅化
         RasterizeTriangleDepth(ScreenPos1, ScreenPos2, ScreenPos3, DepthTexture);
     }
 }
@@ -749,10 +810,10 @@ Eigen::Matrix4f Renderer::Ortho(const float Left, const float Right, const float
     Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
     Result(0, 0) = 2.0f / (Right - Left);
     Result(1, 1) = 2.0f / (Top - Bottom);
-    Result(2, 2) = -2.0f / (Far - Near);
+    Result(2, 2) = 1.0f / (Far - Near);
     Result(0, 3) = -(Right + Left) / (Right - Left);
     Result(1, 3) = -(Top + Bottom) / (Top - Bottom);
-    Result(2, 3) = -(Far + Near) / (Far - Near);
+    Result(2, 3) = -Near / (Far - Near);
     return Result;
 }
 
