@@ -201,7 +201,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // G_Scene->AddObject(FloorPtr);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        -CameraPosition,
+        -CameraPosition.normalized(),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

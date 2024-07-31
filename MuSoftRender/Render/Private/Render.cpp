@@ -719,7 +719,7 @@ void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* Dep
     const Mesh* MeshPtr = MeshObject->GetMesh();
     if (!MeshPtr) return;
 
-    Eigen::Vector3f LightPosition = -DirectionalLightPtr->Direction;
+    Eigen::Vector3f LightPosition = -DirectionalLightPtr->Direction * 40.0f;
     Eigen::Vector3f LightTarget = Eigen::Vector3f(0, 0, 0);
     Eigen::Vector3f LightUp = Eigen::Vector3f(0, 1, 0);
     Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
