@@ -652,6 +652,11 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
             RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr);
         }
     }
+
+    Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
+    Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
+    Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
+    DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
 }
 
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
@@ -837,6 +842,46 @@ Eigen::Matrix4f Renderer::LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector
     Result(1, 3) = -U.dot(Eye);
     Result(2, 3) = F.dot(Eye);
     return Result;
+}
+
+void Renderer::DrawBoundingBox(const BoundingBox& bbox, const Eigen::Matrix4f& viewProjectionMatrix, uint32_t color)
+{
+    // 定义包围盒的8个顶点
+    std::vector<Eigen::Vector3f> vertices = {
+        {bbox.Min.x(), bbox.Min.y(), bbox.Min.z()},
+        {bbox.Max.x(), bbox.Min.y(), bbox.Min.z()},
+        {bbox.Max.x(), bbox.Max.y(), bbox.Min.z()},
+        {bbox.Min.x(), bbox.Max.y(), bbox.Min.z()},
+        {bbox.Min.x(), bbox.Min.y(), bbox.Max.z()},
+        {bbox.Max.x(), bbox.Min.y(), bbox.Max.z()},
+        {bbox.Max.x(), bbox.Max.y(), bbox.Max.z()},
+        {bbox.Min.x(), bbox.Max.y(), bbox.Max.z()}
+    };
+
+    // 定义连接顶点的边
+    std::vector<std::pair<int, int>> edges = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0}, // 底面
+        {4, 5}, {5, 6}, {6, 7}, {7, 4}, // 顶面
+        {0, 4}, {1, 5}, {2, 6}, {3, 7}  // 连接底面和顶面的边
+    };
+
+    // 绘制每条边
+    for (const auto& edge : edges)
+    {
+        Eigen::Vector4f start = viewProjectionMatrix * vertices[edge.first].homogeneous();
+        Eigen::Vector4f end = viewProjectionMatrix * vertices[edge.second].homogeneous();
+
+        // 执行透视除法
+        start /= start.w();
+        end /= end.w();
+
+        // 转换到屏幕空间
+        Eigen::Vector2f screenStart = (start.head<2>() * 0.5f + Eigen::Vector2f::Constant(0.5f)).cwiseProduct(Eigen::Vector2f(ScreenWidth, ScreenHeight));
+        Eigen::Vector2f screenEnd = (end.head<2>() * 0.5f + Eigen::Vector2f::Constant(0.5f)).cwiseProduct(Eigen::Vector2f(ScreenWidth, ScreenHeight));
+
+        // 使用 Bresenham 算法或类似方法绘制线段
+        DrawLine(screenStart.x(), screenStart.y(), screenEnd.x(), screenEnd.y(), color);
+    }
 }
 
 Eigen::Vector3f Renderer::ComputeBarycentric(const int X, const int Y, const float X0, const float Y0, const float X1, const float Y1, const float X2, const float Y2)

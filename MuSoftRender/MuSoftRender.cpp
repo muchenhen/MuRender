@@ -145,6 +145,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         int width = (windowRect.right - windowRect.left) - (clientRect.right - clientRect.left) + WINDOW_WIDTH;
         int height = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top) + WINDOW_HEIGHT;
         SetWindowPos(Hwnd, nullptr, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+        SetCursorPos((windowRect.right + windowRect.left) / 2, (windowRect.bottom + windowRect.top) / 2);
     }
 
     QueryPerformanceFrequency(&G_Frequency);
@@ -168,8 +169,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         0.1f,
         100.0f
         );
+    CameraPtr->SetYaw(0.0f);
+    CameraPtr->SetPitch(0.0f);
+    CameraPtr->UpdateVectors();
 
     G_Scene->AddCamera(std::move(CameraPtr));
+
+    G_Camera = G_Scene->GetCameras()[0].get();
 
     std::shared_ptr<Texture> TexturePtr = std::make_shared<Texture>();
     TexturePtr->LoadFromFile("..\\Resource\\NagisaKaworu.bmp");
@@ -183,7 +189,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene->AddObject(CubePtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
-    float PosY = - static_cast<float>(std::sqrt(2 * 2));
+    float PosY = -static_cast<float>(std::sqrt(2 * 2));
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
@@ -304,9 +310,6 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
         }
         case WM_MOUSEWHEEL:
         {
-            int zDelta = GET_WHEEL_DELTA_WPARAM(WParam);
-            g_CameraDistance -= zDelta * 0.001f;
-            // g_CameraDistance = std::max(1.0f, std::min(g_CameraDistance, 10.0f)); // 限制距离范围
             return 0;
         }
         case WM_COMMAND:
@@ -340,12 +343,61 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
             return 0;
         }
 
+        case WM_KEYDOWN:
+        {
+            if (!G_Camera)
+            {
+                return 0;
+            }
+
+            float MoveSpeed = 0.1f;
+            Eigen::Vector3f Forward = G_Camera->GetForward();
+            Eigen::Vector3f Right = G_Camera->GetRight();
+            Eigen::Vector3f Up = G_Camera->GetUp();
+            Eigen::Vector3f Position = G_Camera->GetPosition();
+
+            switch (WParam)
+            {
+                case 'W':
+                {
+                    Position += Forward * MoveSpeed;
+                    break;
+                }
+                case 'S':
+                {
+                    Position -= Forward * MoveSpeed;
+                    break;
+                }
+                case 'A':
+                {
+                    Position -= Right * MoveSpeed;
+                    break;
+                }
+                case 'D':
+                {
+                    Position += Right * MoveSpeed;
+                    break;
+                }
+                case 'Q':
+                {
+                    Position -= Up * MoveSpeed;
+                    break;
+                }
+                case 'E':
+                {
+                    Position += Up * MoveSpeed;
+                    break;
+                }
+            }
+
+            G_Camera->SetPosition(Position);
+            return 0;
+        }
+
         case WM_PAINT:
         {
             PAINTSTRUCT Ps;
             HDC Hdc = BeginPaint(Hwnd, &Ps);
-
-            // Render(Hwnd);
 
             // 创建位图
             BITMAPINFO Bmi = {};

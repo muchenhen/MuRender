@@ -13,74 +13,49 @@ private:
     Eigen::Vector3f Up;
     Eigen::Vector3f Target;
 
+    float Yaw;
+    float Pitch;
+
 public:
-    Camera(const Eigen::Vector3f& InPosition, const Eigen::Vector3f& InTarget, const Eigen::Vector3f& InUpVector,
-           float InFieldOfView, float InAspectRatio, float InNearValue, float InFarValue) :
-        Object(),
-        Target(InTarget),
-        Up(InUpVector),
-        Fov(InFieldOfView),
-        Aspect(InAspectRatio),
-        NearPlane(InNearValue),
-        FarPlane(InFarValue)
+    Camera(const Eigen::Vector3f& InPosition,
+           const Eigen::Vector3f& InTarget,
+           const Eigen::Vector3f& InUpVector,
+           float InFieldOfView, float InAspectRatio, float InNearValue, float InFarValue);
+
+    Eigen::Matrix4f GetViewMatrix() const;
+
+    Eigen::Matrix4f GetProjectionMatrix() const;
+
+public:
+    void SetPosition(const Eigen::Vector3f& InPosition) override;
+
+    void SetTarget(const Eigen::Vector3f& InTarget);
+
+    void SetYaw(float InYaw);
+
+    void SetPitch(float InPitch);
+
+    void LookAt(const Eigen::Vector3f& LookAtPoint);
+
+    void MoveTowards(const Eigen::Vector3f& Direction, float Distance);
+
+public:
+    Eigen::Vector3f GetForward() const;
+
+    Eigen::Vector3f GetRight() const;
+
+    Eigen::Vector3f GetUp() const;
+
+    Eigen::Vector3f GetPosition() const override;
+
+public:
+    void AddYaw(float InYaw);
+    void AddPitch(float InPitch);
+    void ClampPitch(float MinPitch, float MaxPitch);
+    void UpdateVectors();
+
+    static float DegToRad(float degrees)
     {
-        Camera::SetPosition(InPosition);
-    }
-
-    Eigen::Matrix4f GetViewMatrix() const
-    {
-        Eigen::Vector3f AxisZ = (Position - Target).normalized();
-        Eigen::Vector3f AxisX = Up.cross(AxisZ).normalized();
-        Eigen::Vector3f AxisY = AxisZ.cross(AxisX);
-
-        Eigen::Matrix4f ViewMatrix;
-        ViewMatrix << AxisX.x(), AxisX.y(), AxisX.z(), -AxisX.dot(Position),
-            AxisY.x(), AxisY.y(), AxisY.z(), -AxisY.dot(Position),
-            AxisZ.x(), AxisZ.y(), AxisZ.z(), -AxisZ.dot(Position),
-            0, 0, 0, 1;
-
-        return ViewMatrix;
-    }
-
-    Eigen::Matrix4f GetProjectionMatrix() const
-    {
-        const float FovRadians = Fov * (M_PI / 180.0f);
-        const float TanHalfFovY = tan(FovRadians / 2);
-        const float ZRange = FarPlane - NearPlane;
-
-        Eigen::Matrix4f ProjMatrix = Eigen::Matrix4f::Zero();
-        ProjMatrix(0, 0) = 1.0f / (Aspect * TanHalfFovY);
-        ProjMatrix(1, 1) = 1.0f / TanHalfFovY;
-        ProjMatrix(2, 2) = -(FarPlane + NearPlane) / ZRange;
-        ProjMatrix(2, 3) = -2.0f * FarPlane * NearPlane / ZRange;
-        ProjMatrix(3, 2) = -1.0f;
-
-        if (ProjMatrix.array().isNaN().any())
-        {
-            LOG_ERROR("Warning: Projection matrix contains NaN values!");
-        }
-
-        return ProjMatrix;
-    }
-
-    void SetPosition(const Eigen::Vector3f& InPosition) override
-    {
-        Position = InPosition;
-    }
-
-    void SetTarget(const Eigen::Vector3f& InTarget)
-    {
-        Target = InTarget;
-    }
-
-    void LookAt(const Eigen::Vector3f& LookAtPoint)
-    {
-        Target = LookAtPoint;
-    }
-
-    void MoveTowards(const Eigen::Vector3f& Direction, float Distance)
-    {
-        const Eigen::Vector3f NewPos = Position + Direction.normalized() * Distance;
-        SetPosition(NewPos);
+        return degrees * (M_PI / 180.0f);
     }
 };

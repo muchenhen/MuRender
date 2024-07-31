@@ -24,7 +24,7 @@ public:
 
     void SetScale(const Eigen::Vector3f& InScale);
 
-    Eigen::Vector3f GetPosition() const;
+    virtual Eigen::Vector3f GetPosition() const;
 
     Eigen::Vector3f GetRotation() const;
 

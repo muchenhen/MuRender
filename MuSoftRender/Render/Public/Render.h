@@ -104,11 +104,14 @@ public:
 
     // 渲染阴影贴图
     void RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, const Eigen::Matrix4f& LightSpaceMatrix, float DepthBias);
-    
+
     void RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture, float DepthBias);
 
 private:
     Eigen::Matrix4f Ortho(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far);
 
     Eigen::Matrix4f LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector3f& Center, const Eigen::Vector3f& Up);
+
+public:
+    void DrawBoundingBox(const BoundingBox& bbox, const Eigen::Matrix4f& viewProjectionMatrix, uint32_t color);
 };
