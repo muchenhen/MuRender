@@ -144,6 +144,7 @@
     <ClInclude Include="Game\Public\MeshObject.h" />
     <ClInclude Include="Game\Public\Object.h" />
     <ClInclude Include="Game\Public\Scene.h" />
+    <ClInclude Include="Game\Public\Sphere.h" />
     <ClInclude Include="MuSoftRender.h" />
     <ClInclude Include="Render\Public\DepthTexture.h" />
     <ClInclude Include="Render\Public\FragmentShader.h" />

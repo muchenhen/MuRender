@@ -17,6 +17,7 @@
 
 #include "DirectionalLight.h"
 #include "Floor.h"
+#include "Sphere.h"
 
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
@@ -160,8 +161,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene = new Scene();
 
     // 创建Camera实例
+    Eigen::Vector3f CameraPosition = Eigen::Vector3f(4, 4, 4);
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
-        Eigen::Vector3f(4, 4, 4),
+        CameraPosition,
         Eigen::Vector3f(0, 0, 0),
         Eigen::Vector3f(0, 1, 0),
         45.0f,
@@ -169,7 +171,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         0.1f,
         100.0f
         );
-    
+
     G_Scene->AddCamera(std::move(CameraPtr));
 
     G_Camera = G_Scene->GetCameras()[0].get();
@@ -183,6 +185,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     std::shared_ptr<Cube> CubePtr = std::make_shared<Cube>(2.0f);
     CubePtr->SetMaterial(MaterialPtr);
 
+    std::shared_ptr<Sphere> SpherePtr = std::make_shared<Sphere>(0.5f, 8, 4);
+    SpherePtr->SetMaterial(MaterialPtr);
+    
     G_Scene->AddObject(CubePtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
@@ -193,10 +198,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
     FloorPtr->SetMaterial(FloorMaterialPtr);
 
-    G_Scene->AddObject(FloorPtr);
+    // G_Scene->AddObject(FloorPtr);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(-0.4082f, -0.5774f, 0.4082f),
+        -CameraPosition.normalized(),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

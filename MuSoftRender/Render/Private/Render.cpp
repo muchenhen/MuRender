@@ -574,7 +574,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
 
     float depthBias = 0.005f;
 
-    std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(256, 256);
+    std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(512, 512);
     RenderShadowMap(Scene, DepthTexturePtr.get(), depthBias, DirectionalLightPtr, SceneBoundingBox);
 
     auto Objects = Scene->GetObjects();
@@ -719,7 +719,7 @@ void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* Dep
     const Mesh* MeshPtr = MeshObject->GetMesh();
     if (!MeshPtr) return;
 
-    Eigen::Vector3f LightPosition = - DirectionalLightPtr->Direction.normalized() * 1000.0f;
+    Eigen::Vector3f LightPosition = -DirectionalLightPtr->Direction;
     Eigen::Vector3f LightTarget = Eigen::Vector3f(0, 0, 0);
     Eigen::Vector3f LightUp = Eigen::Vector3f(0, 1, 0);
     Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
@@ -730,28 +730,42 @@ void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* Dep
 
     float Padding = std::max({SceneWidth, SceneHeight, SceneDepth}) * 0.1f;
 
-    float Left = SceneBoundingBox.Min.x() - Padding;
-    float Right = SceneBoundingBox.Max.x() + Padding;
-    float Bottom = SceneBoundingBox.Min.y() - Padding;
-    float Top = SceneBoundingBox.Max.y() + Padding;
-    float Near = SceneBoundingBox.Min.z() - Padding;
-    float Far = SceneBoundingBox.Max.z() + Padding;
+    float Left = -5.0f;
+    float Right = 5.0f;
+    float Bottom = -5.0f;
+    float Top = 5.0f;
+    float Near = 0.1f;
+    float Far = 100.0f;
+    // LOG_WARNING("Left: ", Left);
+    // LOG_WARNING("Right: ", Right);
+    // LOG_WARNING("Bottom: ", Bottom);
+    // LOG_WARNING("Top: ", Top);
+    // LOG_WARNING("Near: ", Near);
+    // LOG_WARNING("Far: ", Far);
+
+    Eigen::Matrix4f ModelMatrix = MeshObject->GetModelMatrix();
 
     Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
     Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
-    Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * MeshObject->GetModelMatrix();
+    Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * ModelMatrix;
 
-    Eigen::Matrix4f ModelMatrix = MeshObject->GetModelMatrix();
-    Eigen::Matrix4f MVPMatrix = LightSpaceMVP * ModelMatrix;
+    // LOG_WARNING("LightPosition: ", LightPosition);
+    // LOG_WARNING("LightTarget: ", LightTarget);
+    // LOG_WARNING("LightUp: ", LightUp);
+    // LOG_WARNING("LightViewMatrix: \n", LightViewMatrix);
+    // LOG_WARNING("LightProjectionMatrix: \n", LightProjectionMatrix);
+    // LOG_WARNING("LightSpaceMatrix: \n", LightSpaceMatrix);
+    // LOG_WARNING("LightSpaceMVP: \n", LightSpaceMVP);
+
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {
         const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        Eigen::Vector4f Pos1 = MVPMatrix * V1.Position.homogeneous();
-        Eigen::Vector4f Pos2 = MVPMatrix * V2.Position.homogeneous();
-        Eigen::Vector4f Pos3 = MVPMatrix * V3.Position.homogeneous();
+        Eigen::Vector4f Pos1 = LightSpaceMVP * V1.Position.homogeneous();
+        Eigen::Vector4f Pos2 = LightSpaceMVP * V2.Position.homogeneous();
+        Eigen::Vector4f Pos3 = LightSpaceMVP * V3.Position.homogeneous();
 
         // 透视除法
         Pos1 /= Pos1.w();
@@ -817,7 +831,7 @@ Eigen::Matrix4f Renderer::Ortho(const float Left, const float Right, const float
     Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
     Result(0, 0) = 2.0f / (Right - Left);
     Result(1, 1) = 2.0f / (Top - Bottom);
-    Result(2, 2) = 1.0f / (Far - Near);
+    Result(2, 2) = -1.0f / (Far - Near);
     Result(0, 3) = -(Right + Left) / (Right - Left);
     Result(1, 3) = -(Top + Bottom) / (Top - Bottom);
     Result(2, 3) = -Near / (Far - Near);
@@ -826,23 +840,17 @@ Eigen::Matrix4f Renderer::Ortho(const float Left, const float Right, const float
 
 Eigen::Matrix4f Renderer::LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector3f& Center, const Eigen::Vector3f& Up)
 {
-    Eigen::Vector3f F = (Center - Eye).normalized();
-    Eigen::Vector3f S = F.cross(Up).normalized();
-    Eigen::Vector3f U = S.cross(F);
+    Eigen::Vector3f AxisZ = (Eye - Center).normalized();
+    Eigen::Vector3f AxisX = Up.cross(AxisZ).normalized();
+    Eigen::Vector3f AxisY = AxisZ.cross(AxisX);
 
     Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
-    Result(0, 0) = S.x();
-    Result(0, 1) = S.y();
-    Result(0, 2) = S.z();
-    Result(1, 0) = U.x();
-    Result(1, 1) = U.y();
-    Result(1, 2) = U.z();
-    Result(2, 0) = -F.x();
-    Result(2, 1) = -F.y();
-    Result(2, 2) = -F.z();
-    Result(0, 3) = -S.dot(Eye);
-    Result(1, 3) = -U.dot(Eye);
-    Result(2, 3) = F.dot(Eye);
+    Result <<
+        AxisX.x(), AxisX.y(), AxisX.z(), -AxisX.dot(Eye),
+        AxisY.x(), AxisY.y(), AxisY.z(), -AxisY.dot(Eye),
+        AxisZ.x(), AxisZ.y(), AxisZ.z(), -AxisZ.dot(Eye),
+        0, 0, 0, 1;
+
     return Result;
 }
 
