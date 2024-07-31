@@ -32,7 +32,7 @@ SimpleLitFragmentShader DefaultSimpleLitFragmentShader = [](const FragmentShader
     float AmbientStrength = 0.1f;
     Eigen::Vector3f AmbientColor = AmbientStrength * Color;
 
-    Eigen::Vector3f LightDir = LightPtr->Direction;
+    Eigen::Vector3f LightDir = LightPtr->Direction.normalized();
 
     // Half Lambert
     float NdotL = -Input.WorldNormal.dot(LightDir);
