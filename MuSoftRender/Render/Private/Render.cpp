@@ -488,40 +488,6 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     }
 }
 
-void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Vector3f& V2, const Eigen::Vector3f& V3, DepthTexture* DepthTexturePtr)
-{
-    if (!DepthTexturePtr) return;
-
-    // 获取深度纹理的尺寸
-    int width = DepthTexturePtr->GetWidth();
-    int height = DepthTexturePtr->GetHeight();
-
-    // 计算三角形的包围盒
-    int minX = std::max(0, static_cast<int>(std::min({V1.x(), V2.x(), V3.x()})));
-    int maxX = std::min(width - 1, static_cast<int>(std::max({V1.x(), V2.x(), V3.x()})));
-    int minY = std::max(0, static_cast<int>(std::min({V1.y(), V2.y(), V3.y()})));
-    int maxY = std::min(height - 1, static_cast<int>(std::max({V1.y(), V2.y(), V3.y()})));
-
-    // 遍历包围盒中的每个像素
-    for (int y = minY; y <= maxY; ++y)
-    {
-        for (int x = minX; x <= maxX; ++x)
-        {
-            // 计算像素中心点与三角形的重心坐标
-            Eigen::Vector3f Barycentric = ComputeBarycentric(x + 0.5f, y + 0.5f, V1.x(), V1.y(), V2.x(), V2.y(), V3.x(), V3.y());
-
-            // 如果像素中心点在三角形内部
-            if (Barycentric.x() >= 0 && Barycentric.y() >= 0 && Barycentric.z() >= 0)
-            {
-                // 计算像素深度
-                float Depth = Barycentric.x() * V1.z() + Barycentric.y() * V2.z() + Barycentric.z() * V3.z();
-
-                // 更新深度纹理
-                DepthTexturePtr->SetDepth(x, y, Depth);
-            }
-        }
-    }
-}
 
 void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
 {
@@ -604,33 +570,12 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
 
     DirectionalLight* DirectionalLightPtr = Scene->GetDirectionalLight().get();
 
-    Eigen::Vector3f LightPosition = DirectionalLightPtr->Direction.normalized() * 1000.0f;
-    Eigen::Vector3f LightTarget = Eigen::Vector3f::Zero();
-    Eigen::Vector3f LightUp = Eigen::Vector3f::UnitY();
-    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
-
     BoundingBox SceneBoundingBox = Scene->CalculateSceneBounds();
-
-    float SceneWidth = SceneBoundingBox.Max.x() - SceneBoundingBox.Min.x();
-    float SceneHeight = SceneBoundingBox.Max.y() - SceneBoundingBox.Min.y();
-    float SceneDepth = SceneBoundingBox.Max.z() - SceneBoundingBox.Min.z();
-
-    float Padding = std::max({SceneWidth, SceneHeight, SceneDepth}) * 0.1f;
-
-    float Left = SceneBoundingBox.Min.x() - Padding;
-    float Right = SceneBoundingBox.Max.x() + Padding;
-    float Bottom = SceneBoundingBox.Min.y() - Padding;
-    float Top = SceneBoundingBox.Max.y() + Padding;
-    float Near = SceneBoundingBox.Min.z() - Padding;
-    float Far = SceneBoundingBox.Max.z() + Padding;
-
-    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
-    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
 
     float depthBias = 0.005f;
 
     std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(256, 256);
-    RenderShadowMap(Scene, DepthTexturePtr.get(), LightSpaceMatrix, depthBias);
+    RenderShadowMap(Scene, DepthTexturePtr.get(), depthBias, DirectionalLightPtr, SceneBoundingBox);
 
     auto Objects = Scene->GetObjects();
     for (auto& ObjectUPtr : Objects)
@@ -656,7 +601,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
     Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
     Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
     Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
-    DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
+    // DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
 }
 
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
@@ -753,14 +698,14 @@ void Renderer::SetUseEarlyDepthTest(bool Enable)
 
 bool isSaved = false;
 
-void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, const Eigen::Matrix4f& LightSpaceMatrix, float DepthBias)
+void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
 {
     for (const auto& Object : Scene->GetObjects())
     {
         const MeshObject* MeshObjectPtr = dynamic_cast<const MeshObject*>(Object.get());
         if (!MeshObjectPtr) continue;
 
-        RenderObjectDepth(MeshObjectPtr, LightSpaceMatrix, DepthTexture, DepthBias);
+        RenderObjectDepth(MeshObjectPtr, DepthTexture, DepthBias, DirectionalLightPtr, SceneBoundingBox);
     }
 
     if (!isSaved)
@@ -769,10 +714,32 @@ void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, c
     }
 }
 
-void Renderer::RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matrix4f& LightSpaceMVP, DepthTexture* DepthTexture, float DepthBias)
+void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
 {
     const Mesh* MeshPtr = MeshObject->GetMesh();
     if (!MeshPtr) return;
+
+    Eigen::Vector3f LightPosition = - DirectionalLightPtr->Direction.normalized() * 1000.0f;
+    Eigen::Vector3f LightTarget = Eigen::Vector3f(0, 0, 0);
+    Eigen::Vector3f LightUp = Eigen::Vector3f(0, 1, 0);
+    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
+
+    float SceneWidth = SceneBoundingBox.Max.x() - SceneBoundingBox.Min.x();
+    float SceneHeight = SceneBoundingBox.Max.y() - SceneBoundingBox.Min.y();
+    float SceneDepth = SceneBoundingBox.Max.z() - SceneBoundingBox.Min.z();
+
+    float Padding = std::max({SceneWidth, SceneHeight, SceneDepth}) * 0.1f;
+
+    float Left = SceneBoundingBox.Min.x() - Padding;
+    float Right = SceneBoundingBox.Max.x() + Padding;
+    float Bottom = SceneBoundingBox.Min.y() - Padding;
+    float Top = SceneBoundingBox.Max.y() + Padding;
+    float Near = SceneBoundingBox.Min.z() - Padding;
+    float Far = SceneBoundingBox.Max.z() + Padding;
+
+    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+    Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * MeshObject->GetModelMatrix();
 
     Eigen::Matrix4f ModelMatrix = MeshObject->GetModelMatrix();
     Eigen::Matrix4f MVPMatrix = LightSpaceMVP * ModelMatrix;
@@ -807,6 +774,41 @@ void Renderer::RenderObjectDepth(const MeshObject* MeshObject, const Eigen::Matr
 
         // 对三角形进行光栅化
         RasterizeTriangleDepth(ScreenPos1, ScreenPos2, ScreenPos3, DepthTexture);
+    }
+}
+
+void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Vector3f& V2, const Eigen::Vector3f& V3, DepthTexture* DepthTexturePtr)
+{
+    if (!DepthTexturePtr) return;
+
+    // 获取深度纹理的尺寸
+    int width = DepthTexturePtr->GetWidth();
+    int height = DepthTexturePtr->GetHeight();
+
+    // 计算三角形的包围盒
+    int minX = std::max(0, static_cast<int>(std::min({V1.x(), V2.x(), V3.x()})));
+    int maxX = std::min(width - 1, static_cast<int>(std::max({V1.x(), V2.x(), V3.x()})));
+    int minY = std::max(0, static_cast<int>(std::min({V1.y(), V2.y(), V3.y()})));
+    int maxY = std::min(height - 1, static_cast<int>(std::max({V1.y(), V2.y(), V3.y()})));
+
+    // 遍历包围盒中的每个像素
+    for (int y = minY; y <= maxY; ++y)
+    {
+        for (int x = minX; x <= maxX; ++x)
+        {
+            // 计算像素中心点与三角形的重心坐标
+            Eigen::Vector3f Barycentric = ComputeBarycentric(x + 0.5f, y + 0.5f, V1.x(), V1.y(), V2.x(), V2.y(), V3.x(), V3.y());
+
+            // 如果像素中心点在三角形内部
+            if (Barycentric.x() >= 0 && Barycentric.y() >= 0 && Barycentric.z() >= 0)
+            {
+                // 计算像素深度
+                float Depth = Barycentric.x() * V1.z() + Barycentric.y() * V2.z() + Barycentric.z() * V3.z();
+
+                // 更新深度纹理
+                DepthTexturePtr->SetDepth(x, y, Depth);
+            }
+        }
     }
 }
 

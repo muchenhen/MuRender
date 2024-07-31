@@ -169,10 +169,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         0.1f,
         100.0f
         );
-    CameraPtr->SetYaw(0.0f);
-    CameraPtr->SetPitch(0.0f);
-    CameraPtr->UpdateVectors();
-
+    
     G_Scene->AddCamera(std::move(CameraPtr));
 
     G_Camera = G_Scene->GetCameras()[0].get();
