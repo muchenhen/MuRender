@@ -601,7 +601,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
     Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
     Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
     Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
-    // DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
+    DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
 }
 
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
@@ -856,41 +856,104 @@ Eigen::Matrix4f Renderer::LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector
 
 void Renderer::DrawBoundingBox(const BoundingBox& bbox, const Eigen::Matrix4f& viewProjectionMatrix, uint32_t color)
 {
-    // 定义包围盒的8个顶点
-    std::vector<Eigen::Vector3f> vertices = {
-        {bbox.Min.x(), bbox.Min.y(), bbox.Min.z()},
-        {bbox.Max.x(), bbox.Min.y(), bbox.Min.z()},
-        {bbox.Max.x(), bbox.Max.y(), bbox.Min.z()},
-        {bbox.Min.x(), bbox.Max.y(), bbox.Min.z()},
-        {bbox.Min.x(), bbox.Min.y(), bbox.Max.z()},
-        {bbox.Max.x(), bbox.Min.y(), bbox.Max.z()},
-        {bbox.Max.x(), bbox.Max.y(), bbox.Max.z()},
-        {bbox.Min.x(), bbox.Max.y(), bbox.Max.z()}
+    std::vector<Eigen::Vector4f> vertices = {
+        {bbox.Min.x(), bbox.Min.y(), bbox.Min.z(), 1.0f},
+        {bbox.Max.x(), bbox.Min.y(), bbox.Min.z(), 1.0f},
+        {bbox.Max.x(), bbox.Max.y(), bbox.Min.z(), 1.0f},
+        {bbox.Min.x(), bbox.Max.y(), bbox.Min.z(), 1.0f},
+        {bbox.Min.x(), bbox.Min.y(), bbox.Max.z(), 1.0f},
+        {bbox.Max.x(), bbox.Min.y(), bbox.Max.z(), 1.0f},
+        {bbox.Max.x(), bbox.Max.y(), bbox.Max.z(), 1.0f},
+        {bbox.Min.x(), bbox.Max.y(), bbox.Max.z(), 1.0f}
     };
 
-    // 定义连接顶点的边
     std::vector<std::pair<int, int>> edges = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0}, // 底面
-        {4, 5}, {5, 6}, {6, 7}, {7, 4}, // 顶面
-        {0, 4}, {1, 5}, {2, 6}, {3, 7}  // 连接底面和顶面的边
+        {0, 1}, {1, 2}, {2, 3}, {3, 0},
+        {4, 5}, {5, 6}, {6, 7}, {7, 4},
+        {0, 4}, {1, 5}, {2, 6}, {3, 7}
     };
 
-    // 绘制每条边
+    // 局部函数：转换到屏幕空间
+    auto ToScreenSpace = [this](const Eigen::Vector4f& clipPos) -> Eigen::Vector3f
+    {
+        Eigen::Vector3f ndcPos = clipPos.head<3>() / clipPos.w();
+        return {
+            (ndcPos.x() * 0.5f + 0.5f) * ScreenWidth,
+            (ndcPos.y() * -0.5f + 0.5f) * ScreenHeight,
+            ndcPos.z()
+        };
+    };
+
+    // 局部函数：带深度测试的线段绘制
+    auto DrawLineWithDepthTest = [this](const Eigen::Vector3f& start, const Eigen::Vector3f& end, uint32_t lineColor)
+    {
+        int x0 = static_cast<int>(start.x()), y0 = static_cast<int>(start.y());
+        int x1 = static_cast<int>(end.x()), y1 = static_cast<int>(end.y());
+        float z0 = start.z(), z1 = end.z();
+
+        int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy, e2;
+
+        float dz = z1 - z0;
+        float step = std::max(std::abs(dx), std::abs(dy));
+        dz /= step;
+
+        while (true)
+        {
+            if (x0 >= 0 && x0 < ScreenWidth && y0 >= 0 && y0 < ScreenHeight)
+            {
+                int index = y0 * ScreenWidth + x0;
+                if (z0 < DepthBuffer[index])
+                {
+                    DepthBuffer[index] = z0;
+                    FrameBuffer[index] = lineColor;
+                }
+            }
+            if (x0 == x1 && y0 == y1) break;
+            e2 = 2 * err;
+            if (e2 >= dy)
+            {
+                err += dy;
+                x0 += sx;
+            }
+            if (e2 <= dx)
+            {
+                err += dx;
+                y0 += sy;
+            }
+            z0 += dz;
+        }
+    };
+
+    // 变换顶点到裁剪空间
+    for (auto& vertex : vertices)
+    {
+        vertex = viewProjectionMatrix * vertex;
+    }
+
+    // 绘制边
     for (const auto& edge : edges)
     {
-        Eigen::Vector4f start = viewProjectionMatrix * vertices[edge.first].homogeneous();
-        Eigen::Vector4f end = viewProjectionMatrix * vertices[edge.second].homogeneous();
+        const Eigen::Vector4f& start = vertices[edge.first];
+        const Eigen::Vector4f& end = vertices[edge.second];
 
-        // 执行透视除法
-        start /= start.w();
-        end /= end.w();
+        // 简单的裁剪：如果两个端点都在近平面后面，跳过这条边
+        if (start.w() <= 0 && end.w() <= 0) continue;
 
-        // 转换到屏幕空间
-        Eigen::Vector2f screenStart = (start.head<2>() * 0.5f + Eigen::Vector2f::Constant(0.5f)).cwiseProduct(Eigen::Vector2f(ScreenWidth, ScreenHeight));
-        Eigen::Vector2f screenEnd = (end.head<2>() * 0.5f + Eigen::Vector2f::Constant(0.5f)).cwiseProduct(Eigen::Vector2f(ScreenWidth, ScreenHeight));
+        Eigen::Vector3f screenStart = ToScreenSpace(start);
+        Eigen::Vector3f screenEnd = ToScreenSpace(end);
 
-        // 使用 Bresenham 算法或类似方法绘制线段
-        DrawLine(screenStart.x(), screenStart.y(), screenEnd.x(), screenEnd.y(), color);
+        // 边界检查
+        if (screenStart.x() < 0 || screenStart.x() >= ScreenWidth ||
+            screenStart.y() < 0 || screenStart.y() >= ScreenHeight ||
+            screenEnd.x() < 0 || screenEnd.x() >= ScreenWidth ||
+            screenEnd.y() < 0 || screenEnd.y() >= ScreenHeight)
+        {
+            continue; // 跳过屏幕外的线段
+        }
+
+        DrawLineWithDepthTest(screenStart, screenEnd, color);
     }
 }
 

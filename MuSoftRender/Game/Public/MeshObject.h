@@ -8,6 +8,7 @@ class MeshObject : public Object
 private:
     std::shared_ptr<Mesh> MeshPtr;
     std::shared_ptr<Material> MaterialPtr;
+    bool bCastShadow = true;
 
 public:
     MeshObject() = default;
@@ -27,6 +28,11 @@ public:
     {
     }
 
+    MeshObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material, bool castShadow) :
+        MeshPtr(std::move(mesh)), MaterialPtr(std::move(material)), bCastShadow(castShadow)
+    {
+    }
+
     virtual Mesh* GetMesh() const
     {
         return MeshPtr.get();
@@ -37,6 +43,11 @@ public:
         return MaterialPtr.get();
     }
 
+    const bool GetCastShadow() const
+    {
+        return bCastShadow;
+    }
+
     void SetMesh(std::shared_ptr<Mesh> InMesh)
     {
         MeshPtr = std::move(InMesh);
@@ -45,5 +56,10 @@ public:
     void SetMaterial(std::shared_ptr<Material> InMaterial)
     {
         MaterialPtr = std::move(InMaterial);
+    }
+
+    void SetCastShadow(bool bCast)
+    {
+        bCastShadow = bCast;
     }
 };

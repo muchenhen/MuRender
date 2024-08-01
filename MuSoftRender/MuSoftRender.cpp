@@ -197,8 +197,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
     FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
     FloorPtr->SetMaterial(FloorMaterialPtr);
+    FloorPtr->SetCastShadow(false);
 
-    // G_Scene->AddObject(FloorPtr);
+    G_Scene->AddObject(FloorPtr);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
         -CameraPosition.normalized(),
