@@ -700,12 +700,55 @@ bool isSaved = false;
 
 void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
 {
+    Vec3f LightDirection = DirectionalLightPtr->Direction.normalized();
+    Vec3f LightUp = Vec3f(0, 1, 0);
+    if (std::abs(LightDirection.dot(LightUp)) > 0.99f)
+    {
+        LightUp = Vec3f(1, 0, 0);
+    }
+    Vec3f LightRight = LightDirection.cross(LightUp).normalized();
+    LightUp = LightRight.cross(LightDirection).normalized();
+
+    Vec3f SceneCenter = (SceneBoundingBox.Max + SceneBoundingBox.Min) * 0.5f;
+    Eigen::Matrix4f LightViewMatrix;
+    LightViewMatrix <<
+        LightRight.x(), LightUp.x(), LightDirection.x(), 0,
+        LightRight.y(), LightUp.y(), LightDirection.y(), 0,
+        LightRight.z(), LightUp.z(), LightDirection.z(), 0,
+        -LightRight.dot(SceneCenter), -LightUp.dot(SceneCenter), -LightDirection.dot(SceneCenter), 1;
+
+    // 计算正交投影的范围
+    Eigen::Vector3f SceneExtents = SceneBoundingBox.Max - SceneBoundingBox.Min;
+    float SceneRadius = SceneExtents.norm() * 0.5f;
+
+    float Left = SceneBoundingBox.Min.x();
+    float Right = SceneBoundingBox.Max.x();
+    float Bottom = SceneBoundingBox.Min.y();
+    float Top = SceneBoundingBox.Max.y();
+    float Near = SceneBoundingBox.Min.z();
+    float Far = SceneBoundingBox.Max.z();
+
+    float Padding = SceneRadius * 0.1f;
+    Left -= Padding;
+    Right += Padding;
+    Bottom -= Padding;
+    Top += Padding;
+    Near -= Padding;
+    Far += Padding;
+
     for (const auto& Object : Scene->GetObjects())
     {
         const MeshObject* MeshObjectPtr = dynamic_cast<const MeshObject*>(Object.get());
         if (!MeshObjectPtr) continue;
 
-        RenderObjectDepth(MeshObjectPtr, DepthTexture, DepthBias, DirectionalLightPtr, SceneBoundingBox);
+        if (!MeshObjectPtr->GetCastShadow()) continue;
+
+        Eigen::Matrix4f ModelMatrix = MeshObjectPtr->GetModelMatrix();
+        Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+        Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+        Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * ModelMatrix;
+
+        RenderObjectDepth(MeshObjectPtr, DepthTexture, DepthBias, LightSpaceMVP);
     }
 
     if (!isSaved)
@@ -714,48 +757,10 @@ void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, f
     }
 }
 
-void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
+void Renderer::RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, const Eigen::Matrix4f& LightSpaceMVP)
 {
     const Mesh* MeshPtr = MeshObject->GetMesh();
     if (!MeshPtr) return;
-
-    Eigen::Vector3f LightPosition = -DirectionalLightPtr->Direction * 40.0f;
-    Eigen::Vector3f LightTarget = Eigen::Vector3f(0, 0, 0);
-    Eigen::Vector3f LightUp = Eigen::Vector3f(0, 1, 0);
-    Eigen::Matrix4f LightViewMatrix = LookAt(LightPosition, LightTarget, LightUp);
-
-    float SceneWidth = SceneBoundingBox.Max.x() - SceneBoundingBox.Min.x();
-    float SceneHeight = SceneBoundingBox.Max.y() - SceneBoundingBox.Min.y();
-    float SceneDepth = SceneBoundingBox.Max.z() - SceneBoundingBox.Min.z();
-
-    float Padding = std::max({SceneWidth, SceneHeight, SceneDepth}) * 0.1f;
-
-    float Left = -5.0f;
-    float Right = 5.0f;
-    float Bottom = -5.0f;
-    float Top = 5.0f;
-    float Near = 0.1f;
-    float Far = 100.0f;
-    // LOG_WARNING("Left: ", Left);
-    // LOG_WARNING("Right: ", Right);
-    // LOG_WARNING("Bottom: ", Bottom);
-    // LOG_WARNING("Top: ", Top);
-    // LOG_WARNING("Near: ", Near);
-    // LOG_WARNING("Far: ", Far);
-
-    Eigen::Matrix4f ModelMatrix = MeshObject->GetModelMatrix();
-
-    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
-    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
-    Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * ModelMatrix;
-
-    // LOG_WARNING("LightPosition: ", LightPosition);
-    // LOG_WARNING("LightTarget: ", LightTarget);
-    // LOG_WARNING("LightUp: ", LightUp);
-    // LOG_WARNING("LightViewMatrix: \n", LightViewMatrix);
-    // LOG_WARNING("LightProjectionMatrix: \n", LightProjectionMatrix);
-    // LOG_WARNING("LightSpaceMatrix: \n", LightSpaceMatrix);
-    // LOG_WARNING("LightSpaceMVP: \n", LightSpaceMVP);
 
     for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
     {

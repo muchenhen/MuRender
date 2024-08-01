@@ -77,6 +77,12 @@ void DepthTexture::SaveDepthTextureToBMP(const DepthTexture* depthTexture, const
                 uint8_t gray = static_cast<uint8_t>(depth * 255);
                 r = g = b = gray;
             }
+            else if (depth < 0.0f)
+            {
+                // Invalid depth, mark as blue
+                r = g = 0;
+                b = 255;
+            }
             else
             {
                 // Invalid depth, mark as red

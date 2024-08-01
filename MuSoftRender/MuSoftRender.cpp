@@ -187,7 +187,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     std::shared_ptr<Sphere> SpherePtr = std::make_shared<Sphere>(0.5f, 8, 4);
     SpherePtr->SetMaterial(MaterialPtr);
-    
+
     G_Scene->AddObject(CubePtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
@@ -202,7 +202,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene->AddObject(FloorPtr);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        -CameraPosition.normalized(),
+        Eigen::Vector3f(-0.4082f, -0.5774f, 0.4082f),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

@@ -11,6 +11,8 @@
 #include "Scene.h"
 #include "VertexShader.h"
 
+using Vec3f = Eigen::Vector3f;
+
 class Renderer
 {
 private:
@@ -104,7 +106,7 @@ public:
     // 渲染阴影贴图
     void RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox);
 
-    void RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox);
+    void RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, const Eigen::Matrix4f& LightSpaceMVP);
 
     void RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Vector3f& V2, const Eigen::Vector3f& V3, DepthTexture* DepthTexturePtr);
 
