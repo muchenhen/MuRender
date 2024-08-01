@@ -58,6 +58,7 @@ NormalRenderPipeline* G_NormalRenderPipeline = nullptr;
 Renderer* G_Renderer = nullptr;
 Scene* G_Scene = nullptr;
 Camera* G_Camera = nullptr;
+DirectionalLight* G_DirectionalLight = nullptr;
 
 // 鼠标控制相关
 bool g_IsMouseDown = false;
@@ -206,6 +207,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );
+
+    G_DirectionalLight = LightPtr.get();
 
     G_Scene->SetDirectionalLight(LightPtr);
 
@@ -392,8 +395,9 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
                     break;
                 }
             }
-
+            
             G_Camera->SetPosition(Position);
+            G_DirectionalLight->Direction = - Position.normalized();
             return 0;
         }
 

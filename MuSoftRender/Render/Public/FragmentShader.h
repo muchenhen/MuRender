@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 #pragma warning(default : 4819)
 
+#include "DepthTexture.h"
 #include "DirectionalLight.h"
 #include "Material.h"
 
@@ -20,3 +21,7 @@ extern FragmentShader DefaultFragmentShader;
 using SimpleLitFragmentShader = std::function<Eigen::Vector4f(const FragmentShaderInput&, const Material*, const DirectionalLight*)>;
 
 extern SimpleLitFragmentShader DefaultSimpleLitFragmentShader;
+
+using ShadowMapFragmentShader = std::function<Eigen::Vector4f(const FragmentShaderInput&, const Material*, const DirectionalLight*, const DepthTexture*, const Eigen::Matrix4f&)>;
+
+extern ShadowMapFragmentShader DefaultShadowMapFragmentShader;

@@ -488,6 +488,74 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     }
 }
 
+void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3, const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr, const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
+{
+    auto ProjectToScreen = [this](const Eigen::Vector4f& v) -> Eigen::Vector3f
+    {
+        Eigen::Vector3f NDC = v.head<3>() / v.w();
+        return {
+            (NDC.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth),
+            (1.0f - NDC.y()) * 0.5f * static_cast<float>(ScreenHeight),
+            NDC.z()
+        };
+    };
+
+    Eigen::Vector3f P1 = ProjectToScreen(V1.Position);
+    Eigen::Vector3f P2 = ProjectToScreen(V2.Position);
+    Eigen::Vector3f P3 = ProjectToScreen(V3.Position);
+
+    Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
+    Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
+
+    const int NumThreads = static_cast<int>(std::thread::hardware_concurrency());
+    std::vector<std::thread> Threads(NumThreads);
+
+    int YStart = MinPoint.y();
+    int YEnd = MaxPoint.y();
+    int XStart = MinPoint.x();
+    int XEnd = MaxPoint.x();
+
+    auto DrawSlice = [&](const int yStart, const int yEnd)
+    {
+        for (int Y = yStart; Y <= yEnd; Y++)
+        {
+            for (int X = XStart; X <= XEnd; X++)
+            {
+                Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
+
+                if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+
+                float Depth = Barycentric.x() * P1.z() + Barycentric.y() * P2.z() + Barycentric.z() * P3.z();
+
+                if (UseEarlyDepthTest)
+                {
+                    if (!EarlyDepthTest(X, Y, Depth)) continue;
+                }
+
+                FragmentShaderInput FSI;
+                FSI.UV = Barycentric.x() * V1.UV + Barycentric.y() * V2.UV + Barycentric.z() * V3.UV;
+                FSI.WorldPosition = Barycentric.x() * V1.WorldPosition + Barycentric.y() * V2.WorldPosition + Barycentric.z() * V3.WorldPosition;
+                FSI.WorldNormal = Barycentric.x() * V1.WorldNormal + Barycentric.y() * V2.WorldNormal + Barycentric.z() * V3.WorldNormal;
+                Eigen::Vector4f Color = FS(FSI, Material, DirectionalLightPtr, ShadowMap, LightSpaceMatrix);
+                DrawPixel(X, Y, Depth, ColorToUint32(Color));
+            }
+        }
+    };
+
+    int SliceHeight = (YEnd - YStart) / NumThreads;
+    for (int i = 0; i < NumThreads; ++i)
+    {
+        int yStart = YStart + i * SliceHeight;
+        int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
+        Threads[i] = std::thread(DrawSlice, yStart, yEnd);
+    }
+
+    for (auto& Thread : Threads)
+    {
+        Thread.join();
+    }
+}
+
 
 void Renderer::RenderCamera(const Scene& InScene, const Camera& InCamera)
 {
@@ -594,7 +662,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
 
         if (bIsSceneHasLight)
         {
-            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr);
+            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr, DepthTexturePtr.get(), DirectionalLightPtr->GetLightSpaceMatrix());
         }
     }
 
@@ -676,7 +744,18 @@ void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Came
         const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
         const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
 
-        ProcessTriangle(V1, V2, V3, ModelMatrix, MVPMatrix, NormalMatrix, Pipeline->VS, Pipeline->FS, MaterialPtr, DirectionalLightPtr);
+        VertexShaderInput VSI1 = {V1.Position, V1.UV, V1.Normal};
+        VertexShaderInput VSI2 = {V2.Position, V2.UV, V2.Normal};
+        VertexShaderInput VSI3 = {V3.Position, V3.UV, V3.Normal};
+
+        auto VS = Pipeline->VS;
+
+        VertexShaderOutput VSO1 = VS(VSI1, ModelMatrix, MVPMatrix, NormalMatrix);
+        VertexShaderOutput VSO2 = VS(VSI2, ModelMatrix, MVPMatrix, NormalMatrix);
+        VertexShaderOutput VSO3 = VS(VSI3, ModelMatrix, MVPMatrix, NormalMatrix);
+
+        auto FS = DefaultShadowMapFragmentShader;
+        RasterizeTriangle(VSO1, VSO2, VSO3, FS, MaterialPtr, DirectionalLightPtr, ShadowMap, LightSpaceMatrix);
     }
 }
 
@@ -717,24 +796,44 @@ void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, f
         LightRight.z(), LightUp.z(), LightDirection.z(), 0,
         -LightRight.dot(SceneCenter), -LightUp.dot(SceneCenter), -LightDirection.dot(SceneCenter), 1;
 
-    // 计算正交投影的范围
-    Eigen::Vector3f SceneExtents = SceneBoundingBox.Max - SceneBoundingBox.Min;
-    float SceneRadius = SceneExtents.norm() * 0.5f;
+    // 需要计算光源空间中的包围盒
+    BoundingBox LightSpaceBoundingBox;
+    std::vector Corners =
+    {
+        SceneBoundingBox.Min,
+        SceneBoundingBox.Max,
+        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
+        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
+        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Max.z()),
+        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
+        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
+        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Min.z())
+    };
 
-    float Left = SceneBoundingBox.Min.x();
-    float Right = SceneBoundingBox.Max.x();
-    float Bottom = SceneBoundingBox.Min.y();
-    float Top = SceneBoundingBox.Max.y();
-    float Near = SceneBoundingBox.Min.z();
-    float Far = SceneBoundingBox.Max.z();
+    for (const auto& corner : Corners)
+    {
+        Vec4f lightSpaceCorner = LightViewMatrix * Vec4f(corner.x(), corner.y(), corner.z(), 1.0f);
+        LightSpaceBoundingBox.Expand(Vec3f(lightSpaceCorner.x(), lightSpaceCorner.y(), lightSpaceCorner.z()));
+    }
 
-    float Padding = SceneRadius * 0.1f;
+    float Left = LightSpaceBoundingBox.Min.x();
+    float Right = LightSpaceBoundingBox.Max.x();
+    float Bottom = LightSpaceBoundingBox.Min.y();
+    float Top = LightSpaceBoundingBox.Max.y();
+    float Near = LightSpaceBoundingBox.Min.z();
+    float Far = LightSpaceBoundingBox.Max.z();
+
+    float Padding = (Right - Left) * 0.1f;
     Left -= Padding;
     Right += Padding;
     Bottom -= Padding;
     Top += Padding;
     Near -= Padding;
     Far += Padding;
+
+    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+    DirectionalLightPtr->SetLightSpaceMatrix(LightSpaceMatrix);
 
     for (const auto& Object : Scene->GetObjects())
     {
@@ -744,8 +843,6 @@ void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, f
         if (!MeshObjectPtr->GetCastShadow()) continue;
 
         Eigen::Matrix4f ModelMatrix = MeshObjectPtr->GetModelMatrix();
-        Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
-        Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
         Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * ModelMatrix;
 
         RenderObjectDepth(MeshObjectPtr, DepthTexture, DepthBias, LightSpaceMVP);

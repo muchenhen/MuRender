@@ -12,6 +12,7 @@
 #include "VertexShader.h"
 
 using Vec3f = Eigen::Vector3f;
+using Vec4f = Eigen::Vector4f;
 
 class Renderer
 {
@@ -79,6 +80,10 @@ private:
 
     void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
                            const SimpleLitFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr);
+
+    void RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
+                       const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr,
+                       const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix);
 
 
 public:
