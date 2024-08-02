@@ -3,6 +3,7 @@
 #include <cmath>
 #include <memory>
 
+#include "CoordinateSystem .h"
 #include "Cube.h"
 #include "Logger.h"
 
@@ -782,59 +783,52 @@ bool isSaved = false;
 
 void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
 {
-    Vec3f LightDirection = DirectionalLightPtr->Direction.normalized();
-    Vec3f LightUp = Vec3f(0, 1, 0);
-    if (std::abs(LightDirection.dot(LightUp)) > 0.99f)
-    {
-        LightUp = Vec3f(1, 0, 0);
-    }
-    Vec3f LightRight = LightDirection.cross(LightUp).normalized();
-    LightUp = LightRight.cross(LightDirection).normalized();
+    Eigen::Matrix4f LightViewMatrix = DirectionalLightPtr->GetLightViewMatrix();
 
-    Vec3f SceneCenter = (SceneBoundingBox.Max + SceneBoundingBox.Min) * 0.5f;
-    Eigen::Matrix4f LightViewMatrix;
-    LightViewMatrix <<
-        LightRight.x(), LightUp.x(), LightDirection.x(), 0,
-        LightRight.y(), LightUp.y(), LightDirection.y(), 0,
-        LightRight.z(), LightUp.z(), LightDirection.z(), 0,
-        -LightRight.dot(SceneCenter), -LightUp.dot(SceneCenter), -LightDirection.dot(SceneCenter), 1;
+    // // 需要计算光源空间中的包围盒
+    // BoundingBox LightSpaceBoundingBox;
+    // std::vector Corners =
+    // {
+    //     SceneBoundingBox.Min,
+    //     SceneBoundingBox.Max,
+    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
+    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
+    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Max.z()),
+    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
+    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
+    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Min.z())
+    // };
+    //
+    // for (const auto& corner : Corners)
+    // {
+    //     V4f lightSpaceCorner = LightViewMatrix * V4f(corner.x(), corner.y(), corner.z(), 1.0f);
+    //     LightSpaceBoundingBox.Expand(V3f(lightSpaceCorner.x(), lightSpaceCorner.y(), lightSpaceCorner.z()));
+    // }
+    //
+    // float Left = LightSpaceBoundingBox.Min.x();
+    // float Right = LightSpaceBoundingBox.Max.x();
+    // float Bottom = LightSpaceBoundingBox.Min.y();
+    // float Top = LightSpaceBoundingBox.Max.y();
+    // float Near = LightSpaceBoundingBox.Min.z();
+    // float Far = LightSpaceBoundingBox.Max.z();
+    //
+    // float Padding = (Right - Left) * 0.1f;
+    // Left -= Padding;
+    // Right += Padding;
+    // Bottom -= Padding;
+    // Top += Padding;
+    // Near -= Padding;
+    // Far += Padding;
 
-    // 需要计算光源空间中的包围盒
-    BoundingBox LightSpaceBoundingBox;
-    std::vector Corners =
-    {
-        SceneBoundingBox.Min,
-        SceneBoundingBox.Max,
-        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
-        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
-        Vec3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Max.z()),
-        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
-        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
-        Vec3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Min.z())
-    };
+    std::vector<float> CameraFrustum = Scene->GetCameras()[0]->GetFrustumPlanes();
+    float Left = CameraFrustum[0];
+    float Right = CameraFrustum[1];
+    float Bottom = CameraFrustum[2];
+    float Top = CameraFrustum[3];
+    float Near = CameraFrustum[4];
+    float Far = CameraFrustum[5];
 
-    for (const auto& corner : Corners)
-    {
-        Vec4f lightSpaceCorner = LightViewMatrix * Vec4f(corner.x(), corner.y(), corner.z(), 1.0f);
-        LightSpaceBoundingBox.Expand(Vec3f(lightSpaceCorner.x(), lightSpaceCorner.y(), lightSpaceCorner.z()));
-    }
-
-    float Left = LightSpaceBoundingBox.Min.x();
-    float Right = LightSpaceBoundingBox.Max.x();
-    float Bottom = LightSpaceBoundingBox.Min.y();
-    float Top = LightSpaceBoundingBox.Max.y();
-    float Near = LightSpaceBoundingBox.Min.z();
-    float Far = LightSpaceBoundingBox.Max.z();
-
-    float Padding = (Right - Left) * 0.1f;
-    Left -= Padding;
-    Right += Padding;
-    Bottom -= Padding;
-    Top += Padding;
-    Near -= Padding;
-    Far += Padding;
-
-    Eigen::Matrix4f LightProjectionMatrix = Ortho(Left, Right, Bottom, Top, Near, Far);
+    Eigen::Matrix4f LightProjectionMatrix = DirectionalLightPtr->GetLightProjectionMatrix(Left, Right, Bottom, Top, Near, Far);
     Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
     DirectionalLightPtr->SetLightSpaceMatrix(LightSpaceMatrix);
 
@@ -854,6 +848,7 @@ void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, f
     if (!isSaved)
     {
         DepthTexture::SaveDepthTextureToBMP(DepthTexture, "ShadowMap.bmp");
+        isSaved = true;
     }
 }
 
@@ -931,7 +926,7 @@ void Renderer::RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Ve
     }
 }
 
-Eigen::Matrix4f Renderer::Ortho(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far)
+Eigen::Matrix4f Renderer::Orthographic(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far)
 {
     Eigen::Matrix4f Result = Eigen::Matrix4f::Identity();
     Result(0, 0) = 2.0f / (Right - Left);

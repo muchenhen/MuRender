@@ -11,8 +11,7 @@
 #include "Scene.h"
 #include "VertexShader.h"
 
-using Vec3f = Eigen::Vector3f;
-using Vec4f = Eigen::Vector4f;
+
 
 class Renderer
 {
@@ -117,7 +116,7 @@ public:
 
 
 private:
-    Eigen::Matrix4f Ortho(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far);
+    Eigen::Matrix4f Orthographic(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far);
 
     Eigen::Matrix4f LookAt(const Eigen::Vector3f& Eye, const Eigen::Vector3f& Center, const Eigen::Vector3f& Up);
 

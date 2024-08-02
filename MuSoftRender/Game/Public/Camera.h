@@ -48,6 +48,8 @@ public:
 
     Eigen::Vector3f GetPosition() const override;
 
+    std::vector<float> GetFrustumPlanes() const;
+    
 public:
     void AddYaw(float InYaw);
     void AddPitch(float InPitch);

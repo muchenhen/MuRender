@@ -99,6 +99,18 @@ Eigen::Vector3f Camera::GetPosition() const
     return Position;
 }
 
+std::vector<float> Camera::GetFrustumPlanes() const
+{
+    // TODO: need fix
+    float Left = -NearPlane * tan(Fov / 2);
+    float Right = NearPlane * tan(Fov / 2);
+    float Bottom = -NearPlane * tan(Fov / 2);
+    float Top = NearPlane * tan(Fov / 2);
+    float Near = NearPlane;
+    float Far = FarPlane;
+    return {Left, Right, Bottom, Top, Near, Far};
+}
+
 void Camera::AddYaw(float InYaw)
 {
     Yaw += InYaw;
