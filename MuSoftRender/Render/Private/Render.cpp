@@ -647,7 +647,12 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
     float depthBias = 0.005f;
 
     std::shared_ptr<DepthTexture> DepthTexturePtr = std::make_shared<DepthTexture>(512, 512);
-    RenderShadowMap(Scene, DepthTexturePtr.get(), depthBias, DirectionalLightPtr, SceneBoundingBox);
+
+    Eigen::Matrix4f LightViewMatrix = DirectionalLightPtr->GetLightViewMatrix(SceneBoundingBox);
+    Eigen::Matrix4f LightProjectionMatrix = DirectionalLightPtr->GetLightProjectionMatrix(SceneBoundingBox, LightViewMatrix);
+    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
+
+    RenderShadowMap(Scene, DepthTexturePtr.get(), depthBias, LightSpaceMatrix);
 
     auto Objects = Scene->GetObjects();
     for (auto& ObjectUPtr : Objects)
@@ -666,14 +671,14 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
 
         if (bIsSceneHasLight)
         {
-            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr, DepthTexturePtr.get(), DirectionalLightPtr->GetLightSpaceMatrix());
+            RenderMeshObject(MeshObjectPtr, Camera, Pipeline, DirectionalLightPtr, DepthTexturePtr.get(), LightSpaceMatrix);
         }
     }
 
-    // Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
-    // Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
-    // Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
-    // DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
+    Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
+    Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
+    Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
+    DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
 }
 
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)
@@ -781,13 +786,8 @@ void Renderer::SetUseEarlyDepthTest(bool Enable)
 
 bool isSaved = false;
 
-void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
+void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, const M4f& LightSpaceMatrix)
 {
-    Eigen::Matrix4f LightViewMatrix = DirectionalLightPtr->GetLightViewMatrix(SceneBoundingBox);
-    Eigen::Matrix4f LightProjectionMatrix = DirectionalLightPtr->GetLightProjectionMatrix(SceneBoundingBox, LightViewMatrix);
-    Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
-    DirectionalLightPtr->SetLightSpaceMatrix(LightSpaceMatrix);
-
     if (!isSaved)
     {
         LOG_DEBUG("LightSpaceMatrix: \n", LightSpaceMatrix);

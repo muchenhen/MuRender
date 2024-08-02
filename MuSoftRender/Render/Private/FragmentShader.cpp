@@ -1,5 +1,7 @@
 #include "FragmentShader.h"
 
+#include "Logger.h"
+
 // #include "Logger.h"
 
 FragmentShader DefaultFragmentShader = [](const FragmentShaderInput& Input, const Material* MaterialPtr)
@@ -90,13 +92,22 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     // Shadow calculation
     Eigen::Vector4f LightSpacePos = LightSpaceMatrix * Input.WorldPosition.homogeneous();
     Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
+    
     ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
 
-    float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
-    float CurrentDepth = ProjectedCoords.z();
+    // TODO：这段阴影采样代码有问题，需要修复
+    float Shadow = 1.0f;
 
-    float ShadowBias = 0.01f;
-    float Shadow = (CurrentDepth + ShadowBias > ClosestDepth) ? 0.5f : 1.0f;
+    // 检查是否在光源的视锥中
+    if (ProjectedCoords.x() >= 0.0f && ProjectedCoords.x() <= 1.0f &&
+        ProjectedCoords.y() >= 0.0f && ProjectedCoords.y() <= 1.0f &&
+        ProjectedCoords.z() >= 0.0f && ProjectedCoords.z() <= 1.0f)
+    {
+        float CurrentDepth = ProjectedCoords.z();
+        float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
+        float Bias = 0.005f;
+        Shadow = CurrentDepth - Bias > ClosestDepth ? 1.0f : 0.0f;
+    }
 
     Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
 

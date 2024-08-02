@@ -108,7 +108,7 @@ public:
     void SetUseEarlyDepthTest(bool Enable);
 
     // 渲染阴影贴图
-    void RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox);
+    void RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, const M4f& LightSpaceMatrix);
 
     void RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, const Eigen::Matrix4f& LightSpaceMVP);
 
