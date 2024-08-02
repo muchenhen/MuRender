@@ -783,54 +783,15 @@ bool isSaved = false;
 
 void Renderer::RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, DirectionalLight* DirectionalLightPtr, const BoundingBox& SceneBoundingBox)
 {
-    Eigen::Matrix4f LightViewMatrix = DirectionalLightPtr->GetLightViewMatrix();
-
-    // // 需要计算光源空间中的包围盒
-    // BoundingBox LightSpaceBoundingBox;
-    // std::vector Corners =
-    // {
-    //     SceneBoundingBox.Min,
-    //     SceneBoundingBox.Max,
-    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
-    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
-    //     V3f(SceneBoundingBox.Min.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Max.z()),
-    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Max.z()),
-    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Max.y(), SceneBoundingBox.Min.z()),
-    //     V3f(SceneBoundingBox.Max.x(), SceneBoundingBox.Min.y(), SceneBoundingBox.Min.z())
-    // };
-    //
-    // for (const auto& corner : Corners)
-    // {
-    //     V4f lightSpaceCorner = LightViewMatrix * V4f(corner.x(), corner.y(), corner.z(), 1.0f);
-    //     LightSpaceBoundingBox.Expand(V3f(lightSpaceCorner.x(), lightSpaceCorner.y(), lightSpaceCorner.z()));
-    // }
-    //
-    // float Left = LightSpaceBoundingBox.Min.x();
-    // float Right = LightSpaceBoundingBox.Max.x();
-    // float Bottom = LightSpaceBoundingBox.Min.y();
-    // float Top = LightSpaceBoundingBox.Max.y();
-    // float Near = LightSpaceBoundingBox.Min.z();
-    // float Far = LightSpaceBoundingBox.Max.z();
-    //
-    // float Padding = (Right - Left) * 0.1f;
-    // Left -= Padding;
-    // Right += Padding;
-    // Bottom -= Padding;
-    // Top += Padding;
-    // Near -= Padding;
-    // Far += Padding;
-
-    std::vector<float> CameraFrustum = Scene->GetCameras()[0]->GetFrustumPlanes();
-    float Left = CameraFrustum[0];
-    float Right = CameraFrustum[1];
-    float Bottom = CameraFrustum[2];
-    float Top = CameraFrustum[3];
-    float Near = CameraFrustum[4];
-    float Far = CameraFrustum[5];
-
-    Eigen::Matrix4f LightProjectionMatrix = DirectionalLightPtr->GetLightProjectionMatrix(Left, Right, Bottom, Top, Near, Far);
+    Eigen::Matrix4f LightViewMatrix = DirectionalLightPtr->GetLightViewMatrix(SceneBoundingBox);
+    Eigen::Matrix4f LightProjectionMatrix = DirectionalLightPtr->GetLightProjectionMatrix(SceneBoundingBox, LightViewMatrix);
     Eigen::Matrix4f LightSpaceMatrix = LightProjectionMatrix * LightViewMatrix;
     DirectionalLightPtr->SetLightSpaceMatrix(LightSpaceMatrix);
+
+    if (!isSaved)
+    {
+        LOG_DEBUG("LightSpaceMatrix: \n", LightSpaceMatrix);
+    }
 
     for (const auto& Object : Scene->GetObjects())
     {

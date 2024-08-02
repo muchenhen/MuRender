@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Game\Public\BoundingBox.h" />
     <ClInclude Include="Game\Public\Camera.h" />
     <ClInclude Include="Game\Public\Cube.h" />
     <ClInclude Include="Game\Public\DirectionalLight.h" />
