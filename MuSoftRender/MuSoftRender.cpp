@@ -162,7 +162,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene = new Scene();
 
     // 创建Camera实例
-    Eigen::Vector3f CameraPosition = Eigen::Vector3f(4, 4, 4);
+    Eigen::Vector3f CameraPosition = Eigen::Vector3f(8, 8, 8);
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
         CameraPosition,
         Eigen::Vector3f(0, 0, 0),
@@ -192,7 +192,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene->AddObject(CubePtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
-    float PosY = -static_cast<float>(std::sqrt(2 * 2));
+    float PosY = -1;
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
@@ -397,7 +397,7 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
             }
             
             G_Camera->SetPosition(Position);
-            G_DirectionalLight->Direction = - Position.normalized();
+            // G_DirectionalLight->Direction = - Position.normalized();
             return 0;
         }
 

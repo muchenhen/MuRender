@@ -92,12 +92,12 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
     ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
 
-    float ClosestDepth = ShadowMap->GetDepth(ProjectedCoords.x(), ProjectedCoords.y());
+    float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
     float CurrentDepth = ProjectedCoords.z();
-
-    float ShadowBias = 0.005f;
-    float Shadow = (CurrentDepth - ShadowBias < ClosestDepth) ? 1.0f : 0.5f; // 修改这里
-
+    
+    float ShadowBias = 0.01f;
+    float Shadow = (CurrentDepth + ShadowBias > ClosestDepth) ? 0.5f : 1.0f;
+    
     Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
 
     Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);

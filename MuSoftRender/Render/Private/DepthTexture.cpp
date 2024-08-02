@@ -110,3 +110,26 @@ void DepthTexture::SaveDepthTextureToBMP(const DepthTexture* depthTexture, const
         std::cerr << "Error: Unable to open file for writing: " << filename << std::endl;
     }
 }
+
+float DepthTexture::SampleDepth(float u, float v) const
+{
+    float x = u * (Width - 1);
+    float y = v * (Height - 1);
+    int x0 = std::floor(x);
+    int y0 = std::floor(y);
+    int x1 = std::min(x0 + 1, Width - 1);
+    int y1 = std::min(y0 + 1, Height - 1);
+
+    float fx = x - x0;
+    float fy = y - y0;
+
+    float d00 = GetDepth(x0, y0);
+    float d10 = GetDepth(x1, y0);
+    float d01 = GetDepth(x0, y1);
+    float d11 = GetDepth(x1, y1);
+
+    float d0 = d00 * (1 - fx) + d10 * fx;
+    float d1 = d01 * (1 - fx) + d11 * fx;
+
+    return d0 * (1 - fy) + d1 * fy;
+}

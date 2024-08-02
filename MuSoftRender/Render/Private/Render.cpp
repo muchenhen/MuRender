@@ -488,7 +488,9 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
     }
 }
 
-void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3, const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr, const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
+void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
+    const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr,
+    const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
 {
     auto ProjectToScreen = [this](const Eigen::Vector4f& v) -> Eigen::Vector3f
     {

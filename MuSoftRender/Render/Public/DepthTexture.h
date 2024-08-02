@@ -22,4 +22,6 @@ public:
     int GetHeight() const;
 
     static void SaveDepthTextureToBMP(const DepthTexture* depthTexture, const std::string& filename);
+
+    float SampleDepth(float u, float v) const;
 };
