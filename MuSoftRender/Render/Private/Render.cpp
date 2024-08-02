@@ -1,6 +1,7 @@
 ﻿#include "Render.h"
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 #include "Cube.h"
 #include "Logger.h"
@@ -489,8 +490,8 @@ void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShade
 }
 
 void Renderer::RasterizeTriangle(const VertexShaderOutput& V1, const VertexShaderOutput& V2, const VertexShaderOutput& V3,
-    const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr,
-    const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
+                                 const ShadowMapFragmentShader& FS, const Material* Material, const DirectionalLight* DirectionalLightPtr,
+                                 const DepthTexture* ShadowMap, const Eigen::Matrix4f& LightSpaceMatrix)
 {
     auto ProjectToScreen = [this](const Eigen::Vector4f& v) -> Eigen::Vector3f
     {
@@ -631,7 +632,7 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Rende
     }
 }
 
-void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const NormalRenderPipeline* Pipeline)
+void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRenderPipeline* Pipeline)
 {
     if (Scene == nullptr || Camera == nullptr || Pipeline == nullptr)
     {
@@ -668,10 +669,10 @@ void Renderer::RenderScene(const Scene* Scene, const Camera* Camera, const Norma
         }
     }
 
-    Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
-    Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
-    Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
-    DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
+    // Eigen::Matrix4f viewMatrix = Camera->GetViewMatrix();
+    // Eigen::Matrix4f projectionMatrix = Camera->GetProjectionMatrix();
+    // Eigen::Matrix4f viewProjectionMatrix = projectionMatrix * viewMatrix;
+    // DrawBoundingBox(SceneBoundingBox, viewProjectionMatrix, 0xFF0000);
 }
 
 void Renderer::RenderMeshObject(const MeshObject* MeshObject, const Camera* Camera, const RenderPipeline* Pipeline)

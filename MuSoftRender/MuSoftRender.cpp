@@ -17,6 +17,7 @@
 
 #include "DirectionalLight.h"
 #include "Floor.h"
+#include "CoordinateSystem .h"
 #include "Sphere.h"
 
 
@@ -162,7 +163,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene = new Scene();
 
     // 创建Camera实例
-    Eigen::Vector3f CameraPosition = Eigen::Vector3f(8, 8, 8);
+    Eigen::Vector3f CameraPosition = Eigen::Vector3f(8, 8, -8);
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
         CameraPosition,
         Eigen::Vector3f(0, 0, 0),
@@ -189,27 +190,32 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     std::shared_ptr<Sphere> SpherePtr = std::make_shared<Sphere>(0.5f, 8, 4);
     SpherePtr->SetMaterial(MaterialPtr);
 
-    G_Scene->AddObject(CubePtr);
-
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
     float PosY = -1;
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
+    
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
     FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
     FloorPtr->SetMaterial(FloorMaterialPtr);
     FloorPtr->SetCastShadow(false);
-
-    G_Scene->AddObject(FloorPtr);
-
+    
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(-0.4082f, -0.5774f, 0.4082f),
+        Eigen::Vector3f(-4, -4, -4).normalized(),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );
-
+    
     G_DirectionalLight = LightPtr.get();
 
+    // std::shared_ptr<CoordinateSystem> CoordinateSystemPtr = std::make_shared<CoordinateSystem>(2.5f, 0.3f);
+    // G_Scene->AddObject(CoordinateSystemPtr);
+
+
+    G_Scene->AddObject(CubePtr);
+    G_Scene->AddObject(FloorPtr);
+
+    
     G_Scene->SetDirectionalLight(LightPtr);
 
     ShowWindow(Hwnd, nCmdShow);

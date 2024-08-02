@@ -74,31 +74,31 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     // Ambient
     float AmbientStrength = 0.1f;
     Eigen::Vector3f AmbientColor = AmbientStrength * Color;
-
+    
     Eigen::Vector3f LightDir = LightPtr->Direction;
-
+    
     // Half Lambert
     float NdotL = -Input.WorldNormal.dot(LightDir);
     float HalfLambert = 0.5f * NdotL + 0.5f;
-
+    
     // Diffuse
     Eigen::Vector3f LightColor = LightPtr->Color;
     float LightIntensity = LightPtr->Intensity;
-
+    
     Eigen::Vector3f DiffuseColor = HalfLambert * LightColor * LightIntensity;
-
+    
     // Shadow calculation
-    Eigen::Vector4f LightSpacePos = LightSpaceMatrix * Input.WorldPosition.homogeneous();
-    Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
-    ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
-
-    float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
-    float CurrentDepth = ProjectedCoords.z();
+    // Eigen::Vector4f LightSpacePos = LightSpaceMatrix * Input.WorldPosition.homogeneous();
+    // Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
+    // ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
     
-    float ShadowBias = 0.01f;
-    float Shadow = (CurrentDepth + ShadowBias > ClosestDepth) ? 0.5f : 1.0f;
+    // float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
+    // float CurrentDepth = ProjectedCoords.z();
     
-    Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
+    // float ShadowBias = 0.01f;
+    // float Shadow = (CurrentDepth + ShadowBias > ClosestDepth) ? 0.5f : 1.0f;
+    
+    Eigen::Vector3f LightingColor = AmbientColor +  DiffuseColor;
 
     Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);
 

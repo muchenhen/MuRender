@@ -148,6 +148,7 @@
     <ClInclude Include="MuSoftRender.h" />
     <ClInclude Include="Render\Public\DepthTexture.h" />
     <ClInclude Include="Render\Public\FragmentShader.h" />
+    <ClInclude Include="Render\Public\CoordinateSystem .h" />
     <ClInclude Include="Render\Public\Material.h" />
     <ClInclude Include="Render\Public\Render.h" />
     <ClInclude Include="Render\Public\RenderPipeline.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Game\Private\Object.cpp" />
     <ClCompile Include="Game\Private\Scene.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
+    <ClCompile Include="Render\Private\CoordinateSystem.cpp" />
     <ClCompile Include="Render\Private\DepthTexture.cpp" />
     <ClCompile Include="Render\Private\FragmentShader.cpp" />
     <ClCompile Include="Render\Private\Render.cpp" />
