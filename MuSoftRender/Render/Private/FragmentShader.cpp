@@ -57,6 +57,8 @@ SimpleLitFragmentShader DefaultSimpleLitFragmentShader = [](const FragmentShader
     return Eigen::Vector4f(FinalColor.x(), FinalColor.y(), FinalColor.z(), 1);
 };
 
+bool isPrinted = false;
+
 ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShaderInput& Input,
                                                             const Material* MaterialPtr,
                                                             const DirectionalLight* LightPtr,
@@ -89,10 +91,17 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
 
     Eigen::Vector3f DiffuseColor = HalfLambert * LightColor * LightIntensity;
 
+    if(!isPrinted)
+    {
+        LOG_DEBUG("LightSpaceMatrix: \n", LightSpaceMatrix);
+        isPrinted = true;
+    }
+    
     // Shadow calculation
     Eigen::Vector4f LightSpacePos = LightSpaceMatrix * Input.WorldPosition.homogeneous();
     Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
-    
+
+    // 将 xyz 都映射到 [0, 1] 范围
     ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
 
     // TODO：这段阴影采样代码有问题，需要修复
@@ -107,7 +116,14 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
         float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
         float Bias = 0.005f;
         Shadow = CurrentDepth - Bias > ClosestDepth ? 1.0f : 0.0f;
+
+        std::cout << "WorldPosition: " << Input.WorldPosition.transpose() << std::endl;
+        std::cout << "ProjectedCoords: " << ProjectedCoords.transpose() << std::endl;
+        std::cout << "CurrentDepth: " << CurrentDepth << ", ClosestDepth: " << ClosestDepth << std::endl;
     }
+
+
+
 
     Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
 

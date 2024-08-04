@@ -110,10 +110,7 @@ public:
     // 渲染阴影贴图
     void RenderShadowMap(const Scene* Scene, DepthTexture* DepthTexture, float DepthBias, const M4f& LightSpaceMatrix);
 
-    void RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, float DepthBias, const Eigen::Matrix4f& LightSpaceMVP);
-
-    void RasterizeTriangleDepth(const Eigen::Vector3f& V1, const Eigen::Vector3f& V2, const Eigen::Vector3f& V3, DepthTexture* DepthTexturePtr);
-
+    void RenderObjectDepth(const MeshObject* MeshObject, DepthTexture* DepthTexture, const Eigen::Matrix4f& LightSpaceMVP);
 
 private:
     Eigen::Matrix4f Orthographic(const float Left, const float Right, const float Bottom, const float Top, const float Near, const float Far);

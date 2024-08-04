@@ -7,11 +7,13 @@
 class DepthTexture
 {
 public:
-    std::vector<float> Data;
+    std::vector<float> DepthBuffer;
     int Width;
     int Height;
 
     DepthTexture(int InWidth, int InHeight);
+
+    void Clear();
 
     void SetDepth(int x, int y, float InDepth);
 

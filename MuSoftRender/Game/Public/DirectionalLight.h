@@ -4,6 +4,7 @@
 #include "CoordinateSystem .h"
 #include "Object.h"
 #include "BoundingBox.h"
+#include "DepthTexture.h"
 
 class DirectionalLight : public Object
 {
@@ -11,6 +12,9 @@ public:
     Eigen::Vector3f Direction;
     Eigen::Vector3f Color;
     float Intensity;
+
+    std::unique_ptr<DepthTexture> ShadowMapPtr;
+
 
     Eigen::Matrix4f LightSpaceMatrix;
 
@@ -30,4 +34,6 @@ public:
 
     // 计算LightProjectionMatrix
     M4f GetLightProjectionMatrix(const BoundingBox& SceneBounds, const M4f& LightViewMatrix) const;
+
+    void CreateShadowMap(uint8_t Width, uint8_t Height);
 };

@@ -5,7 +5,12 @@
 DepthTexture::DepthTexture(int InWidth, int InHeight):
     Width(InWidth), Height(InHeight)
 {
-    Data.resize(static_cast<size_t>(Width) * Height, 1.0f);
+    DepthBuffer.resize(static_cast<size_t>(Width) * Height, 1.0f);
+}
+
+void DepthTexture::Clear()
+{
+    std::fill(DepthBuffer.begin(), DepthBuffer.end(), 1.0f);
 }
 
 void DepthTexture::SetDepth(int x, int y, float InDepth)
@@ -14,9 +19,9 @@ void DepthTexture::SetDepth(int x, int y, float InDepth)
     {
         int index = y * Width + x;
         // 在左手坐标系中，较小的深度值表示离光源更近
-        if (InDepth < Data[index])
+        if (InDepth < DepthBuffer[index])
         {
-            Data[index] = InDepth;
+            DepthBuffer[index] = InDepth;
         }
     }
 }
@@ -25,7 +30,7 @@ float DepthTexture::GetDepth(int x, int y) const
 {
     if (x >= 0 && x < Width && y >= 0 && y < Height)
     {
-        return Data[y * Width + x];
+        return DepthBuffer[y * Width + x];
     }
     return 1.0f;
 }

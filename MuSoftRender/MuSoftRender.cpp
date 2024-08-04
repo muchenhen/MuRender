@@ -439,6 +439,8 @@ void Tick(HWND Hwnd, float deltaTime)
     Render(Hwnd);
 }
 
+bool rendered = false;
+
 void Render(HWND Hwnd)
 {
     G_Renderer->Clear(0x000000); // 清除为黑色
