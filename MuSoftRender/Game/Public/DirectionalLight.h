@@ -13,7 +13,7 @@ public:
     Eigen::Vector3f Color;
     float Intensity;
 
-    std::unique_ptr<DepthTexture> ShadowMapPtr;
+    DepthTexture* ShadowMap;
 
 
     Eigen::Matrix4f LightSpaceMatrix;
@@ -35,5 +35,5 @@ public:
     // 计算LightProjectionMatrix
     M4f GetLightProjectionMatrix(const BoundingBox& SceneBounds, const M4f& LightViewMatrix) const;
 
-    void CreateShadowMap(uint8_t Width, uint8_t Height);
+    void CreateShadowMap(int Width, int Height);
 };

@@ -644,7 +644,8 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
 
     DirectionalLight* Light = Scene->GetDirectionalLight().get();
     Light->CreateShadowMap(512, 512);
-    Light->ShadowMapPtr->Clear();
+    DepthTexture* ShadowMap = Light->ShadowMap;
+    ShadowMap->Clear();
 
     auto SceneBounds = Scene->CalculateSceneBounds();
     M4f LightViewMatrix = Light->GetLightViewMatrix(SceneBounds);
@@ -656,20 +657,68 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
     for (auto& ObjectUPtr : Scene->GetObjects())
     {
         Object* ObjectPtr = ObjectUPtr.get();
-        if (ObjectPtr == nullptr)
-        {
-            continue;
-        }
+        if (ObjectPtr == nullptr) continue;
         MeshObject* MeshObjectPtr = dynamic_cast<MeshObject*>(ObjectPtr);
-        if (MeshObjectPtr != nullptr)
+        if (MeshObjectPtr == nullptr) continue;
+        if (!MeshObjectPtr->GetCastShadow()) continue;
+        const Mesh* MeshPtr = MeshObjectPtr->GetMesh();
+        if (!MeshPtr) return;
+
+        Eigen::Matrix4f ModelMatrix = MeshObjectPtr->GetModelMatrix();
+        Eigen::Matrix4f LightSpaceMVP = LightSpaceMatrix * ModelMatrix;
+
+        for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
         {
-            RenderObjectDepth(MeshObjectPtr, Light->ShadowMapPtr.get(), LightSpaceMatrix);
+            const Vertex& V0 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+            const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+            const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
+
+            // 光源空间
+            V4f V0LightSpace = LightSpaceMVP * V4f(V0.Position.x(), V0.Position.y(), V0.Position.z(), 1.0f);
+            V4f V1LightSpace = LightSpaceMVP * V4f(V1.Position.x(), V1.Position.y(), V1.Position.z(), 1.0f);
+            V4f V2LightSpace = LightSpaceMVP * V4f(V2.Position.x(), V2.Position.y(), V2.Position.z(), 1.0f);
+
+            V0LightSpace /= V0LightSpace.w();
+            V1LightSpace /= V1LightSpace.w();
+            V2LightSpace /= V2LightSpace.w();
+
+            // 屏幕空间
+            V3f V0Screen = (V0LightSpace.head<3>() + V3f::Ones()) * 0.5f;
+            V3f V1Screen = (V1LightSpace.head<3>() + V3f::Ones()) * 0.5f;
+            V3f V2Screen = (V2LightSpace.head<3>() + V3f::Ones()) * 0.5f;
+
+            V0Screen.x() *= ShadowMap->GetWidth();
+            V0Screen.y() *= ShadowMap->GetHeight();
+            V1Screen.x() *= ShadowMap->GetWidth();
+            V1Screen.y() *= ShadowMap->GetHeight();
+            V2Screen.x() *= ShadowMap->GetWidth();
+            V2Screen.y() *= ShadowMap->GetHeight();
+
+            // 计算包围盒
+            int MinX = std::max(0, static_cast<int>(std::min({V0Screen.x(), V1Screen.x(), V2Screen.x()})));
+            int MinY = std::max(0, static_cast<int>(std::min({V0Screen.y(), V1Screen.y(), V2Screen.y()})));
+            int MaxX = std::min(ShadowMap->GetWidth() - 1, static_cast<int>(std::max({V0Screen.x(), V1Screen.x(), V2Screen.x()})));
+            int MaxY = std::min(ShadowMap->GetHeight() - 1, static_cast<int>(std::max({V0Screen.y(), V1Screen.y(), V2Screen.y()})));
+
+            for (int Y = MinY; Y <= MaxY; Y++)
+            {
+                for (int X = MinX; X <= MaxX; X++)
+                {
+                    V3f Barycentric = ComputeBarycentric(X, Y, V0Screen.x(), V0Screen.y(), V1Screen.x(), V1Screen.y(), V2Screen.x(), V2Screen.y());
+                    if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+
+                    float Depth = Barycentric.x() * V0LightSpace.z() + Barycentric.y() * V1LightSpace.z() + Barycentric.z() * V2LightSpace.z();
+                    if (Depth >= ShadowMap->GetDepth(X, Y)) continue;
+
+                    ShadowMap->SetDepth(X, Y, Depth);
+                }
+            }
         }
     }
 
     if (!isSaved)
     {
-        DepthTexture::SaveDepthTextureToBMP(Light->ShadowMapPtr.get(), "ShadowMap.bmp");
+        DepthTexture::SaveDepthTextureToBMP(Light->ShadowMap, "ShadowMap.bmp");
         isSaved = true;
     }
 }

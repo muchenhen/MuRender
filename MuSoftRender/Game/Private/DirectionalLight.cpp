@@ -75,7 +75,7 @@ M4f DirectionalLight::GetLightProjectionMatrix(const BoundingBox& SceneBounds, c
     return LightProjectionMatrix;
 }
 
-void DirectionalLight::CreateShadowMap(uint8_t Width, uint8_t Height)
+void DirectionalLight::CreateShadowMap(int Width, int Height)
 {
-    ShadowMapPtr = std::make_unique<DepthTexture>(Width, Height);
+    ShadowMap = new DepthTexture(Width, Height);
 }

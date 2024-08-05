@@ -194,28 +194,26 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     float PosY = -1;
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
-    
+
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
     FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
     FloorPtr->SetMaterial(FloorMaterialPtr);
     FloorPtr->SetCastShadow(false);
-    
+
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
         Eigen::Vector3f(-4, -4, -4).normalized(),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );
-    
+
     G_DirectionalLight = LightPtr.get();
 
     // std::shared_ptr<CoordinateSystem> CoordinateSystemPtr = std::make_shared<CoordinateSystem>(2.5f, 0.3f);
     // G_Scene->AddObject(CoordinateSystemPtr);
 
-
     G_Scene->AddObject(CubePtr);
     G_Scene->AddObject(FloorPtr);
 
-    
     G_Scene->SetDirectionalLight(LightPtr);
 
     ShowWindow(Hwnd, nCmdShow);
@@ -401,7 +399,7 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
                     break;
                 }
             }
-            
+
             G_Camera->SetPosition(Position);
             // G_DirectionalLight->Direction = - Position.normalized();
             return 0;
