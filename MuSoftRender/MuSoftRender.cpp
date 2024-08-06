@@ -200,8 +200,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     FloorPtr->SetMaterial(FloorMaterialPtr);
     FloorPtr->SetCastShadow(false);
 
+    V3f LightDir = V3f(0, 1, 0).normalized();
+
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(-1, 0, -1).normalized(),
+        LightDir,
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

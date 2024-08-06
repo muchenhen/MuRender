@@ -37,7 +37,7 @@ SimpleLitFragmentShader DefaultSimpleLitFragmentShader = [](const FragmentShader
     Eigen::Vector3f LightDir = LightPtr->Direction;
 
     // Half Lambert
-    float NdotL = -Input.WorldNormal.dot(LightDir);
+    float NdotL = Input.WorldNormal.dot(LightDir);
     float HalfLambert = 0.5f * NdotL + 0.5f;
     // HalfLambert = HalfLambert * HalfLambert; 
 
@@ -76,58 +76,28 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     }
 
     // Ambient
-    float AmbientStrength = 0.01f;
+    float AmbientStrength = 0.1f;
     Eigen::Vector3f AmbientColor = AmbientStrength * Color;
 
     Eigen::Vector3f LightDir = LightPtr->Direction;
 
     // Half Lambert
-    float NdotL = -Input.WorldNormal.dot(LightDir);
+    float NdotL = Input.WorldNormal.dot(LightDir);
     float HalfLambert = 0.5f * NdotL + 0.5f;
+    // HalfLambert = HalfLambert * HalfLambert; 
 
     // Diffuse
     Eigen::Vector3f LightColor = LightPtr->Color;
     float LightIntensity = LightPtr->Intensity;
 
+    // float DiffuseFactor = std::max(0.0f, Input.WorldNormal.dot(-LightDir));
+
     Eigen::Vector3f DiffuseColor = HalfLambert * LightColor * LightIntensity;
 
-    if (!isPrinted)
-    {
-        LOG_DEBUG("LightSpaceMatrix: \n", LightSpaceMatrix);
-        isPrinted = true;
-    }
-
-    // Shadow calculation
-    Eigen::Vector4f LightSpacePos = LightSpaceMatrix * V4f(Input.WorldPosition.x(), Input.WorldPosition.y(), Input.WorldPosition.z(), 1.0f);
-    Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
-
-    // 将 xyz 都映射到 [0, 1] 范围
-    ProjectedCoords = ProjectedCoords * 0.5f + Eigen::Vector3f::Constant(0.5f);
-
-    // TODO：这段阴影采样代码有问题，需要修复
-    float Shadow = 1.0f;
-    // 检查是否在光源的视锥中
-    if (ProjectedCoords.x() >= 0.0f && ProjectedCoords.x() <= 1.0f &&
-        ProjectedCoords.y() >= 0.0f && ProjectedCoords.y() <= 1.0f &&
-        ProjectedCoords.z() >= 0.0f && ProjectedCoords.z() <= 1.0f)
-    {
-        float CurrentDepth = ProjectedCoords.z();
-        float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
-        float Bias = std::max(0.05f * (1.0f - Input.WorldNormal.dot(-LightDir)), 0.005f);
-        Shadow = CurrentDepth + Bias < ClosestDepth ? 0.0f : 1.0f;
-
-        std::cout << "WorldPosition: " << Input.WorldPosition.transpose() << std::endl;
-        std::cout << "ProjectedCoords: " << ProjectedCoords.transpose() << std::endl;
-        std::cout << "CurrentDepth: " << CurrentDepth << ", ClosestDepth: " << ClosestDepth << std::endl;
-    }
-
-    Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
-    float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
+    Eigen::Vector3f LightingColor = AmbientColor + DiffuseColor;
 
     Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);
 
     FinalColor = FinalColor.cwiseMin(1.0f).cwiseMax(0.0f);
-    // Eigen::Vector3f FinalColor = V3f(ClosestDepth, ClosestDepth, ClosestDepth);
-
     return Eigen::Vector4f(FinalColor.x(), FinalColor.y(), FinalColor.z(), 1);
 };
