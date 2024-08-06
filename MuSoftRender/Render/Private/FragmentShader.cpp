@@ -91,14 +91,14 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
 
     Eigen::Vector3f DiffuseColor = HalfLambert * LightColor * LightIntensity;
 
-    if(!isPrinted)
+    if (!isPrinted)
     {
         LOG_DEBUG("LightSpaceMatrix: \n", LightSpaceMatrix);
         isPrinted = true;
     }
-    
+
     // Shadow calculation
-    Eigen::Vector4f LightSpacePos = LightSpaceMatrix * Input.WorldPosition.homogeneous();
+    Eigen::Vector4f LightSpacePos = LightSpaceMatrix * V4f(Input.WorldPosition.x(), Input.WorldPosition.y(), Input.WorldPosition.z(), 1.0f);
     Eigen::Vector3f ProjectedCoords = LightSpacePos.head<3>() / LightSpacePos.w();
 
     // 将 xyz 都映射到 [0, 1] 范围
@@ -106,7 +106,6 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
 
     // TODO：这段阴影采样代码有问题，需要修复
     float Shadow = 1.0f;
-
     // 检查是否在光源的视锥中
     if (ProjectedCoords.x() >= 0.0f && ProjectedCoords.x() <= 1.0f &&
         ProjectedCoords.y() >= 0.0f && ProjectedCoords.y() <= 1.0f &&
@@ -114,21 +113,21 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     {
         float CurrentDepth = ProjectedCoords.z();
         float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
-        float Bias = 0.005f;
-        Shadow = CurrentDepth - Bias > ClosestDepth ? 1.0f : 0.0f;
+        float Bias = std::max(0.05f * (1.0f - Input.WorldNormal.dot(-LightDir)), 0.005f);
+        Shadow = CurrentDepth + Bias < ClosestDepth ? 0.0f : 1.0f;
 
         std::cout << "WorldPosition: " << Input.WorldPosition.transpose() << std::endl;
         std::cout << "ProjectedCoords: " << ProjectedCoords.transpose() << std::endl;
         std::cout << "CurrentDepth: " << CurrentDepth << ", ClosestDepth: " << ClosestDepth << std::endl;
     }
 
-
-
-
     Eigen::Vector3f LightingColor = AmbientColor + Shadow * DiffuseColor;
+    float ClosestDepth = ShadowMap->SampleDepth(ProjectedCoords.x(), ProjectedCoords.y());
 
     Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);
 
     FinalColor = FinalColor.cwiseMin(1.0f).cwiseMax(0.0f);
+    // Eigen::Vector3f FinalColor = V3f(ClosestDepth, ClosestDepth, ClosestDepth);
+
     return Eigen::Vector4f(FinalColor.x(), FinalColor.y(), FinalColor.z(), 1);
 };

@@ -192,7 +192,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
     float PosY = -1;
-    FloorPtr->SetPosition(Eigen::Vector3f(0, PosY - 0.1f, 0));
+    FloorPtr->SetPosition(Eigen::Vector3f(0, PosY, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
 
     std::shared_ptr<Material> FloorMaterialPtr = std::make_shared<Material>();
@@ -201,7 +201,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     FloorPtr->SetCastShadow(false);
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
-        Eigen::Vector3f(-4, -4, -4).normalized(),
+        Eigen::Vector3f(-1, 0, -1).normalized(),
         Eigen::Vector3f(1, 1, 1),
         1.0f
         );

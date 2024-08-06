@@ -654,6 +654,17 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
 
     Light->SetLightSpaceMatrix(LightSpaceMatrix);
 
+    auto ProjectToScreen = [this](const Eigen::Vector4f& v) -> Eigen::Vector3f
+    {
+        Eigen::Vector3f NDC = v.head<3>() / v.w();
+        return {
+            (NDC.x() + 1.0f) * 0.5f * static_cast<float>(ScreenWidth),
+            (1.0f - NDC.y()) * 0.5f * static_cast<float>(ScreenHeight),
+            NDC.z()
+        };
+    };
+
+    // 绘制ShadowMap
     for (auto& ObjectUPtr : Scene->GetObjects())
     {
         Object* ObjectPtr = ObjectUPtr.get();
@@ -712,6 +723,98 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
 
                     ShadowMap->SetDepth(X, Y, Depth);
                 }
+            }
+        }
+    }
+
+    // 渲染场景
+    for (auto& ObjectUPtr : Scene->GetObjects())
+    {
+        Object* ObjectPtr = ObjectUPtr.get();
+        if (ObjectPtr == nullptr) continue;
+        MeshObject* MeshObjectPtr = dynamic_cast<MeshObject*>(ObjectPtr);
+        if (MeshObjectPtr == nullptr) continue;
+
+        const Mesh* MeshPtr = MeshObjectPtr->GetMesh();
+        const Material* MaterialPtr = MeshObjectPtr->GetMaterial();
+
+        auto ModelMatrix = MeshObjectPtr->GetModelMatrix();
+        auto ViewMatrix = Camera->GetViewMatrix();
+        auto ProjectionMatrix = Camera->GetProjectionMatrix();
+        auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
+        auto NormalMatrix = MeshObjectPtr->GetNormalMatrix();
+
+        for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
+        {
+            const Vertex& V1 = MeshPtr->Vertices[MeshPtr->Indices[i]];
+            const Vertex& V2 = MeshPtr->Vertices[MeshPtr->Indices[i + 1]];
+            const Vertex& V3 = MeshPtr->Vertices[MeshPtr->Indices[i + 2]];
+
+            VertexShaderInput VSI1 = {V1.Position, V1.UV, V1.Normal};
+            VertexShaderInput VSI2 = {V2.Position, V2.UV, V2.Normal};
+            VertexShaderInput VSI3 = {V3.Position, V3.UV, V3.Normal};
+
+            auto VS = Pipeline->VS;
+
+            VertexShaderOutput VSO1 = VS(VSI1, ModelMatrix, MVPMatrix, NormalMatrix);
+            VertexShaderOutput VSO2 = VS(VSI2, ModelMatrix, MVPMatrix, NormalMatrix);
+            VertexShaderOutput VSO3 = VS(VSI3, ModelMatrix, MVPMatrix, NormalMatrix);
+
+            auto FS = DefaultShadowMapFragmentShader;
+            
+            Eigen::Vector3f P1 = ProjectToScreen(VSO1.Position);
+            Eigen::Vector3f P2 = ProjectToScreen(VSO2.Position);
+            Eigen::Vector3f P3 = ProjectToScreen(VSO3.Position);
+
+            Eigen::Vector2i MinPoint(std::min({P1.x(), P2.x(), P3.x()}), std::min({P1.y(), P2.y(), P3.y()}));
+            Eigen::Vector2i MaxPoint(std::max({P1.x(), P2.x(), P3.x()}), std::max({P1.y(), P2.y(), P3.y()}));
+
+            const int NumThreads = static_cast<int>(std::thread::hardware_concurrency());
+            std::vector<std::thread> Threads(NumThreads);
+
+            int YStart = MinPoint.y();
+            int YEnd = MaxPoint.y();
+            int XStart = MinPoint.x();
+            int XEnd = MaxPoint.x();
+
+            auto DrawSlice = [&](const int yStart, const int yEnd)
+            {
+                for (int Y = yStart; Y <= yEnd; Y++)
+                {
+                    for (int X = XStart; X <= XEnd; X++)
+                    {
+                        Eigen::Vector3f Barycentric = ComputeBarycentric(X, Y, P1.x(), P1.y(), P2.x(), P2.y(), P3.x(), P3.y());
+
+                        if (Barycentric.x() < 0 || Barycentric.y() < 0 || Barycentric.z() < 0) continue;
+
+                        float Depth = Barycentric.x() * P1.z() + Barycentric.y() * P2.z() + Barycentric.z() * P3.z();
+
+                        if (UseEarlyDepthTest)
+                        {
+                            if (!EarlyDepthTest(X, Y, Depth)) continue;
+                        }
+
+                        FragmentShaderInput FSI;
+                        FSI.UV = Barycentric.x() * VSO1.UV + Barycentric.y() * VSO2.UV + Barycentric.z() * VSO3.UV;
+                        FSI.WorldPosition = Barycentric.x() * VSO1.WorldPosition + Barycentric.y() * VSO2.WorldPosition + Barycentric.z() * VSO3.WorldPosition;
+                        FSI.WorldNormal = Barycentric.x() * VSO1.WorldNormal + Barycentric.y() * VSO2.WorldNormal + Barycentric.z() * VSO3.WorldNormal;
+                        Eigen::Vector4f Color = FS(FSI, MaterialPtr, Light, ShadowMap, LightSpaceMatrix);
+                        DrawPixel(X, Y, Depth, ColorToUint32(Color));
+                    }
+                }
+            };
+
+            int SliceHeight = (YEnd - YStart) / NumThreads;
+            for (int i = 0; i < NumThreads; ++i)
+            {
+                int yStart = YStart + i * SliceHeight;
+                int yEnd = (i == NumThreads - 1) ? YEnd : yStart + SliceHeight;
+                Threads[i] = std::thread(DrawSlice, yStart, yEnd);
+            }
+
+            for (auto& Thread : Threads)
+            {
+                Thread.join();
             }
         }
     }
