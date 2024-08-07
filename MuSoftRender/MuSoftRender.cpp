@@ -162,8 +162,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     // 创建Scene实例
     G_Scene = new Scene();
 
+    V3f LightDir = V3f(1, 1, 1).normalized();
+    V3f CameraPosition = Eigen::Vector3f(0, 0, -8);
+
     // 创建Camera实例
-    Eigen::Vector3f CameraPosition = Eigen::Vector3f(8, 8, -8);
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
         CameraPosition,
         Eigen::Vector3f(0, 0, 0),
@@ -199,8 +201,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     FloorMaterialPtr->SetBaseColor(Eigen::Vector3f(0.67f, 0.67f, 0.67f));
     FloorPtr->SetMaterial(FloorMaterialPtr);
     FloorPtr->SetCastShadow(false);
-
-    V3f LightDir = V3f(0, 1, 0).normalized();
 
     std::shared_ptr<DirectionalLight> LightPtr = std::make_shared<DirectionalLight>(
         LightDir,
