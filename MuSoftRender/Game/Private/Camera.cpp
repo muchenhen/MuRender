@@ -14,15 +14,31 @@ Camera::Camera(const Eigen::Vector3f& InPosition, const Eigen::Vector3f& InTarge
 
 Eigen::Matrix4f Camera::GetViewMatrix() const
 {
-    Eigen::Vector3f AxisZ = (Position - Target).normalized();
-    Eigen::Vector3f AxisX = Up.cross(AxisZ).normalized();
-    Eigen::Vector3f AxisY = AxisZ.cross(AxisX);
+    Eigen::Vector3f AxisZ = (Target - Position).normalized();
+    Eigen::Vector3f AxisX;
+    Eigen::Vector3f AxisY;
+
+    // 检查 Up 和 AxisZ 是否几乎平行
+    if (fabs(Up.dot(AxisZ)) > 0.9999f) {
+        // 选择一个不与 AxisZ 平行的向量
+        Eigen::Vector3f tempVector;
+        if (fabs(AxisZ.y()) < 0.9999f) {
+            tempVector = Eigen::Vector3f(0, 1, 0);
+        } else {
+            tempVector = Eigen::Vector3f(1, 0, 0);
+        }
+        AxisX = tempVector.cross(AxisZ).normalized();
+    } else {
+        AxisX = Up.cross(AxisZ).normalized();
+    }
+
+    AxisY = AxisZ.cross(AxisX);
 
     Eigen::Matrix4f ViewMatrix;
     ViewMatrix << AxisX.x(), AxisX.y(), AxisX.z(), -AxisX.dot(Position),
-        AxisY.x(), AxisY.y(), AxisY.z(), -AxisY.dot(Position),
-        AxisZ.x(), AxisZ.y(), AxisZ.z(), -AxisZ.dot(Position),
-        0, 0, 0, 1;
+                  AxisY.x(), AxisY.y(), AxisY.z(), -AxisY.dot(Position),
+                  AxisZ.x(), AxisZ.y(), AxisZ.z(), -AxisZ.dot(Position),
+                  0, 0, 0, 1;
 
     return ViewMatrix;
 }
@@ -36,9 +52,9 @@ Eigen::Matrix4f Camera::GetProjectionMatrix() const
     Eigen::Matrix4f ProjMatrix = Eigen::Matrix4f::Zero();
     ProjMatrix(0, 0) = 1.0f / (Aspect * TanHalfFovY);
     ProjMatrix(1, 1) = 1.0f / TanHalfFovY;
-    ProjMatrix(2, 2) = -(FarPlane + NearPlane) / ZRange;
-    ProjMatrix(2, 3) = -2.0f * FarPlane * NearPlane / ZRange;
-    ProjMatrix(3, 2) = -1.0f;
+    ProjMatrix(2, 2) = FarPlane / (FarPlane - NearPlane);
+    ProjMatrix(2, 3) = -(FarPlane * NearPlane) / (FarPlane - NearPlane);
+    ProjMatrix(3, 2) = 1.0f;
 
     if (ProjMatrix.array().isNaN().any())
     {
@@ -86,7 +102,7 @@ Eigen::Vector3f Camera::GetForward() const
 
 Eigen::Vector3f Camera::GetRight() const
 {
-    return GetForward().cross(Up).normalized();
+    return Up.cross(GetForward()).normalized();
 }
 
 Eigen::Vector3f Camera::GetUp() const
@@ -133,14 +149,14 @@ void Camera::ClampPitch(float MinPitch, float MaxPitch)
 
 void Camera::UpdateVectors()
 {
-    // Eigen::Vector3f Direction;
-    // auto radYaw = DegToRad(Yaw);
-    // auto radPitch = DegToRad(Pitch);
-    // Direction.x() = cos(radYaw) * cos(radPitch);
-    // Direction.y() = sin(radPitch);
-    // Direction.z() = sin(radYaw) * cos(radPitch);
-    // Direction.normalize();
-    //
-    // Target = Position + Direction;
-    // Up = GetRight().cross(Direction).normalized();
+    Eigen::Vector3f Direction;
+    auto radYaw = DegToRad(Yaw);
+    auto radPitch = DegToRad(Pitch);
+    Direction.x() = cos(radYaw) * cos(radPitch);
+    Direction.y() = sin(radPitch);
+    Direction.z() = sin(radYaw) * cos(radPitch);
+    Direction.normalize();
+
+    Target = Position + Direction;
+    Up = Direction.cross(GetRight()).normalized();
 }

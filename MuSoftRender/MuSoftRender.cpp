@@ -163,7 +163,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_Scene = new Scene();
 
     V3f LightDir = V3f(1, 1, 1).normalized();
-    V3f CameraPosition = Eigen::Vector3f(0, 0, -8);
+    V3f CameraPosition = Eigen::Vector3f(0, 8, 0);
 
     // 创建Camera实例
     std::unique_ptr<Camera> CameraPtr = std::make_unique<Camera>(
