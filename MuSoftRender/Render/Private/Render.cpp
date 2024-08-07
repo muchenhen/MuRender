@@ -647,6 +647,10 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
     DepthTexture* ShadowMap = Light->ShadowMap;
     ShadowMap->Clear();
 
+    M4f ViewMatrix = Camera->GetViewMatrix();
+    M4f ProjectionMatrix = Camera->GetProjectionMatrix();
+    M4f CameraSpaceMatrix = ProjectionMatrix * ViewMatrix;
+
     auto SceneBounds = Scene->CalculateSceneBounds();
     M4f LightViewMatrix = Light->GetLightViewMatrix(SceneBounds);
     M4f LightProjectionMatrix = Light->GetLightProjectionMatrix(SceneBounds, LightViewMatrix);
@@ -669,9 +673,12 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
     {
         Object* ObjectPtr = ObjectUPtr.get();
         if (ObjectPtr == nullptr) continue;
+        
         MeshObject* MeshObjectPtr = dynamic_cast<MeshObject*>(ObjectPtr);
         if (MeshObjectPtr == nullptr) continue;
+        
         if (!MeshObjectPtr->GetCastShadow()) continue;
+        
         const Mesh* MeshPtr = MeshObjectPtr->GetMesh();
         if (!MeshPtr) return;
 
@@ -739,9 +746,8 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
         const Material* MaterialPtr = MeshObjectPtr->GetMaterial();
 
         auto ModelMatrix = MeshObjectPtr->GetModelMatrix();
-        auto ViewMatrix = Camera->GetViewMatrix();
-        auto ProjectionMatrix = Camera->GetProjectionMatrix();
-        auto MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+        auto MVPMatrix = CameraSpaceMatrix * ModelMatrix;
         auto NormalMatrix = MeshObjectPtr->GetNormalMatrix();
 
         for (size_t i = 0; i < MeshPtr->Indices.size(); i += 3)
@@ -761,7 +767,7 @@ void Renderer::RenderScene(Scene* Scene, const Camera* Camera, const NormalRende
             VertexShaderOutput VSO3 = VS(VSI3, ModelMatrix, MVPMatrix, NormalMatrix);
 
             auto FS = DefaultShadowMapFragmentShader;
-            
+
             Eigen::Vector3f P1 = ProjectToScreen(VSO1.Position);
             Eigen::Vector3f P2 = ProjectToScreen(VSO2.Position);
             Eigen::Vector3f P3 = ProjectToScreen(VSO3.Position);

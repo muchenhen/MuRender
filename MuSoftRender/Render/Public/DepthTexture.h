@@ -7,6 +7,8 @@
 class DepthTexture
 {
 public:
+    static constexpr float INVALID_DEPTH = 2.0f; // 使用大于1的值表示无效深度
+    
     std::vector<float> DepthBuffer;
     int Width;
     int Height;

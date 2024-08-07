@@ -10,7 +10,7 @@ DepthTexture::DepthTexture(int InWidth, int InHeight):
 
 void DepthTexture::Clear()
 {
-    std::fill(DepthBuffer.begin(), DepthBuffer.end(), 1.0f);
+    std::fill(DepthBuffer.begin(), DepthBuffer.end(), INVALID_DEPTH);
 }
 
 void DepthTexture::SetDepth(int x, int y, float InDepth)
@@ -18,8 +18,7 @@ void DepthTexture::SetDepth(int x, int y, float InDepth)
     if (x >= 0 && x < Width && y >= 0 && y < Height)
     {
         int index = y * Width + x;
-        // 在左手坐标系中，较小的深度值表示离光源更近
-        if (InDepth < DepthBuffer[index])
+        if (InDepth >= 0.0f && InDepth <= 1.0f && InDepth < DepthBuffer[index])
         {
             DepthBuffer[index] = InDepth;
         }
@@ -32,7 +31,7 @@ float DepthTexture::GetDepth(int x, int y) const
     {
         return DepthBuffer[y * Width + x];
     }
-    return 1.0f;
+    return INVALID_DEPTH;
 }
 
 int DepthTexture::GetWidth() const
@@ -127,5 +126,10 @@ float DepthTexture::SampleDepth(float u, float v) const
     y = std::clamp(y, 0, Height - 1);
 
     float depth = GetDepth(x, y);
+    if (depth == INVALID_DEPTH)
+    {
+        // 返回一个表示"不在阴影中"的值
+        return 0.0f;
+    }
     return depth;
 }

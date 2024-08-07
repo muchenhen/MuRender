@@ -102,15 +102,20 @@ ShadowMapFragmentShader DefaultShadowMapFragmentShader = [](const FragmentShader
     ProjCoords.y() = ProjCoords.y() * 0.5f + 0.5f;
     ProjCoords.z() = ProjCoords.z() * 0.5f + 0.5f;
 
-    // 获取最近深度（阴影贴图中的深度，距离光源最近的深度）
     float ClosestDepth = ShadowMap->SampleDepth(ProjCoords.x(), ProjCoords.y());
-    // 获取当前深度，当前片元转换到光源空间对应的深度
     float CurrentDepth = ProjCoords.z();
 
-    // 阴影因子 (调整比较逻辑)
-    float bias = 0.5f; // 可以根据需要调整这个偏移值
-    float ShadowFactor = (CurrentDepth - bias) < ClosestDepth ? 1.0f : 0.5f;
-
+    float ShadowFactor;
+    if (ClosestDepth == 0.0f) // 表示采样点不在阴影贴图范围内
+    {
+        ShadowFactor = 1.0f; // 不在阴影中
+    }
+    else
+    {
+        float bias = 0.005f;
+        ShadowFactor = (CurrentDepth - bias) > ClosestDepth ? 0.5f : 1.0f;
+    }
+    
     // 最终颜色计算
     Eigen::Vector3f LightingColor = AmbientColor + ShadowFactor * DiffuseColor;
     Eigen::Vector3f FinalColor = Color.cwiseProduct(LightingColor);
