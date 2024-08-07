@@ -20,7 +20,7 @@ Eigen::Matrix4f DirectionalLight::GetLightSpaceMatrix() const
 M4f DirectionalLight::GetLightViewMatrix() const
 {
     V3f LightPos = -Direction * 1000.0f;
-    V3f Up = Y_AXIS;
+    V3f Up = (std::abs(Direction.dot(Y_AXIS)) > 0.99f) ? X_AXIS : Y_AXIS;
     V3f Right = Up.cross(Direction).normalized();
     Up = Direction.cross(Right).normalized();
     return LookAt(LightPos, ORIGIN, Up);

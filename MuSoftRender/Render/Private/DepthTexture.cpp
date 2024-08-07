@@ -85,7 +85,7 @@ void DepthTexture::SaveDepthTextureToBMP(const DepthTexture* depthTexture, const
             {
                 // 直接使用深度值：较小的深度值（较近的表面）显示为白色
                 // 较大的深度值（较远的表面）显示为黑色
-                color = static_cast<uint8_t>(depth * 255);
+                color = static_cast<uint8_t>((1.0f - depth) * 255);
             }
             else if (depth < 0.0f)
             {
@@ -125,5 +125,7 @@ float DepthTexture::SampleDepth(float u, float v) const
     int y = static_cast<int>(v * (Height - 1) + 0.5f);
     x = std::clamp(x, 0, Width - 1);
     y = std::clamp(y, 0, Height - 1);
-    return GetDepth(x, y);
+
+    float depth = GetDepth(x, y);
+    return depth;
 }
