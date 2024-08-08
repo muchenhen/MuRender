@@ -24,8 +24,9 @@ public:
     int GetWidth() const;
 
     int GetHeight() const;
+    void RotateDepthBuffer90DegreesCounterClockwise();
 
-    static void SaveDepthTextureToBMP(const DepthTexture* depthTexture, const std::string& filename);
+    static void SaveDepthTextureToBMP(DepthTexture* depthTexture, const std::string& filename);
 
     float SampleDepth(float u, float v) const;
 };

@@ -193,7 +193,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     SpherePtr->SetMaterial(MaterialPtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
-    float PosY = -1;
+    float PosY = -1 - 0.01;
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
 

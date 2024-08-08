@@ -50,7 +50,7 @@ Eigen::Matrix4f Object::GetModelMatrix() const
     auto RotationX = Eigen::AngleAxisf(this->Rotation.x(), X_AXIS);
     auto RotationY = Eigen::AngleAxisf(this->Rotation.y(), Y_AXIS);
     auto RotationZ = Eigen::AngleAxisf(this->Rotation.z(), Z_AXIS);
-    R.block<3, 3>(0, 0) = (RotationZ * RotationY * RotationX).matrix();
+    R.block<3, 3>(0, 0) = (RotationX * RotationY * RotationZ).matrix();
 
     M4f T = M4f::Identity();
     T.block<3, 1>(0, 3) = Position;

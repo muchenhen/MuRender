@@ -44,7 +44,37 @@ int DepthTexture::GetHeight() const
     return Height;
 }
 
-void DepthTexture::SaveDepthTextureToBMP(const DepthTexture* depthTexture, const std::string& filename)
+void DepthTexture::RotateDepthBuffer90DegreesCounterClockwise()
+{
+    std::vector<float> rotatedBuffer(DepthBuffer.size());
+    
+    for (int y = 0; y < Height; ++y)
+    {
+        for (int x = 0; x < Width; ++x)
+        {
+            // 计算原始索引
+            int originalIndex = y * Width + x;
+            
+            // 计算旋转后的新位置
+            int newX = Height - 1 - y;
+            int newY = x;
+            
+            // 计算新索引
+            int newIndex = newY * Height + newX;
+            
+            // 将原始数据复制到新位置
+            rotatedBuffer[newIndex] = DepthBuffer[originalIndex];
+        }
+    }
+    
+    // 交换宽度和高度
+    std::swap(Width, Height);
+    
+    // 用旋转后的数据替换原始数据
+    DepthBuffer = std::move(rotatedBuffer);
+}
+
+void DepthTexture::SaveDepthTextureToBMP(DepthTexture* depthTexture, const std::string& filename)
 {
     int width = depthTexture->GetWidth();
     int height = depthTexture->GetHeight();
