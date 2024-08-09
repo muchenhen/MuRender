@@ -29,7 +29,7 @@ M4f DirectionalLight::GetLightViewMatrix() const
 M4f DirectionalLight::GetLightViewMatrix(const BoundingBox& SceneBounds) const
 {
     V3f Center = SceneBounds.GetCenter();
-    V3f LightPos = Center - Direction * SceneBounds.GetDiagonalLength();
+    V3f LightPos = Center + Direction * SceneBounds.GetDiagonalLength();
     
     // 选择一个不与光照方向平行的向量作为初始 Up 向量
     V3f Up = (std::abs(Direction.dot(Y_AXIS)) > 0.99f) ? Z_AXIS : Y_AXIS;

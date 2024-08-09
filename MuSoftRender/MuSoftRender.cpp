@@ -158,7 +158,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
     G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultSimpleLitFragmentShader);
     // 创建Render实例
-    G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
+    G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT); 
     // 创建Scene实例
     G_Scene = new Scene();
 
@@ -193,7 +193,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     SpherePtr->SetMaterial(MaterialPtr);
 
     std::shared_ptr<Floor> FloorPtr = std::make_shared<Floor>();
-    float PosY = -1 - 0.01;
+    float PosY = -1;
     FloorPtr->SetPosition(Eigen::Vector3f(0, PosY, 0));
     FloorPtr->SetScale(Eigen::Vector3f(1, 1, 1));
 

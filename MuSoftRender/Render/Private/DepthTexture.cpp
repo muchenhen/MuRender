@@ -112,9 +112,7 @@ void DepthTexture::SaveDepthTextureToBMP(DepthTexture* depthTexture, const std::
 
             if (depth >= 0.0f && depth <= 1.0f)
             {
-                // 直接使用深度值：较小的深度值（较近的表面）显示为白色
-                // 较大的深度值（较远的表面）显示为黑色
-                color = static_cast<uint8_t>((1.0f - depth) * 255);
+                color = static_cast<uint8_t>(depth * 255);
             }
             else if (depth < 0.0f)
             {
