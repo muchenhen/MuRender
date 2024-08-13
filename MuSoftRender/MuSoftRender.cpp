@@ -20,6 +20,8 @@
 #include "CoordinateSystem .h"
 #include "Sphere.h"
 
+#include <commctrl.h>
+#pragma comment(lib, "comctl32.lib")
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
@@ -43,6 +45,9 @@ constexpr auto ID_FRAMERATE_120 = 1005;
 constexpr auto ID_FRAMERATE_144 = 1006;
 constexpr auto ID_FRAMERATE_160 = 1007;
 constexpr auto ID_FRAMERATE_240 = 1008;
+
+#define ID_LIGHT_CONTROL 2000
+
 
 LARGE_INTEGER G_Frequency;
 LARGE_INTEGER G_LastFPSUpdateTime;
@@ -81,10 +86,86 @@ void UpdateDevice(HWND Hwnd);
 
 // 注意：本项目采用1单位 = 1米的比例，与UE4保持一致
 
+void UpdateLightDirection(HWND hWnd, HWND hSliderX, HWND hSliderY, HWND hSliderZ, HWND hEditX, HWND hEditY, HWND hEditZ)
+{
+    if (G_DirectionalLight)
+    {
+        float x = SendMessage(hSliderX, TBM_GETPOS, 0, 0) / 100.0f;
+        float y = SendMessage(hSliderY, TBM_GETPOS, 0, 0) / 100.0f;
+        float z = SendMessage(hSliderZ, TBM_GETPOS, 0, 0) / 100.0f;
+
+        G_DirectionalLight->Direction = V3f(x, y, z).normalized();
+
+        // 更新编辑框
+        wchar_t buffer[16];
+        swprintf_s(buffer, L"%.2f", x);
+        SetWindowText(hEditX, buffer);
+        swprintf_s(buffer, L"%.2f", y);
+        SetWindowText(hEditY, buffer);
+        swprintf_s(buffer, L"%.2f", z);
+        SetWindowText(hEditZ, buffer);
+
+        // 强制重绘主窗口
+        InvalidateRect(GetParent(hWnd), NULL, TRUE);
+    }
+}
+
+LRESULT CALLBACK LightControlProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    static HWND hSliderX, hSliderY, hSliderZ;
+    static HWND hEditX, hEditY, hEditZ;
+
+    switch (message)
+    {
+        case WM_CREATE:
+            // 创建滑动条和编辑框
+            hSliderX = CreateWindow(TRACKBAR_CLASS, L"X", WS_CHILD | WS_VISIBLE | TBS_HORZ,
+                                    10, 10, 200, 30, hWnd, (HMENU)1, GetModuleHandle(NULL), NULL);
+            hSliderY = CreateWindow(TRACKBAR_CLASS, L"Y", WS_CHILD | WS_VISIBLE | TBS_HORZ,
+                                    10, 50, 200, 30, hWnd, (HMENU)2, GetModuleHandle(NULL), NULL);
+            hSliderZ = CreateWindow(TRACKBAR_CLASS, L"Z", WS_CHILD | WS_VISIBLE | TBS_HORZ,
+                                    10, 90, 200, 30, hWnd, (HMENU)3, GetModuleHandle(NULL), NULL);
+
+            hEditX = CreateWindow(L"EDIT", L"1.0", WS_CHILD | WS_VISIBLE | ES_NUMBER,
+                                  220, 10, 50, 20, hWnd, (HMENU)4, GetModuleHandle(NULL), NULL);
+            hEditY = CreateWindow(L"EDIT", L"1.0", WS_CHILD | WS_VISIBLE | ES_NUMBER,
+                                  220, 50, 50, 20, hWnd, (HMENU)5, GetModuleHandle(NULL), NULL);
+            hEditZ = CreateWindow(L"EDIT", L"1.0", WS_CHILD | WS_VISIBLE | ES_NUMBER,
+                                  220, 90, 50, 20, hWnd, (HMENU)6, GetModuleHandle(NULL), NULL);
+
+        // 设置滑动条范围和初始值
+            SendMessage(hSliderX, TBM_SETRANGE, TRUE, MAKELPARAM(-100, 100));
+            SendMessage(hSliderY, TBM_SETRANGE, TRUE, MAKELPARAM(-100, 100));
+            SendMessage(hSliderZ, TBM_SETRANGE, TRUE, MAKELPARAM(-100, 100));
+            SendMessage(hSliderX, TBM_SETPOS, TRUE, 100);
+            SendMessage(hSliderY, TBM_SETPOS, TRUE, 100);
+            SendMessage(hSliderZ, TBM_SETPOS, TRUE, 100);
+            break;
+
+        case WM_HSCROLL: if ((HWND)lParam == hSliderX || (HWND)lParam == hSliderY || (HWND)lParam == hSliderZ)
+            {
+                UpdateLightDirection(hWnd, hSliderX, hSliderY, hSliderZ, hEditX, hEditY, hEditZ);
+            }
+            break;
+
+        case WM_CLOSE: DestroyWindow(hWnd);
+            break;
+
+        default: return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
     Logger::GetInstance().SetLogLevel(Logger::ELogLevel::Debug);
     Logger::GetInstance().SetLogFile("debug_log.txt");
+
+    WNDCLASS wcLightControl = {};
+    wcLightControl.lpfnWndProc = LightControlProc;
+    wcLightControl.hInstance = hInstance;
+    wcLightControl.lpszClassName = L"LightControlClass";
+    RegisterClass(&wcLightControl);
 
     // 注册窗口类
     constexpr wchar_t CLASS_NAME[] = L"Soft Renderer Window Class";
@@ -111,6 +192,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     AppendMenu(hSubMenu, MF_STRING, ID_FRAMERATE_240, L"240 FPS");
 
     AppendMenu(hMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(hSubMenu), L"Frame Rate");
+
+    AppendMenu(hMenu, MF_STRING, ID_LIGHT_CONTROL, L"Light Control");
 
     RECT rc = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, true);
@@ -158,7 +241,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
     G_RenderPipeline = new RenderPipeline(DefaultStandardVertexShader, DefaultFragmentShader);
     G_NormalRenderPipeline = new NormalRenderPipeline(DefaultNormalVertexShader, DefaultSimpleLitFragmentShader);
     // 创建Render实例
-    G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT); 
+    G_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
     // 创建Scene实例
     G_Scene = new Scene();
 
@@ -346,6 +429,43 @@ LRESULT CALLBACK WindowProc(HWND Hwnd, UINT UMsg, WPARAM WParam, LPARAM LParam)
                     break;
                 case ID_FRAMERATE_240: G_FrameRateLimit = 240;
                     break;
+                case ID_LIGHT_CONTROL:
+                {
+                    HWND hLightControlWnd = CreateWindowEx(
+                        0,
+                        L"LightControlClass",
+                        L"Light Control",
+                        WS_OVERLAPPEDWINDOW,
+                        CW_USEDEFAULT, CW_USEDEFAULT, 300, 200,
+                        Hwnd, NULL, GetModuleHandle(NULL), NULL);
+
+                    if (hLightControlWnd)
+                    {
+                        ShowWindow(hLightControlWnd, SW_SHOW);
+                        UpdateWindow(hLightControlWnd);
+                        // 添加调试输出
+                        OutputDebugString(L"Light Control window created and shown\n");
+                    }
+                    else
+                    {
+                        // 如果窗口创建失败，获取错误信息
+                        DWORD error = GetLastError();
+                        LPVOID lpMsgBuf;
+                        FormatMessage(
+                            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                            FORMAT_MESSAGE_FROM_SYSTEM |
+                            FORMAT_MESSAGE_IGNORE_INSERTS,
+                            NULL,
+                            error,
+                            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                            (LPTSTR)&lpMsgBuf,
+                            0, NULL);
+                        // 输出错误信息
+                        OutputDebugString((LPTSTR)lpMsgBuf);
+                        LocalFree(lpMsgBuf);
+                    }
+                    return 0;
+                }
             }
             return 0;
         }
