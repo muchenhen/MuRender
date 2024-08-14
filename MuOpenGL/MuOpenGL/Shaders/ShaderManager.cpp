@@ -29,8 +29,8 @@ std::string ShaderManager::LoadShaderSource(const char* filePath)
 
 unsigned int ShaderManager::BuildShader(int type)
 {
-    unsigned int shader = glCreateShader(type);
-    GLenum error = glGetError();
+    const unsigned int shader = glCreateShader(type);
+    const GLenum error = glGetError();
     if (error != GL_NO_ERROR)
     {
         std::cerr << "OpenGL error: " << error << '\n';
@@ -44,7 +44,7 @@ unsigned int ShaderManager::BuildShader(int type)
     {
         shaderSourcePath = EXECUTABLE_PATH / SHADER_PATH / FRAGMENT_SHADER_FILE;
     }
-    std::string vertexShaderSource = ShaderManager::LoadShaderSource(shaderSourcePath.string().c_str());
+    const std::string vertexShaderSource = ShaderManager::LoadShaderSource(shaderSourcePath.string().c_str());
     const char* vertexShaderSourceCStr = vertexShaderSource.c_str();
     glShaderSource(shader, 1, &vertexShaderSourceCStr, nullptr);
     glCompileShader(shader);
@@ -58,4 +58,25 @@ unsigned int ShaderManager::BuildShader(int type)
         std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << '\n';
     }
     return shader;
+}
+
+unsigned int ShaderManager::BuildShaderProgram(unsigned int vertexShader, unsigned int fragmentShader)
+{
+    // 着色程序
+    const unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    // 检查链接错误
+    int success;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        char infoLog[512];
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        std::cerr << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << '\n';
+    }
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    return shaderProgram;
 }
