@@ -1,32 +1,17 @@
-﻿#include "Window.h"
+﻿#include <filesystem>
+
+#include "Window.h"
 #include <iostream>
+
+#include "Shaders/ShaderManager.h"
 
 constexpr unsigned int SCR_WIDTH = 800;
 constexpr unsigned int SCR_HEIGHT = 600;
 
-// 顶点着色器源码
-const char* g_vertex_shader_source = R"(
-    #version 330 core
-    layout (location = 0) in vec3 aPos;
-    void main()
-    {
-        gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    }
-)";
-
-// 片段着色器源码
-const char* g_fragment_shader_source = R"(
-    #version 330 core
-    out vec4 FragColor;
-    void main()
-    {
-        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-    }
-)";
-
-
-int main()
+int main(int argc, char* argv[])
 {
+    std::filesystem::path executablePath = std::filesystem::current_path();
+
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
     // 创建绑定着色程序
@@ -37,7 +22,10 @@ int main()
     {
         std::cerr << "OpenGL error: " << error << '\n';
     }
-    glShaderSource(vertexShader, 1, &g_vertex_shader_source, nullptr);
+    auto vertexShaderSourcePath = executablePath / "Shaders" / "VertexShader.glsl";
+    std::string vertexShaderSource = ShaderManager::LoadShaderSource(vertexShaderSourcePath.string().c_str());
+    const char* vertexShaderSourceCStr = vertexShaderSource.c_str();
+    glShaderSource(vertexShader, 1, &vertexShaderSourceCStr, nullptr);
     glCompileShader(vertexShader);
     // 检查编译错误
     int success;
@@ -48,9 +36,13 @@ int main()
         glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
         std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << '\n';
     }
+
     // 片段着色器
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &g_fragment_shader_source, nullptr);
+    auto fragmentShaderSourcePath = executablePath / "Shaders" / "FragmentShader.glsl";
+    std::string fragmentShaderSource = ShaderManager::LoadShaderSource(fragmentShaderSourcePath.string().c_str());
+    const char* fragmentShaderSourceCStr = fragmentShaderSource.c_str();
+    glShaderSource(fragmentShader, 1, &fragmentShaderSourceCStr, nullptr);
     glCompileShader(fragmentShader);
     // 检查编译错误
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
