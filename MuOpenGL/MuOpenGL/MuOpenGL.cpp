@@ -4,60 +4,21 @@
 #include <iostream>
 
 #include "Shaders/ShaderManager.h"
-
-constexpr unsigned int SCR_WIDTH = 800;
-constexpr unsigned int SCR_HEIGHT = 600;
+#include "Constants.h"
 
 int main(int argc, char* argv[])
 {
-    std::filesystem::path executablePath = std::filesystem::current_path();
-
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
-    // 创建绑定着色程序
-    // 顶点着色器
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR)
-    {
-        std::cerr << "OpenGL error: " << error << '\n';
-    }
-    auto vertexShaderSourcePath = executablePath / "Shaders" / "VertexShader.glsl";
-    std::string vertexShaderSource = ShaderManager::LoadShaderSource(vertexShaderSourcePath.string().c_str());
-    const char* vertexShaderSourceCStr = vertexShaderSource.c_str();
-    glShaderSource(vertexShader, 1, &vertexShaderSourceCStr, nullptr);
-    glCompileShader(vertexShader);
-    // 检查编译错误
-    int success;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << '\n';
-    }
-
-    // 片段着色器
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    auto fragmentShaderSourcePath = executablePath / "Shaders" / "FragmentShader.glsl";
-    std::string fragmentShaderSource = ShaderManager::LoadShaderSource(fragmentShaderSourcePath.string().c_str());
-    const char* fragmentShaderSourceCStr = fragmentShaderSource.c_str();
-    glShaderSource(fragmentShader, 1, &fragmentShaderSourceCStr, nullptr);
-    glCompileShader(fragmentShader);
-    // 检查编译错误
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << '\n';
-    }
+    auto vertexShader = ShaderManager::BuildShader(GL_VERTEX_SHADER);
+    auto fragmentShader = ShaderManager::BuildShader(GL_FRAGMENT_SHADER);
     // 着色程序
     unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
     // 检查链接错误
+    int success;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success)
     {

@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Contansts.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="MuOpenGL.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -140,6 +141,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shaders\ShaderManager.h" />
     <ClInclude Include="Window.h" />
