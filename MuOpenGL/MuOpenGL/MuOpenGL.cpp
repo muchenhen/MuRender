@@ -11,26 +11,34 @@ int main(int argc, char* argv[])
     const auto fragmentShader = ShaderManager::BuildShader(GL_FRAGMENT_SHADER);
     const auto shaderProgram = ShaderManager::BuildShaderProgram(vertexShader, fragmentShader);
 
-    // 顶点数据
-    constexpr float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+    // 设置顶点数据
+    float vertices[] = {
+        0.5f, 0.5f, 0.0f,   // 右上角
+        0.5f, -0.5f, 0.0f,  // 右下角
+        -0.5f, -0.5f, 0.0f, // 左下角
+        -0.5f, 0.5f, 0.0f   // 左上角
     };
-    // 顶点缓冲对象
-    unsigned int vbo, vao;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    // 绑定VAO
-    glBindVertexArray(vao);
-    // 绑定VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    unsigned int indices[] = {
+        0, 1, 3, // 第一个三角形
+        1, 2, 3  // 第二个三角形
+    };
+
+    unsigned int VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // 设置顶点属性指针
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(nullptr));
     glEnableVertexAttribArray(0);
 
-    // 渲染循环
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -43,15 +51,13 @@ int main(int argc, char* argv[])
 
         // 绘制三角形
         glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         window.SwapBuffersAndPollEvents();
     }
 
     // 清理
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
     glDeleteProgram(shaderProgram);
 
     window.Terminate();
