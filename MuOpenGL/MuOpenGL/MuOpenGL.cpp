@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
     Shader shader(VERTEX_SHADER_PATH.c_str(), FRAGMENT_SHADER_PATH.c_str());
-    shader.Use();
 
     // 设置顶点数据
     float vertices[] = {
@@ -47,21 +46,28 @@ int main(int argc, char* argv[])
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    unsigned int texture;
+    unsigned int texture1;
     int width = 0;
     int height = 0;
     int nrChannels = 0;
-    Texture::BuildTexture("NagisaKaworu.bmp", texture, width, height, nrChannels);
+    Texture::BuildTexture("NagisaKaworu.bmp", texture1, width, height, nrChannels);
 
     window.SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+    shader.Use();
+    glUniform1i(glGetUniformLocation(shader.ID, "texture"), 0);
+    
+    
     while (!window.ShouldClose())
     {
+        // 处理输入
         window.ProcessInput();
-
+        // 渲染
         window.Clear();
 
+        // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, texture1);
         
         // 绘制三角形
         shader.Use();

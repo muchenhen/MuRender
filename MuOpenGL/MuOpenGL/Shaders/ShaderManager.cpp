@@ -49,7 +49,7 @@ unsigned int ShaderManager::BuildShader(int type, const char* fileName)
     {
         char infoLog[512];
         glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << '\n';
+        std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << '\n';
     }
     return shader;
 }
