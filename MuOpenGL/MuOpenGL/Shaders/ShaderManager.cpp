@@ -27,7 +27,7 @@ std::string ShaderManager::LoadShaderSource(const char* filePath)
     return shaderCode;
 }
 
-unsigned int ShaderManager::BuildShader(int type)
+unsigned int ShaderManager::BuildShader(int type, const char* fileName)
 {
     const unsigned int shader = glCreateShader(type);
     const GLenum error = glGetError();
@@ -35,15 +35,9 @@ unsigned int ShaderManager::BuildShader(int type)
     {
         std::cerr << "OpenGL error: " << error << '\n';
     }
-    std::filesystem::path shaderSourcePath;
-    if (type == GL_VERTEX_SHADER)
-    {
-        shaderSourcePath = EXECUTABLE_PATH / SHADER_PATH / VERTEX_SHADER_FILE;
-    }
-    else
-    {
-        shaderSourcePath = EXECUTABLE_PATH / SHADER_PATH / FRAGMENT_SHADER_FILE;
-    }
+
+    std::filesystem::path shaderSourcePath = EXECUTABLE_PATH / SHADER_PATH / fileName;
+
     const std::string vertexShaderSource = ShaderManager::LoadShaderSource(shaderSourcePath.string().c_str());
     const char* vertexShaderSourceCStr = vertexShaderSource.c_str();
     glShaderSource(shader, 1, &vertexShaderSourceCStr, nullptr);
