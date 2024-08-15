@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 class Shader
 {
@@ -12,4 +13,5 @@ public:
     void SetBool(const char* name, bool value) const;
     void SetInt(const char* name, int value) const;
     void SetFloat(const char* name, float value) const;
+    void SetMat4(const char* name, glm::mat4 value) const;
 };

@@ -1,5 +1,8 @@
 ﻿#include "Shader.h"
 
+#include <iostream>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "Constants.h"
 #include "Shaders/ShaderManager.h"
 
@@ -27,4 +30,15 @@ void Shader::SetInt(const char* name, int value) const
 
 void Shader::SetFloat(const char* name, float value) const
 {
+}
+
+void Shader::SetMat4(const char* name, glm::mat4 value) const
+{
+    GLint location = glGetUniformLocation(ID, name);
+    if (location == -1)
+    {
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << '\n';
+        return;
+    }
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
