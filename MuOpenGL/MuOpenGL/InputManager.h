@@ -17,7 +17,7 @@ public:
 
 public:
     void Initialize(GLFWwindow* windows);
-    void ProcessInput();
+    void ProcessInput(double deltaTime);
     void MouseCallback(double xpos, double ypos);
     void ScrollCallback(double yoffset);
     

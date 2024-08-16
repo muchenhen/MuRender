@@ -16,6 +16,7 @@ public:
 
     void Draw(const Shader& shader) const;
 
+    static Mesh CreateCube();
 private:
     unsigned int VAO, VBO, EBO;
     size_t indexCount;
