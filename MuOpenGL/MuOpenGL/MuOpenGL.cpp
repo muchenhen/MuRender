@@ -4,47 +4,24 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Camera.h"
+#include "InputManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
-#include "Camera.h"
-
-Camera camera(glm::vec3(3.0f, 3.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
-}
+#define SAFE_DELETE(p) if (p) { delete p; p = nullptr; }
 
 int main(int argc, char* argv[])
 {
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
-    window.SetMouseCallback(mouse_callback);
-    window.SetScrollCallback(scroll_callback);
+
+    Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+    InputManager& inputManager = InputManager::GetInstance();
+    inputManager.Initialize(window.GetWindow());
+    inputManager.SetCamera(camera);
 
     Shader shader(VERTEX_SHADER_PATH.c_str(), FRAGMENT_SHADER_PATH.c_str());
 
@@ -92,7 +69,6 @@ int main(int argc, char* argv[])
 
     Texture::BuildTexture("NagisaKaworu.bmp", texture1);
 
-    window.SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
     glm::mat4 view = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
@@ -103,6 +79,8 @@ int main(int argc, char* argv[])
 
     float lastFrame = 0.0f;
 
+    window.SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    
     while (!window.ShouldClose())
     {
         constexpr float rotationSpeed = 50.0f;
@@ -111,21 +89,21 @@ int main(int argc, char* argv[])
         lastFrame = currentFrame;
 
         // 处理输入
-        window.ProcessInput();
+        inputManager.ProcessInput();
 
         // 相机控制
-        if (glfwGetKey(window.GetWindow(), GLFW_KEY_W) == GLFW_PRESS) camera.ProcessKeyboard(FORWARD, deltaTime);
-        if (glfwGetKey(window.GetWindow(), GLFW_KEY_S) == GLFW_PRESS) camera.ProcessKeyboard(BACKWARD, deltaTime);
-        if (glfwGetKey(window.GetWindow(), GLFW_KEY_A) == GLFW_PRESS) camera.ProcessKeyboard(LEFT, deltaTime);
-        if (glfwGetKey(window.GetWindow(), GLFW_KEY_D) == GLFW_PRESS) camera.ProcessKeyboard(RIGHT, deltaTime);
+        if (glfwGetKey(window.GetWindow(), GLFW_KEY_W) == GLFW_PRESS) camera->ProcessKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window.GetWindow(), GLFW_KEY_S) == GLFW_PRESS) camera->ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window.GetWindow(), GLFW_KEY_A) == GLFW_PRESS) camera->ProcessKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window.GetWindow(), GLFW_KEY_D) == GLFW_PRESS) camera->ProcessKeyboard(RIGHT, deltaTime);
 
         // 渲染
         window.Clear();
 
         // 更新模型矩阵以实现旋转
         glm::mat4 model = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
-        view = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera->GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
+        view = camera->GetViewMatrix();
 
         shader.Use();
         shader.SetMat4("model", model);
@@ -146,6 +124,8 @@ int main(int argc, char* argv[])
     glDeleteProgram(shader.ID);
 
     window.Terminate();
+
+    SAFE_DELETE(camera);
 
     return 0;
 }

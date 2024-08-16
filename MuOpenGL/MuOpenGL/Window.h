@@ -14,7 +14,6 @@ public:
     void Clear();
     void SetClearColor(float r, float g, float b, float a);
     bool ShouldClose();
-    void ProcessInput();
     void SwapBuffersAndPollEvents();
     void Terminate();
 

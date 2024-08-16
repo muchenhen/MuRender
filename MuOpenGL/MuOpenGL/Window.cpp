@@ -76,14 +76,6 @@ bool Window::ShouldClose()
     return glfwWindowShouldClose(m_window);
 }
 
-void Window::ProcessInput()
-{
-    if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(m_window, true);
-    }
-}
-
 void Window::SwapBuffersAndPollEvents()
 {
     glfwSwapBuffers(m_window);

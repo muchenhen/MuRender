@@ -136,9 +136,11 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Contansts.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MuOpenGL.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shaders\ShaderManager.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -147,8 +149,10 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shaders\ShaderManager.h" />
     <ClInclude Include="stb_image.h" />
