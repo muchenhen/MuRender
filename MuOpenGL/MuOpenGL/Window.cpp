@@ -52,6 +52,11 @@ Window::~Window()
     glfwTerminate();
 }
 
+GLFWwindow* Window::GetWindow()
+{
+    return m_window;
+}
+
 void Window::Clear()
 {
     glClearColor(m_clearColor[0], m_clearColor[1], m_clearColor[2], m_clearColor[3]);
@@ -88,6 +93,16 @@ void Window::SwapBuffersAndPollEvents()
 void Window::Terminate()
 {
     glfwTerminate();
+}
+
+void Window::SetMouseCallback(GLFWcursorposfun callback)
+{
+    glfwSetCursorPosCallback(m_window, callback);
+}
+
+void Window::SetScrollCallback(GLFWscrollfun callback)
+{
+    glfwSetScrollCallback(m_window, callback);
 }
 
 // 帧缓冲区大小回调函数

@@ -12,8 +12,11 @@
 namespace fs = std::filesystem;
 
 
-void Texture::BuildTexture(const char* fileName, unsigned int& textureID, int& width, int& height, int& nrChannels)
+void Texture::BuildTexture(const char* fileName, unsigned int& textureID)
 {
+    int width = 0;
+    int height = 0;
+    int nrChannels = 0;
     stbi_set_flip_vertically_on_load(true);
     fs::path executablePath = EXECUTABLE_PATH;
     fs::path newPath = executablePath.parent_path().parent_path();

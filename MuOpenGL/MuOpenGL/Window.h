@@ -8,6 +8,9 @@ class Window
 public:
     Window(int width, int height, const char* title);
     ~Window();
+
+    GLFWwindow* GetWindow();
+    
     void Clear();
     void SetClearColor(float r, float g, float b, float a);
     bool ShouldClose();
@@ -15,6 +18,9 @@ public:
     void SwapBuffersAndPollEvents();
     void Terminate();
 
+    void SetMouseCallback(GLFWcursorposfun callback);
+    void SetScrollCallback(GLFWscrollfun callback);
+    
 private:
     GLFWwindow* m_window;
 
