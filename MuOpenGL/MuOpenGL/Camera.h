@@ -14,7 +14,7 @@ enum Camera_Movement {
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 2.5f;
-const float SENSITIVITY = 0.1f;
+const float SENSITIVITY = 0.01f;
 const float ZOOM = 45.0f;
 
 class Camera {
@@ -26,20 +26,26 @@ public:
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
     void ProcessMouseScroll(float yoffset);
 
-    float GetZoom() { return Zoom; }
+    void LookAt(glm::vec3 target);
+
+    float GetZoom() { return m_zoom; }
 
 private:
-    glm::vec3 Position;
-    glm::vec3 Front;
-    glm::vec3 Up;
-    glm::vec3 Right;
-    glm::vec3 WorldUp;
-    
-    float Yaw;
-    float Pitch;
-    float MovementSpeed;
-    float MouseSensitivity;
-    float Zoom;
+    glm::vec3 m_position;
+    glm::vec3 m_front;
+    glm::vec3 m_up;
+    glm::vec3 m_right;
+    glm::vec3 m_worldUp;
 
-    void updateCameraVectors();
+    glm::vec3 m_target;
+    
+    float m_yaw;
+    float m_pitch;
+    float m_movementSpeed;
+    float m_mouseSensitivity;
+    float m_zoom;
+
+    
+
+    void UpdateCameraVectors();
 };
