@@ -19,11 +19,6 @@ void InputManager::ProcessInput(double deltaTime)
     {
         glfwSetWindowShouldClose(m_window, true);
     }
-
-    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) m_activeCamera->ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS) m_activeCamera->ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS) m_activeCamera->ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS) m_activeCamera->ProcessKeyboard(RIGHT, deltaTime);
 }
 
 void InputManager::MouseCallback(double xpos, double ypos)
@@ -46,7 +41,6 @@ void InputManager::MouseCallback(double xpos, double ypos)
 
 void InputManager::ScrollCallback(double yoffset)
 {
-    m_activeCamera->ProcessMouseScroll(yoffset);
 }
 
 void InputManager::SetCamera(Camera* camera)

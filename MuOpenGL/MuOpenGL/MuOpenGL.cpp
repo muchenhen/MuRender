@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
     Camera* camera = new Camera(glm::vec3(3.0f, 3.0f, 3.0f));
-    camera->LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+    camera->SetTarget(glm::vec3(0.0f, 0.0f, 0.0f));
 
     InputManager& inputManager = InputManager::GetInstance();
     inputManager.Initialize(window.GetWindow());
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 
         // 更新模型矩阵以实现旋转
         glm::mat4 model = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(camera->GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera->GetFOV()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
         view = camera->GetViewMatrix();
 
         shader.Use();
