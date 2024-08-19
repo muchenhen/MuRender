@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Constants.h"
-#include "Shaders/ShaderManager.h"
+#include "ShaderManager.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 {
@@ -19,17 +19,37 @@ void Shader::Use() const
     glUseProgram(ID);
 }
 
-// TODO:
 void Shader::SetBool(const char* name, bool value) const
 {
+    GLint location = glGetUniformLocation(ID, name);
+    if (location == -1)
+    {
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << '\n';
+        return;
+    }
+    glUniform1i(location, static_cast<int>(value));
 }
 
 void Shader::SetInt(const char* name, int value) const
 {
+    GLint location = glGetUniformLocation(ID, name);
+    if (location == -1)
+    {
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << '\n';
+        return;
+    }
+    glUniform1i(location, value);
 }
 
 void Shader::SetFloat(const char* name, float value) const
 {
+    GLint location = glGetUniformLocation(ID, name);
+    if (location == -1)
+    {
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << '\n';
+        return;
+    }
+    glUniform1f(location, value);
 }
 
 void Shader::SetMat4(const char* name, glm::mat4 value) const

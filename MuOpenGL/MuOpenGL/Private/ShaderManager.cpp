@@ -1,5 +1,5 @@
 ﻿#include "ShaderManager.h"
-#include "..\Constants.h"
+#include "Constants.h"
 
 #include <fstream>
 #include <iostream>
