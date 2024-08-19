@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
     window.Terminate();
 
-    SAFE_DELETE(camera);
+    SAFE_DELETE(camera)
 
     return 0;
 }

@@ -5,29 +5,23 @@
 
 class InputManager
 {
-public:
-    static InputManager& GetInstance()
-    {
-        static InputManager instance;
-        return instance;
-    }
-
-    InputManager(InputManager const&) = delete;
-    void operator=(InputManager const&) = delete;
-
-public:
-    void Initialize(GLFWwindow* windows);
-    void ProcessInput(double deltaTime);
-    void MouseCallback(double xpos, double ypos);
-    void ScrollCallback(double yoffset);
-    
-    void SetCamera(Camera* camera);
-
 private:
     InputManager();
+    ~InputManager() = default;
 
     GLFWwindow* m_window;
     bool m_firstMouse;
-    float m_lastX, m_lastY;
+    double m_lastX, m_lastY;
     Camera* m_activeCamera;
+
+public:
+    static InputManager& GetInstance();
+
+public:
+    void Initialize(GLFWwindow* windows);
+    void ProcessInput(double deltaTime) const;
+    void MouseCallback(double xPos, double yPos);
+    void ScrollCallback(double yOffset) const;
+
+    void SetCamera(Camera* camera);
 };

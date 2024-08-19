@@ -1,19 +1,27 @@
 ﻿#include "InputManager.h"
 
+InputManager::InputManager() = default;
+
+InputManager& InputManager::GetInstance()
+{
+    static InputManager instance;
+    return instance;
+}
+
 void InputManager::Initialize(GLFWwindow* windows)
 {
     m_window = windows;
-    glfwSetCursorPosCallback(m_window, [](GLFWwindow*, double xpos, double ypos)
+    glfwSetCursorPosCallback(m_window, [](GLFWwindow*, double xPos, double yPos)
     {
-        GetInstance().MouseCallback(xpos, ypos);
+        GetInstance().MouseCallback(xPos, yPos);
     });
-    glfwSetScrollCallback(m_window, [](GLFWwindow*, double, double yoffset)
+    glfwSetScrollCallback(m_window, [](GLFWwindow*, double, double yOffset)
     {
-        GetInstance().ScrollCallback(yoffset);
+        GetInstance().ScrollCallback(yOffset);
     });
 }
 
-void InputManager::ProcessInput(double deltaTime)
+void InputManager::ProcessInput(double deltaTime) const
 {
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -21,33 +29,29 @@ void InputManager::ProcessInput(double deltaTime)
     }
 }
 
-void InputManager::MouseCallback(double xpos, double ypos)
+void InputManager::MouseCallback(double xPos, double yPos)
 {
     if (m_firstMouse)
     {
-        m_lastX = xpos;
-        m_lastY = ypos;
+        m_lastX = xPos;
+        m_lastY = yPos;
         m_firstMouse = false;
     }
 
-    float xoffset = xpos - m_lastX;
-    float yoffset = m_lastY - ypos;
+    const float xOffset = static_cast<float>(xPos - m_lastX);
+    const float yOffset = static_cast<float>(m_lastY - yPos);
 
-    m_lastX = xpos;
-    m_lastY = ypos;
+    m_lastX = xPos;
+    m_lastY = yPos;
 
-    m_activeCamera->ProcessMouseMovement(xoffset, yoffset);
+    m_activeCamera->ProcessMouseMovement(xOffset, yOffset);
 }
 
-void InputManager::ScrollCallback(double yoffset)
+void InputManager::ScrollCallback(double yOffset) const
 {
 }
 
 void InputManager::SetCamera(Camera* camera)
 {
     m_activeCamera = camera;
-}
-
-InputManager::InputManager()
-{
 }
