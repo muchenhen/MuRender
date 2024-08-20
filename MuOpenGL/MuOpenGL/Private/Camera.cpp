@@ -1,11 +1,8 @@
 ﻿#include "Camera.h"
 #include <algorithm>
 
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 2.5f;
-const float SENSITIVITY = 0.1f;
-const float FOV = 45.0f;
+#include "Constants.h"
+
 
 void Camera::UpdateCameraVectors()
 {
@@ -13,9 +10,9 @@ void Camera::UpdateCameraVectors()
     front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     front.y = sin(glm::radians(m_pitch));
     front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-    m_front = glm::normalize(front);
-    m_right = glm::normalize(glm::cross(m_front, m_worldUp));
-    m_up = glm::normalize(glm::cross(m_right, m_front));
+    m_front = normalize(front);
+    m_right = normalize(cross(m_front, m_worldUp));
+    m_up = normalize(cross(m_right, m_front));
 }
 
 Camera::Camera(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) :
@@ -27,7 +24,7 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& target, const glm::ve
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-    return glm::lookAt(m_position, m_position + m_front, m_up);
+    return lookAt(m_position, m_position + m_front, m_up);
 }
 
 glm::vec3 Camera::GetPosition() const
@@ -63,9 +60,9 @@ void Camera::SetPosition(const glm::vec3& position)
 
 void Camera::SetTarget(const glm::vec3& target)
 {
-    m_front = glm::normalize(target - m_position);
-    m_right = glm::normalize(glm::cross(m_front, m_worldUp));
-    m_up = glm::normalize(glm::cross(m_right, m_front));
+    m_front = normalize(target - m_position);
+    m_right = normalize(cross(m_front, m_worldUp));
+    m_up = normalize(cross(m_right, m_front));
 
     m_yaw = glm::degrees(std::atan2(m_front.z, m_front.x));
     m_pitch = glm::degrees(std::asin(m_front.y));
