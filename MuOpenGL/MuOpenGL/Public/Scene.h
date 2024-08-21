@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Mesh.h"
+#include "MeshObject.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -14,7 +14,7 @@ public:
     Camera& GetCamera();
 
 private:
-    std::vector<Mesh> objects;
+    std::vector<MeshObject> objects;
     Camera camera;
     unsigned int texture;
 };

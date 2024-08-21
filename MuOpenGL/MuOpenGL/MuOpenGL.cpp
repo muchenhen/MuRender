@@ -1,7 +1,7 @@
 ﻿#include "Window.h"
 
 #include "Constants.h"
-#include "Mesh.h"
+#include "MeshObject.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 {
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
+    Shader shader(VERTEX_SHADER_PATH.c_str(), FRAGMENT_SHADER_PATH.c_str());
+
     Camera* camera = new Camera();
     camera->SetPosition(glm::vec3(3.0f, 3.0f, 3.0f));
     camera->SetTarget(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -27,9 +29,8 @@ int main(int argc, char* argv[])
     inputManager.Initialize(window.GetWindow());
     inputManager.SetCamera(camera);
 
-    Shader shader(VERTEX_SHADER_PATH.c_str(), FRAGMENT_SHADER_PATH.c_str());
-
-    Mesh cube = Mesh::CreateCube();
+    MeshObject* cube = MeshObject::CreateCube("Cube");
+    cube->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 
     unsigned int texture1;
     Texture::BuildTexture("NagisaKaworu.bmp", texture1);
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
         glBindTexture(GL_TEXTURE_2D, texture1);
 
         // 绘制三角形
-        cube.Draw(shader);
+        cube->Draw(shader);
 
         window.SwapBuffersAndPollEvents();
     }

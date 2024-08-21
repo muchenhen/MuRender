@@ -356,7 +356,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Private\Mesh.cpp">
+    <ClCompile Include="Private\MeshObject.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -1027,7 +1027,7 @@
     <ClInclude Include="Public\Camera.h" />
     <ClInclude Include="Public\Constants.h" />
     <ClInclude Include="Public\InputManager.h" />
-    <ClInclude Include="Public\Mesh.h" />
+    <ClInclude Include="Public\MeshObject.h" />
     <ClInclude Include="Public\Object.h" />
     <ClInclude Include="Public\Renderer.h" />
     <ClInclude Include="Public\Scene.h" />

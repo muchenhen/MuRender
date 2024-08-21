@@ -1,19 +1,18 @@
-﻿#include "Mesh.h"
+﻿#include "MeshObject.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
+void MeshObject::SetupMesh()
 {
-    indexCount = indices.size();
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &m_vao);
+    glGenBuffers(1, &m_vbo);
+    glGenBuffers(1, &m_ebo);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(m_vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<long long>(vertices.size() * sizeof(Vertex)), vertices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<long long>(m_vertexCount * sizeof(Vertex)), m_vertices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long long>(indices.size() * sizeof(unsigned int)), indices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long long>(m_indexCount * sizeof(unsigned int)), m_indices.data(), GL_STATIC_DRAW);
 
     // 顶点位置
     glEnableVertexAttribArray(0);
@@ -28,22 +27,40 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
     glBindVertexArray(0);
 }
 
-Mesh::~Mesh()
+MeshObject::MeshObject(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) :
+    Object(name),
+    m_vertices(vertices), m_indices(indices),
+    m_vao(0),
+    m_vbo(0),
+    m_ebo(0)
 {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    m_vertexCount = m_vertices.size();
+    m_indexCount = m_indices.size();
+
+    SetupMesh();
 }
 
-void Mesh::Draw(const Shader& shader) const
+MeshObject::~MeshObject()
+{
+    glDeleteVertexArrays(1, &m_vao);
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ebo);
+}
+
+void MeshObject::Draw(const Shader& shader) const
 {
     shader.Use();
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indexCount), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }
 
-Mesh Mesh::CreateCube()
+void MeshObject::Update(float deltaTime)
+{
+    Object::Update(deltaTime);
+}
+
+MeshObject* MeshObject::CreateCube(const std::string& name)
 {
     std::vector<Vertex> vertices = {
         // 前面
@@ -83,5 +100,5 @@ Mesh Mesh::CreateCube()
         12, 13, 14, 14, 15, 12
     };
 
-    return {vertices, indices};
+    return new MeshObject(name, vertices, indices);
 }
