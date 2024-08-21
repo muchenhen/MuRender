@@ -15,21 +15,21 @@ void Camera::UpdateCameraVectors()
     m_up = normalize(cross(m_right, m_front));
 }
 
-Camera::Camera(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) :
-    m_position(position), m_worldUp(up), m_yaw(YAW), m_pitch(PITCH), m_roll(0.0f),
-    m_fov(FOV), m_movementSpeed(SPEED), m_mouseSensitivity(SENSITIVITY)
+Camera::Camera(const std::string& name, const glm::vec3& position, const glm::vec3& target, const glm::vec3& up)
 {
+    m_name = name;
+    m_position = position;
+    m_worldUp = up;
     SetTarget(target);
+
+    m_fov = 45.0f;
+    m_movementSpeed = 2.5f;
+    m_mouseSensitivity = 0.1f;
 }
 
 glm::mat4 Camera::GetViewMatrix() const
 {
     return lookAt(m_position, m_position + m_front, m_up);
-}
-
-glm::vec3 Camera::GetPosition() const
-{
-    return m_position;
 }
 
 glm::vec3 Camera::GetFront() const

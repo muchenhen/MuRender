@@ -17,8 +17,11 @@ int main(int argc, char* argv[])
 {
     Window window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL");
 
-    Camera* camera = new Camera(glm::vec3(3.0f, 3.0f, 3.0f));
+    Camera* camera = new Camera();
+    camera->SetPosition(glm::vec3(3.0f, 3.0f, 3.0f));
     camera->SetTarget(glm::vec3(0.0f, 0.0f, 0.0f));
+    camera->SetFOV(90.0f);
+    camera->SetName("Camera");
 
     InputManager& inputManager = InputManager::GetInstance();
     inputManager.Initialize(window.GetWindow());

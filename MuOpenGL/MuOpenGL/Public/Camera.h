@@ -1,12 +1,10 @@
 ﻿#pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "Object.h"
 
-class Camera
+class Camera : public Object
 {
 private:
-    glm::vec3 m_position;
     glm::vec3 m_front;
     glm::vec3 m_up;
     glm::vec3 m_right;
@@ -40,26 +38,25 @@ public:
         Roll
     };
 
-    Camera(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& target = glm::vec3(0.0f, 0.0f, -1.0f), const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
+    Camera(const std::string& name = "Camera",
+           const glm::vec3& position = glm::vec3(0.0f),
+           const glm::vec3& target = glm::vec3(0.0f, 0.0f, -1.0f),
+           const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Getters
     glm::mat4 GetViewMatrix() const;
-    glm::vec3 GetPosition() const;
     glm::vec3 GetFront() const;
     glm::vec3 GetUp() const;
     glm::vec3 GetRight() const;
     float GetFOV() const;
 
-    // Setters
-    void SetPosition(const glm::vec3& position);
     void SetTarget(const glm::vec3& target);
     void SetFOV(float fov);
 
-    // Movement
+    void SetPosition(const glm::vec3& position) override;
+    
     void Move(MovementDirection direction, float deltaTime);
     void Rotate(RotationType type, float angle);
     void Zoom(float yOffset);
 
-    // Mouse input
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
 };
