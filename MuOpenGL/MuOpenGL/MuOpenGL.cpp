@@ -32,8 +32,13 @@ int main(int argc, char* argv[])
     MeshObject* cube = MeshObject::CreateCube("Cube");
     cube->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    unsigned int texture1;
-    Texture::BuildTexture("NagisaKaworu.bmp", texture1);
+    Texture texture;
+    if (texture.Load("NagisaKaworu.bmp"))
+    {
+        // 纹理加载成功
+        texture.Bind(0); // 绑定到纹理单元 0
+        texture.Unbind();
+    }
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 100.0f);
     glm::mat4 view = translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
@@ -72,7 +77,7 @@ int main(int argc, char* argv[])
 
         // 绑定纹理
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
+        glBindTexture(GL_TEXTURE_2D, texture.GetID());
 
         // 绘制三角形
         cube->Draw(shader);
