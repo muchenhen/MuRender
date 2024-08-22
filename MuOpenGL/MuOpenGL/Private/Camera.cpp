@@ -1,48 +1,45 @@
 ﻿#include "Camera.h"
-#include <algorithm>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
-#include "Constants.h"
-
+Camera::Camera(const std::string& name, const glm::vec3& position, const glm::vec3& target, const glm::vec3& up) :
+    Object(name), m_worldUp(up), m_fov(45.0f), m_aspectRatio(1.0f), m_nearPlane(0.1f), m_farPlane(100.0f),
+    m_movementSpeed(2.5f), m_mouseSensitivity(0.1f)
+{
+    Camera::SetPosition(position);
+    SetTarget(target);
+    UpdateCameraVectors();
+}
 
 void Camera::UpdateCameraVectors()
 {
-    glm::vec3 front;
-    front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-    front.y = sin(glm::radians(m_pitch));
-    front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-    m_front = normalize(front);
-    m_right = normalize(cross(m_front, m_worldUp));
-    m_up = normalize(cross(m_right, m_front));
-}
-
-Camera::Camera(const std::string& name, const glm::vec3& position, const glm::vec3& target, const glm::vec3& up)
-{
-    m_name = name;
-    m_position = position;
-    m_worldUp = up;
-    SetTarget(target);
-
-    m_fov = 45.0f;
-    m_movementSpeed = 2.5f;
-    m_mouseSensitivity = 0.1f;
+    m_front = glm::normalize(glm::rotate(m_rotation, glm::vec3(0.0f, 0.0f, -1.0f)));
+    m_right = glm::normalize(glm::cross(m_front, m_worldUp));
+    m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-    return lookAt(m_position, m_position + m_front, m_up);
+    return glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
-glm::vec3 Camera::GetFront() const
+glm::mat4 Camera::GetProjectionMatrix() const
+{
+    return glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearPlane, m_farPlane);
+}
+
+const glm::vec3& Camera::GetFront() const
 {
     return m_front;
 }
 
-glm::vec3 Camera::GetUp() const
+const glm::vec3& Camera::GetUp() const
 {
     return m_up;
 }
 
-glm::vec3 Camera::GetRight() const
+const glm::vec3& Camera::GetRight() const
 {
     return m_right;
 }
@@ -52,25 +49,32 @@ float Camera::GetFOV() const
     return m_fov;
 }
 
-void Camera::SetPosition(const glm::vec3& position)
-{
-    m_position = position;
-    UpdateCameraVectors();
-}
-
 void Camera::SetTarget(const glm::vec3& target)
 {
-    m_front = normalize(target - m_position);
-    m_right = normalize(cross(m_front, m_worldUp));
-    m_up = normalize(cross(m_right, m_front));
-
-    m_yaw = glm::degrees(std::atan2(m_front.z, m_front.x));
-    m_pitch = glm::degrees(std::asin(m_front.y));
+    m_rotation = glm::quatLookAt(glm::normalize(target - m_position), m_worldUp);
+    UpdateCameraVectors();
 }
 
 void Camera::SetFOV(float fov)
 {
-    m_fov = std::clamp(fov, 1.0f, 90.0f);
+    m_fov = fov;
+}
+
+void Camera::SetAspectRatio(float aspectRatio)
+{
+    m_aspectRatio = aspectRatio;
+}
+
+void Camera::SetClipPlanes(float nearPlane, float farPlane)
+{
+    m_nearPlane = nearPlane;
+    m_farPlane = farPlane;
+}
+
+void Camera::SetPosition(const glm::vec3& position)
+{
+    Object::SetPosition(position);
+    UpdateCameraVectors();
 }
 
 void Camera::Move(MovementDirection direction, float deltaTime)
@@ -86,45 +90,46 @@ void Camera::Move(MovementDirection direction, float deltaTime)
             break;
         case MovementDirection::Right: m_position += m_right * velocity;
             break;
-        case MovementDirection::Up: m_position += m_up * velocity;
+        case MovementDirection::Up: m_position += m_worldUp * velocity;
             break;
-        case MovementDirection::Down: m_position -= m_up * velocity;
+        case MovementDirection::Down: m_position -= m_worldUp * velocity;
             break;
     }
 }
 
-void Camera::Rotate(RotationType type, float angle)
+void Camera::Rotate(float yaw, float pitch)
 {
-    switch (type)
-    {
-        case RotationType::Pitch: m_pitch += angle;
-            break;
-        case RotationType::Yaw: m_yaw += angle;
-            break;
-        case RotationType::Roll: m_roll += angle;
-            break;
-    }
+    glm::quat qPitch = glm::angleAxis(glm::radians(pitch), m_right);
+    glm::quat qYaw = glm::angleAxis(glm::radians(yaw), m_worldUp);
+    m_rotation = qYaw * m_rotation * qPitch;
     UpdateCameraVectors();
 }
 
 void Camera::Zoom(float yOffset)
 {
-    m_fov -= yOffset;
-    m_fov = std::clamp(m_fov, 1.0f, 90.0f);
+    if (m_fov >= 1.0f && m_fov <= 45.0f) m_fov -= yOffset;
+    if (m_fov <= 1.0f) m_fov = 1.0f;
+    if (m_fov >= 45.0f) m_fov = 45.0f;
 }
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
-    xOffset *= m_mouseSensitivity;
-    yOffset *= m_mouseSensitivity;
+    // xOffset *= m_mouseSensitivity;
+    // yOffset *= m_mouseSensitivity;
+    //
+    // Rotate(xOffset, -yOffset);
+    //
+    // if (constrainPitch)
+    // {
+    //     glm::vec3 front = glm::rotate(m_rotation, glm::vec3(0.0f, 0.0f, -1.0f));
+    //     float pitch = glm::degrees(asin(front.y));
+    //     if (pitch > 89.0f) Rotate(0.0f, 89.0f - pitch);
+    //     else if (pitch < -89.0f) Rotate(0.0f, -89.0f - pitch);
+    // }
+}
 
-    m_yaw += xOffset;
-    m_pitch += yOffset;
-
-    if (constrainPitch)
-    {
-        m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
-    }
-
+void Camera::Update(float deltaTime)
+{
+    // 如果需要，在这里添加任何每帧更新逻辑
     UpdateCameraVectors();
 }
