@@ -42,12 +42,12 @@ void Application::LoadResources()
     cube->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     m_scene.AddObject(cube);
 
-    // m_texture = std::make_shared<Texture>();
-    // if (m_texture->Load("NagisaKaworu.bmp"))
-    // {
-    //     // 纹理加载成功
-    //     cube->SetTexture(m_texture);
-    // }
+    m_texture = std::make_shared<Texture>();
+    if (m_texture->Load("NagisaKaworu.bmp"))
+    {
+        // 纹理加载成功
+        cube->SetTexture(m_texture);
+    }
 }
 
 void Application::MainLoop()

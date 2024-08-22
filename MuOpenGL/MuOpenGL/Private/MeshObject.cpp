@@ -50,9 +50,21 @@ MeshObject::~MeshObject()
 void MeshObject::Draw(const Shader& shader) const
 {
     shader.Use();
+
+    if (m_texture)
+    {
+        m_texture->Bind(0);
+        shader.SetInt("texture1", 0);
+    }
+
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indexCount), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+
+    if (m_texture)
+    {
+        m_texture->Unbind();
+    }
 }
 
 void MeshObject::Update(float deltaTime)
@@ -101,4 +113,14 @@ MeshObject* MeshObject::CreateCube(const std::string& name)
     };
 
     return new MeshObject(name, vertices, indices);
+}
+
+void MeshObject::SetTexture(const std::shared_ptr<Texture>& texture)
+{
+    m_texture = texture;
+}
+
+const std::shared_ptr<Texture>& MeshObject::GetTexture() const
+{
+    return m_texture;
 }

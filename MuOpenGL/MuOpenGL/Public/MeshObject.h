@@ -4,6 +4,7 @@
 
 #include "Object.h"
 #include "Shader.h"
+#include "Texture.h"
 
 struct Vertex
 {
@@ -21,6 +22,8 @@ private:
     size_t m_vertexCount;
     size_t m_indexCount;
 
+    std::shared_ptr<Texture> m_texture;
+
     void SetupMesh();
     
 public:
@@ -34,4 +37,7 @@ public:
     void Update(float deltaTime) override;
 
     static MeshObject* CreateCube(const std::string& name);
+
+    void SetTexture(const std::shared_ptr<Texture>& texture);
+    const std::shared_ptr<Texture>& GetTexture() const;
 };
