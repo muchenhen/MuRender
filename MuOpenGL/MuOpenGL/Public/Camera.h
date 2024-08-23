@@ -58,5 +58,5 @@ public:
 
     void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
 
-    void Update(float deltaTime) override;
+    void Update(double deltaTime) override;
 };

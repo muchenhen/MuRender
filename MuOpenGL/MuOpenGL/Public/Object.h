@@ -34,5 +34,5 @@ public:
     void Rotate(float angleDegrees, const glm::vec3& axis);
     void Scale(const glm::vec3& scale);
 
-    virtual void Update(float deltaTime);
+    virtual void Update(double deltaTime);
 };

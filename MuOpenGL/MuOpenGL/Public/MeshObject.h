@@ -34,7 +34,7 @@ public:
     ~MeshObject() override;
 
     virtual void Draw(const Shader& shader) const;
-    void Update(float deltaTime) override;
+    void Update(double deltaTime) override;
 
     static MeshObject* CreateCube(const std::string& name);
 

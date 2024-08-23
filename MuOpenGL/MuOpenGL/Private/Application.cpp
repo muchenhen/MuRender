@@ -22,9 +22,9 @@ void Application::Initialize()
     m_window.SetClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     m_camera = std::make_shared<Camera>();
-    m_camera->SetPosition(glm::vec3(3.0f, 3.0f, 3.0f));
+    m_camera->SetPosition(glm::vec3(2.0f, 2.0f, 2.0f));
     m_camera->SetTarget(glm::vec3(0.0f, 0.0f, 0.0f));
-    m_camera->SetFOV(90.0f);
+    m_camera->SetFOV(45.0f);
     m_camera->SetAspectRatio(static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT));
     m_camera->SetName("Camera");
 
@@ -34,6 +34,12 @@ void Application::Initialize()
 
     m_scene.SetCamera(m_camera);
     m_scene.SetShader(m_shader);
+
+    auto mainLight = std::make_shared<DirectionalLight>("MainLight");
+    mainLight->SetDirection(glm::vec3(-0.2f, -1.0f, -0.3f));
+    mainLight->SetColor(glm::vec3(1.0f, 0.9f, 0.8f));
+    mainLight->SetIntensity(0.8f);
+    m_scene.AddLight(mainLight);
 }
 
 void Application::LoadResources()

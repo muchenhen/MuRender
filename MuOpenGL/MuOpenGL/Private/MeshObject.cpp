@@ -67,7 +67,7 @@ void MeshObject::Draw(const Shader& shader) const
     }
 }
 
-void MeshObject::Update(float deltaTime)
+void MeshObject::Update(double deltaTime)
 {
     Object::Update(deltaTime);
 }

@@ -128,7 +128,7 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
     // }
 }
 
-void Camera::Update(float deltaTime)
+void Camera::Update(double deltaTime)
 {
     // 如果需要，在这里添加任何每帧更新逻辑
     UpdateCameraVectors();

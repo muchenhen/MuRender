@@ -85,6 +85,6 @@ void Object::Scale(const glm::vec3& scale)
     m_scale *= scale;
 }
 
-void Object::Update(float deltaTime)
+void Object::Update(double deltaTime)
 {
 }
