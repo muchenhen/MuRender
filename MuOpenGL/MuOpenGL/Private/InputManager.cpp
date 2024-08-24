@@ -27,6 +27,15 @@ void InputManager::ProcessInput(double deltaTime) const
     {
         glfwSetWindowShouldClose(m_window, true);
     }
+    // 处理左右方向键
+    if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        m_activeCamera->OrbitAroundTarget(m_orbitSpeed * static_cast<float>(deltaTime));
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        m_activeCamera->OrbitAroundTarget(-m_orbitSpeed * static_cast<float>(deltaTime));
+    }
 }
 
 void InputManager::MouseCallback(double xPos, double yPos)

@@ -20,6 +20,9 @@ private:
     float m_movementSpeed;
     float m_mouseSensitivity;
 
+    glm::vec3 m_target;
+    float m_orbitRadius;
+
     void UpdateCameraVectors();
 
 public:
@@ -45,7 +48,10 @@ public:
     const glm::vec3& GetRight() const;
     float GetFOV() const;
 
+    void OrbitAroundTarget(float angleInDegrees);
     void SetTarget(const glm::vec3& target);
+    const glm::vec3& GetTarget() const;
+
     void SetFOV(float fov);
     void SetAspectRatio(float aspectRatio);
     void SetClipPlanes(float nearPlane, float farPlane);

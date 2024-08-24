@@ -1189,7 +1189,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Shaders\FragmentShader.glsl" />
-    <Content Include="Shaders\ProjectionFS.glsl" />
+    <Content Include="Shaders\NormalFS.glsl" />
+    <Content Include="Shaders\NormalVS.glsl" />
     <Content Include="Shaders\ProjectionVS.glsl" />
     <Content Include="Shaders\TextureFS.glsl" />
     <Content Include="Shaders\TextureVS.glsl" />

@@ -49,10 +49,37 @@ float Camera::GetFOV() const
     return m_fov;
 }
 
+void Camera::OrbitAroundTarget(float angleInDegrees)
+{
+    // 将角度转换为弧度
+    float angleInRadians = glm::radians(angleInDegrees);
+
+    // 计算当前相对于目标的位置
+    glm::vec3 relativePos = m_position - m_target;
+
+    // 创建旋转矩阵
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angleInRadians, m_worldUp);
+
+    // 应用旋转
+    relativePos = glm::vec3(rotation * glm::vec4(relativePos, 1.0f));
+
+    // 更新摄像机位置
+    m_position = m_target + relativePos;
+
+    // 更新摄像机朝向
+    SetTarget(m_target);
+}
+
 void Camera::SetTarget(const glm::vec3& target)
 {
+    m_target = target;
     m_rotation = glm::quatLookAt(glm::normalize(target - m_position), m_worldUp);
     UpdateCameraVectors();
+}
+
+const glm::vec3& Camera::GetTarget() const
+{
+    return m_target;
 }
 
 void Camera::SetFOV(float fov)
@@ -114,18 +141,6 @@ void Camera::Zoom(float yOffset)
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
-    // xOffset *= m_mouseSensitivity;
-    // yOffset *= m_mouseSensitivity;
-    //
-    // Rotate(xOffset, -yOffset);
-    //
-    // if (constrainPitch)
-    // {
-    //     glm::vec3 front = glm::rotate(m_rotation, glm::vec3(0.0f, 0.0f, -1.0f));
-    //     float pitch = glm::degrees(asin(front.y));
-    //     if (pitch > 89.0f) Rotate(0.0f, 89.0f - pitch);
-    //     else if (pitch < -89.0f) Rotate(0.0f, -89.0f - pitch);
-    // }
 }
 
 void Camera::Update(double deltaTime)

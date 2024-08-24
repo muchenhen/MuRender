@@ -11,6 +11,7 @@ struct Vertex
     float position[3];
     float color[3];
     float texCoords[2];
+    float normal[3];
 };
 
 class MeshObject : public Object

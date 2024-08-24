@@ -52,6 +52,17 @@ void Shader::SetFloat(const char* name, float value) const
     glUniform1f(location, value);
 }
 
+void Shader::SetVec3(const char* name, glm::vec3 value) const
+{
+    GLint location = glGetUniformLocation(ID, name);
+    if (location == -1)
+    {
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << '\n';
+        return;
+    }
+    glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
 void Shader::SetMat4(const char* name, glm::mat4 value) const
 {
     GLint location = glGetUniformLocation(ID, name);

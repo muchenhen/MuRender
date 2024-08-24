@@ -14,6 +14,9 @@ private:
     double m_lastX, m_lastY;
     Camera* m_activeCamera;
 
+    float m_orbitSpeed = 60.0f; // 度/秒
+
+
 public:
     static InputManager& GetInstance();
 

@@ -69,12 +69,12 @@ void Scene::Render()
     m_shader->SetMat4("projection", m_camera->GetProjectionMatrix());
     m_shader->SetMat4("view", m_camera->GetViewMatrix());
 
-    // 设置光照信息
-    for (size_t i = 0; i < m_lights.size(); ++i)
+    // 设置光照信息 假设当前只有一个方向光
+    if (!m_lights.empty())
     {
-        if (m_lights[i]->IsEnabled())
-        {
-        }
+        m_shader->SetVec3("lightDir", m_lights[0]->GetDirection());
+        m_shader->SetVec3("lightColor", m_lights[0]->GetColor());
+        m_shader->SetFloat("lightIntensity", m_lights[0]->GetIntensity());
     }
 
     for (auto& object : m_objects)
