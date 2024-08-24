@@ -26,5 +26,8 @@ void main()
 
     // 合并结果
     vec3 result = (ambient + diffuse) * vec3(texture(texture1, TexCoord));
+
+    result = max(result, 0.05);
+
     FragColor = vec4(result, 1.0);
 }
