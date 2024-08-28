@@ -6,15 +6,10 @@ class PointLight : public Object
 public:
     PointLight(const std::string& name = "PointLight");
 
-    void SetColor(const glm::vec3& color) { m_color = color; }
-    void SetIntensity(float intensity) { m_intensity = intensity; }
+    void SetColor(const glm::vec3& color);
+    void SetIntensity(float intensity);
 
-    void SetAttenuation(float constant, float linear, float quadratic)
-    {
-        m_constant = constant;
-        m_linear = linear;
-        m_quadratic = quadratic;
-    }
+    void SetAttenuation(float constant, float linear, float quadratic);
 
     glm::vec3 GetColor() const;
     float GetIntensity() const;

@@ -9,6 +9,23 @@ PointLight::PointLight(const std::string& name):
 {
 }
 
+void PointLight::SetColor(const glm::vec3& color)
+{
+    m_color = color;
+}
+
+void PointLight::SetIntensity(float intensity)
+{
+    m_intensity = intensity;
+}
+
+void PointLight::SetAttenuation(float constant, float linear, float quadratic)
+{
+    m_constant = constant;
+    m_linear = linear;
+    m_quadratic = quadratic;
+}
+
 glm::vec3 PointLight::GetColor() const
 {
     return m_color;

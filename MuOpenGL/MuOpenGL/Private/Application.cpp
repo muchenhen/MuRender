@@ -2,6 +2,8 @@
 
 #include "Application.h"
 
+#include "PointLight.h"
+
 Application::Application() :
     m_window(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL"),
     m_inputManager(InputManager::GetInstance())
@@ -40,6 +42,12 @@ void Application::Initialize()
     mainLight->SetColor(glm::vec3(1.0f, 0.9f, 0.8f));
     mainLight->SetIntensity(0.8f);
     m_scene.AddLight(mainLight);
+
+    auto pointLight1 = std::make_shared<PointLight>("PointLight1");
+    pointLight1->SetPosition(glm::vec3(0.7f, 0.2f, 2.0f));
+    pointLight1->SetColor(glm::vec3(1.0f, 0.6f, 0.0f));
+    pointLight1->SetIntensity(1.0f);
+    pointLight1->SetAttenuation(1.0f, 0.09f, 0.032f);
 }
 
 void Application::LoadResources()
