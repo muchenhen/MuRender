@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 
 const int TGAFormat = 4;
@@ -12,20 +12,24 @@ class TGAImage
 {
 public:
     TGAImage(int w, int h); // bpp: Bytes Per Pixel
+    // æ‹·è´æ„é€ 
+    TGAImage(const TGAImage& other);
     ~TGAImage();
 
-    // »ù´¡²Ù×÷
-    bool set(int x, int y, const TGAColor& c); // ÉèÖÃÏñËØ
-    TGAColor get(int x, int y) const;          // »ñÈ¡ÏñËØ£¨ÓÃÓÚºóÆÚ»ìºÏ£©
+    TGAImage& operator=(const TGAImage& other);
 
-    // ºËĞÄ¹¦ÄÜ£ºĞ´ÈëÎÄ¼ş
+    // åŸºç¡€æ“ä½œ
+    bool set(int x, int y, const TGAColor& c); // è®¾ç½®åƒç´ 
+    TGAColor get(int x, int y) const;          // è·å–åƒç´ ï¼ˆç”¨äºåæœŸæ··åˆï¼‰
+
+    // æ ¸å¿ƒåŠŸèƒ½ï¼šå†™å…¥æ–‡ä»¶
     bool write_tga_file(const std::string& filename, bool flip_vertically = true);
 
-    // ¸¨Öú¹¦ÄÜ
-    void clear(); // Çå¿Õ»­²¼£¨±³¾°É«£©
+    // è¾…åŠ©åŠŸèƒ½
+    void clear(); // æ¸…ç©ºç”»å¸ƒï¼ˆèƒŒæ™¯è‰²ï¼‰
     int get_width() const;
     int get_height() const;
-    unsigned char* buffer(); // ·µ»ØÔ­Ê¼Ö¸Õë£¬·½±ã memset »ò¶àÏß³Ì²Ù×÷
+    unsigned char* buffer(); // è¿”å›åŸå§‹æŒ‡é’ˆï¼Œæ–¹ä¾¿ memset æˆ–å¤šçº¿ç¨‹æ“ä½œ
 
 private:
     int width;

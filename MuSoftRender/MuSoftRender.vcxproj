@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Math\Math.cpp" />
     <ClCompile Include="MuSoftRender.cpp" />
     <ClCompile Include="Render\TGAImage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Math\Math.h" />
     <ClInclude Include="Render\TGAImage.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

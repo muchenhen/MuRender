@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="MuSoftRender.vcxproj" />
+  <Project Path="MuSoftRender.vcxproj" Id="7c87e91e-e4a1-47cd-8bf3-4356cc472b91" />
 </Solution>

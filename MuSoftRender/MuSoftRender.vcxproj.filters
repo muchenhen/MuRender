@@ -21,9 +21,15 @@
     <ClCompile Include="Render\TGAImage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Math\Math.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Render\TGAImage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Math.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

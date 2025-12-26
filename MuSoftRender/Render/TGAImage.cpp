@@ -1,4 +1,4 @@
-#include "TGAImage.h"
+ï»¿#include "TGAImage.h"
 #include <iostream>
 #include <fstream>
 
@@ -27,10 +27,42 @@ TGAImage::TGAImage(int w, int h)
     data = new unsigned char[width * height * TGAFormat];
 }
 
+TGAImage::TGAImage(const TGAImage& other)
+{
+    width = other.width;
+    height = other.height;
+    data = new unsigned char[width * height * TGAFormat];
+    std::memcpy(data, other.data, static_cast<size_t>(width) * height * TGAFormat);
+}
+
 TGAImage::~TGAImage()
 {
     delete[] data;
     data = nullptr;
+}
+
+TGAImage& TGAImage::operator=(const TGAImage& other)
+{
+    if (this == &other) return *this; // è‡ªèµ‹å€¼æ£€æŸ¥
+    size_t newSize = static_cast<size_t>(other.width) * other.height * TGAFormat;
+    unsigned char* newData = nullptr;
+
+    if (newSize > 0)
+    {
+        newData = new unsigned char[newSize];
+        if (other.data)
+            std::memcpy(newData, other.data, newSize);
+        else
+            std::memset(newData, 0, newSize);
+    }
+
+    // æˆåŠŸåˆ†é…å¹¶å¤åˆ¶åæ‰é‡Šæ”¾æ—§èµ„æº
+    delete[] data;
+    data = newData;
+    width = other.width;
+    height = other.height;
+
+    return *this;
 }
 
 bool TGAImage::set(int x, int y, const TGAColor& c)
@@ -38,7 +70,7 @@ bool TGAImage::set(int x, int y, const TGAColor& c)
     if (x < 0 || x >= width || y < 0 || y >= height)
         return false;
     const size_t idx = (static_cast<size_t>(y) * width + x) * TGAFormat;
-    // ´æ´¢Ë³ĞòÎª B, G, R, A£¨TGA ³£¼ûË³Ğò£©
+    // å­˜å‚¨é¡ºåºä¸º B, G, R, Aï¼ˆTGA å¸¸è§é¡ºåºï¼‰
     data[idx + 0] = c.b;
     data[idx + 1] = c.g;
     data[idx + 2] = c.r;
@@ -48,9 +80,14 @@ bool TGAImage::set(int x, int y, const TGAColor& c)
 
 TGAColor TGAImage::get(int x, int y) const
 {
-    if (x < 0 || x >= width || y < 0 || y >= height)
-        return TGAColor();
-    return TGAColor();
+    TGAColor c{0, 0, 0, 0};
+    if (x < 0 || x >= width || y < 0 || y >= height) return c;
+    const size_t idx = (static_cast<size_t>(y) * width + x) * TGAFormat;
+    c.b = data[idx + 0];
+    c.g = data[idx + 1];
+    c.r = data[idx + 2];
+    c.a = data[idx + 3];
+    return c;
 }
 
 bool TGAImage::write_tga_file(const std::string& filename, bool flip_vertically)
@@ -68,17 +105,17 @@ bool TGAImage::write_tga_file(const std::string& filename, bool flip_vertically)
     header.width = static_cast<uint16_t>(width);
     header.height = static_cast<uint16_t>(height);
     header.bitsperpixel = static_cast<uint8_t>(TGAFormat * 8); // 32
-    // bit5 (0x20) ¿ØÖÆÍ¼ÏñÔ­µã£º1 = top-left, 0 = bottom-left
+    // bit5 (0x20) æ§åˆ¶å›¾åƒåŸç‚¹ï¼š1 = top-left, 0 = bottom-left
     header.imagedescriptor = flip_vertically ? 0x20 : 0x00;
 
     std::ofstream ofs(filename, std::ios::binary);
     if (!ofs) return false;
-    // Ğ´ÈëÍ·²¿
+    // å†™å…¥å¤´éƒ¨
     ofs.write(reinterpret_cast<const char*>(&header), sizeof(header));
     if (!ofs) return false;
 
     const size_t rowBytes = static_cast<size_t>(width) * TGAFormat;
-    // Ğ´ÈëÏñËØÊı¾İ£º°´ĞĞĞ´£¬Ö§³Ö´¹Ö±·­×ª
+    // å†™å…¥åƒç´ æ•°æ®ï¼šæŒ‰è¡Œå†™ï¼Œæ”¯æŒå‚ç›´ç¿»è½¬
     if (flip_vertically)
     {
         for (int y = height - 1; y >= 0; --y)
@@ -100,7 +137,7 @@ bool TGAImage::write_tga_file(const std::string& filename, bool flip_vertically)
 
 void TGAImage::clear()
 {
-    data = new unsigned char[width * height * TGAFormat]();
+    std::memset(data, 0, static_cast<size_t>(width) * height * TGAFormat);
 }
 
 int TGAImage::get_width() const
